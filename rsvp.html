@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Family Weather Events - RSVP</title>
+    <link rel="icon" href="images/icon.webp" type="image/gif" sizes="16x16">
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" >
+    <meta content="FamilyWeather" name="description" >
+    <meta content="" name="keywords" >
+    <meta content="" name="author" >
+    <!-- CSS Files
+    ================================================== -->
+    <link href="css/bootstrap.min.css" rel="stylesheet" type="text/css" id="bootstrap">
+    <link href="css/vendors.css" rel="stylesheet" type="text/css" >
+    <link href="css/style.css" rel="stylesheet" type="text/css" >
+    <!-- color scheme -->
+    <link id="colors" href="css/colors/scheme-01.css" rel="stylesheet" type="text/css" >
+
+</head>
+
+<body class="dark-scheme">
+
+    <div id="wrapper">
+
+        <div class="float-text show-on-scroll">
+            <span><a href="#">Scroll to top</a></span>
+        </div>
+        <div class="scrollbar-v show-on-scroll"></div>
+
+        <!-- page preloader begin -->
+        <div id="de-loader"></div>
+        <!-- page preloader close -->
+
+        <header class="transparent">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="de-flex">
+                            <div class="de-flex-col">
+                                <!-- logo begin -->
+                                <div id="logo">
+                                    <a href="index.html">
+                                        <img class="logo-main" src="images/assets/Family%20Weather%20Logo.png%233.png" alt="" >
+                                        <img class="logo-scroll" src="images/assets/Family%20Weather%20Logo.png%233.png" alt="" >
+                                        <img class="logo-mobile" src="images/assets/Family%20Weather%20Logo.png%233.png" alt="" >
+                                    </a>
+                                </div>
+                                <!-- logo close -->
+                            </div>
+
+                            <div class="de-flex-col">
+                                <div class="de-flex-col header-col-mid">
+                                    <ul id="mainmenu">
+                                        <li><a class="menu-item" href="index.html"><i class="fa fa-house me-2"></i>Home</a></li>
+                                        <li><a class="menu-item" href="create-event.html"><i class="fa fa-plus me-2"></i>Create Event</a></li>
+                                        <li><a class="menu-item" href="my-events.html"><i class="fa fa-calendar me-2"></i>My Events</a></li>
+                                        <li><a class="menu-item" href="invite.html"><i class="fa fa-envelope me-2"></i>Invite</a></li>
+                                        <li><a class="menu-item active" href="rsvp.html"><i class="fa fa-check me-2"></i>RSVP</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div class="de-flex-col">
+                                <a class="btn-main fx-slide w-100" href="#section-rsvp"><span><i class="fa fa-check me-2"></i>RSVP Now</span></a>
+
+                                <div class="menu_side_area">
+                                    <span id="menu-btn"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <section id="section-hero" class="section-dark no-top no-bottom text-light jarallax relative mh-800" data-video-src="mp4:video/1.mp4">
+            <div class="gradient-edge-top op-6 h-50 color"></div>
+            <div class="gradient-edge-bottom"></div>
+            <div class="sw-overlay op-8"></div>
+            <div class="abs abs-centered z-2 w-80">
+                <div class="container wow scaleIn" data-wow-duration="3s">
+                    <div class="row">
+                        <div class="col-lg-12 text-center">
+                            <img src="images/fw-icons/thermometer.svg" class="w-80px mb-3" alt="">
+                            <div class="subtitle">Family Weather Events</div>
+                            <h1 class="fs-120 text-uppercase fs-sm-12vw mb-4 lh-1">RSVP</h1>
+                            <p class="lead">Let the host know your attendance status.</p>
+
+                            <div class="spacer-single"></div>
+
+                            <a class="btn-main mx-2 fx-slide" href="#section-rsvp"><span><i class="fa fa-check me-2"></i>Submit RSVP</span></a>
+                            <a class="btn-main btn-line mx-2 fx-slide" href="index.html"><span><i class="fa fa-house me-2"></i>Back to Home</span></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="section-rsvp" class="bg-dark section-dark text-light">
+            <div class="container">
+                <div class="row g-4 justify-content-center">
+                    <div class="col-lg-8">
+                        <div class="bg-dark-2 rounded-1 p-60 relative">
+                            <div class="subtitle wow fadeInUp">RSVP Form</div>
+                            <h2 class="wow fadeInUp" data-wow-delay=".2s">Respond to the invitation</h2>
+                            <p class="wow fadeInUp" data-wow-delay=".4s">Choose your status and share any notes.</p>
+                            <div id="rsvp-event-summary" class="bg-dark-2 rounded-1 p-20 mt-3"></div>
+                            <p id="rsvp-event-meta" class="mb-0"></p>
+
+                            <form class="row g-4 mt-2" id="rsvp-form" id="rsvp-form">
+                                <div class="col-md-6">
+                                    <input type="text" class="form-control form-control-lg" id="rsvp-name" id="rsvp-name" placeholder="Full Name" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <input type="email" class="form-control form-control-lg" id="rsvp-email" id="rsvp-email" placeholder="Email Address" required>
+                                </div>
+                                <div class="col-md-12">
+                                    <select class="form-control form-control-lg" id="rsvp-status" id="rsvp-status">
+                                        <option selected>RSVP Status</option>
+                                        <option>Going</option>
+                                        <option>Maybe</option>
+                                        <option>Can't Go</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-12">
+                                    <textarea class="form-control form-control-lg" id="rsvp-notes" id="rsvp-notes" rows="4" placeholder="Notes for the host (dietary, accessibility, etc.)"></textarea>
+                                </div>
+                                <div class="col-12">
+                                    <button type="submit" class="btn-main fx-slide w-100"><span>Submit RSVP</span></button>
+                                    <div id="rsvp-message" class="mt-3"></div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- footer begin -->
+    <footer class="text-light section-dark">
+        <div class="container">
+            <div class="row g-4 align-items-center">
+                <div class="col-md-12">
+                    <div class="d-lg-flex align-items-center justify-content-between text-center">
+                        <div>
+                            <h3 class="fs-20">Family Weather Events</h3>
+                            Plan together with the people you care about.
+                        </div>
+                        <div>
+                            <img src="images/assets/Family%20Weather%20Logo.png%233.png" class="w-150px" alt=""><br>
+                            <div class="social-icons mb-sm-30 mt-4">
+                                <a href="#"><i class="fa-brands fa-facebook-f"></i></a>
+                                <a href="#"><i class="fa-brands fa-instagram"></i></a>
+                                <a href="#"><i class="fa-brands fa-twitter"></i></a>
+                                <a href="#"><i class="fa-brands fa-youtube"></i></a>
+                            </div>
+
+                        </div>
+                        <div>
+                            <h3 class="fs-20">Contact Us</h3>
+                            T. +1 123 456 789<br>
+                            M. contact@familyweather.com
+                        </div>
+                    </div>
+                </div>                    
+            </div>
+        </div>
+        <div class="subfooter">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-12 text-center">
+                        Copyright 2026 - Family Weather Events
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <!-- footer end -->
+    
+    <!-- Javascript Files
+    ================================================== -->
+    <script src="js/vendors.js"></script>
+    <script src="js/fw-settings.js"></script>
+<script src="js/designesia.js"></script>
+    <script src="js/countdown-custom.js"></script>
+    <script src="js/custom-marquee.js"></script>
+        <script>
+        (function () {
+            const STORAGE_KEYS = {
+                invites: "fw_invites",
+                rsvps: "fw_rsvps",
+                events: "fw_events"
+            };
+
+            function readStorage(key, fallback) {
+                try {
+                    const raw = localStorage.getItem(key);
+                    return raw ? JSON.parse(raw) : fallback;
+                } catch (err) {
+                    return fallback;
+                }
+            }
+
+            function writeStorage(key, value) {
+                localStorage.setItem(key, JSON.stringify(value));
+            }
+
+            function setMessage(el, text, type) {
+                if (!el) return;
+                el.textContent = text;
+                el.className = type === "success" ? "mt-3 text-success" : "mt-3 text-danger";
+            }
+
+            function initRsvp() {
+                const params = new URLSearchParams(window.location.search);
+                const token = params.get("token");
+                const messageEl = document.getElementById("rsvp-message");
+                const form = document.getElementById("rsvp-form");
+                const nameInput = document.getElementById("rsvp-name");
+                const emailInput = document.getElementById("rsvp-email");
+                const statusSelect = document.getElementById("rsvp-status");
+                const notesInput = document.getElementById("rsvp-notes");
+
+                if (!token) {
+                    setMessage(messageEl, "Invalid RSVP link.", "error");
+                    if (form) form.addEventListener("submit", (e) => e.preventDefault());
+                    return;
+                }
+
+                const invites = readStorage(STORAGE_KEYS.invites, []);
+                const invite = invites.find((inv) => inv.token === token);
+                if (!invite) {
+                    setMessage(messageEl, "Invalid RSVP link.", "error");
+                    if (form) form.addEventListener("submit", (e) => e.preventDefault());
+                    return;
+                }
+
+                if (emailInput) {
+                    emailInput.value = invite.invitee || "";
+                    emailInput.readOnly = true;
+                }
+
+                const events = readStorage(STORAGE_KEYS.events, []);
+                const event = events.find((evt) => evt.id === invite.event_id);
+                const summaryEl = document.getElementById("rsvp-event-summary");
+                const metaEl = document.getElementById("rsvp-event-meta");
+                if (summaryEl) {
+                    if (event) {
+                        summaryEl.innerHTML = `
+                            <div class="subtitle">Event Details</div>
+                            <h4 class="mb-2">${event.title || "Event"}</h4>
+                            <div class="small">${event.date || ""}${event.time ? ` ? ${event.time}` : ""}</div>
+                            <div class="small">Visibility: ${event.visibility || ""}</div>
+                        `;
+                    } else {
+                        summaryEl.innerHTML = `<div class="small">Event details unavailable.</div>`;
+                    }
+                }
+                if (metaEl) {
+                    metaEl.textContent = `Invited as: ${invite.invitee}`;
+                }
+
+                if (form) {
+                    form.addEventListener("submit", (e) => {
+                        e.preventDefault();
+                        const statusValue = statusSelect ? statusSelect.value : "";
+                        if (!statusValue || statusValue === "RSVP Status") {
+                            setMessage(messageEl, "Please choose an RSVP status.", "error");
+                            return;
+                        }
+
+                        const rsvps = readStorage(STORAGE_KEYS.rsvps, []);
+                        const updated = rsvps.filter((r) => !(r.event_id === invite.event_id && r.invitee === invite.invitee));
+                        updated.push({
+                            event_id: invite.event_id,
+                            invitee: invite.invitee,
+                            name: nameInput ? nameInput.value.trim() : "",
+                            status: statusValue === "Can't Go" ? "No" : statusValue,
+                            note: notesInput ? notesInput.value.trim() : ""
+                        ,
+                            created_at: new Date().toISOString()
+                        });
+                        writeStorage(STORAGE_KEYS.rsvps, updated);
+                        const stamp = new Date().toLocaleString();
+                        setMessage(messageEl, `RSVP saved \u2705 (${stamp})`, "success");
+                        if (form) form.querySelector("button[type=submit]").disabled = true;
+                    }, { once: true });
+                }
+            }
+
+            initRsvp();
+        })();
+    </script>
+</body>
+
+</html>
+
+
+
+
+
+
+
+
+
+
+

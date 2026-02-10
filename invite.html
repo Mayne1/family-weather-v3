@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Family Weather Events - Invite</title>
+    <link rel="icon" href="images/icon.webp" type="image/gif" sizes="16x16">
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" >
+    <meta content="FamilyWeather" name="description" >
+    <meta content="" name="keywords" >
+    <meta content="" name="author" >
+    <!-- CSS Files
+    ================================================== -->
+    <link href="css/bootstrap.min.css" rel="stylesheet" type="text/css" id="bootstrap">
+    <link href="css/vendors.css" rel="stylesheet" type="text/css" >
+    <link href="css/style.css" rel="stylesheet" type="text/css" >
+    <!-- color scheme -->
+    <link id="colors" href="css/colors/scheme-01.css" rel="stylesheet" type="text/css" >
+
+</head>
+
+<body class="dark-scheme">
+
+    <div id="wrapper">
+
+        <div class="float-text show-on-scroll">
+            <span><a href="#">Scroll to top</a></span>
+        </div>
+        <div class="scrollbar-v show-on-scroll"></div>
+
+        <!-- page preloader begin -->
+        <div id="de-loader"></div>
+        <!-- page preloader close -->
+
+        <header class="transparent">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="de-flex">
+                            <div class="de-flex-col">
+                                <!-- logo begin -->
+                                <div id="logo">
+                                    <a href="index.html">
+                                        <img class="logo-main" src="images/assets/Family%20Weather%20Logo.png%233.png" alt="" >
+                                        <img class="logo-scroll" src="images/assets/Family%20Weather%20Logo.png%233.png" alt="" >
+                                        <img class="logo-mobile" src="images/assets/Family%20Weather%20Logo.png%233.png" alt="" >
+                                    </a>
+                                </div>
+                                <!-- logo close -->
+                            </div>
+
+                            <div class="de-flex-col">
+                                <div class="de-flex-col header-col-mid">
+                                    <ul id="mainmenu">
+                                        <li><a class="menu-item" href="index.html"><i class="fa fa-house me-2"></i>Home</a></li>
+                                        <li><a class="menu-item" href="create-event.html"><i class="fa fa-plus me-2"></i>Create Event</a></li>
+                                        <li><a class="menu-item" href="my-events.html"><i class="fa fa-calendar me-2"></i>My Events</a></li>
+                                        <li><a class="menu-item active" href="invite.html"><i class="fa fa-envelope me-2"></i>Invite</a></li>
+                                        <li><a class="menu-item" href="rsvp.html"><i class="fa fa-check me-2"></i>RSVP</a></li>
+                                        <li><a class="menu-item" href="settings.html"><i class="fa fa-gear me-2"></i>Settings</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div class="de-flex-col">
+                                <a class="btn-main fx-slide w-100" href="#section-invite"><span><i class="fa fa-envelope me-2"></i>Invite Guests</span></a>
+
+                                <div class="menu_side_area">
+                                    <span id="menu-btn"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <section id="section-hero" class="section-dark no-top no-bottom text-light jarallax relative mh-800" data-video-src="mp4:video/2.mp4">
+            <div class="gradient-edge-top op-6 h-50 color"></div>
+            <div class="gradient-edge-bottom"></div>
+            <div class="sw-overlay op-8"></div>
+            <div class="abs abs-centered z-2 w-80">
+                <div class="container wow scaleIn" data-wow-duration="3s">
+                    <div class="row">
+                        <div class="col-lg-12 text-center">
+                            <img src="images/fw-icons/wind.svg" class="w-80px mb-3" alt="">
+                            <div class="subtitle">Family Weather Events</div>
+                            <h1 class="fs-120 text-uppercase fs-sm-12vw mb-4 lh-1">Invite</h1>
+                            <p class="lead">Send invites by email or share a quick link.</p>
+
+                            <div class="spacer-single"></div>
+
+                            <a class="btn-main mx-2 fx-slide" href="#section-invite"><span><i class="fa fa-envelope me-2"></i>Invite Guests</span></a>
+                            <a class="btn-main btn-line mx-2 fx-slide" href="index.html"><span><i class="fa fa-house me-2"></i>Back to Home</span></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="section-invite" class="bg-dark section-dark text-light">
+            <div class="container">
+                <div class="row g-4 justify-content-center">
+                    <div class="col-lg-8">
+                        <div class="bg-dark-2 rounded-1 p-60 relative">
+                            <div class="subtitle wow fadeInUp">Email Invites</div>
+                            <h2 class="wow fadeInUp" data-wow-delay=".2s">Send invitations</h2>
+                            <p class="wow fadeInUp" data-wow-delay=".4s">Add guest emails and a message to invite them.</p>
+
+                            <form class="row g-4 mt-2">
+                                <div class="col-md-12">
+                                    <input type="text" class="form-control form-control-lg" placeholder="Event Name" required>
+                                </div>
+                                <div class="col-md-12">
+                                    <input type="text" class="form-control form-control-lg" placeholder="Guest Emails (comma-separated)" required>
+                                </div>
+                                <div class="col-md-12">
+                                    <textarea class="form-control form-control-lg" rows="4" placeholder="Personal message"></textarea>
+                                </div>
+                                <div class="col-12">
+                                    <button type="submit" class="btn-main fx-slide w-100"><span>Send Invites</span></button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="spacer-double"></div>
+
+                <div class="row g-4 justify-content-center">
+                    <div class="col-lg-8">
+                        <div class="bg-dark-2 rounded-1 p-60 relative">
+                            <div class="subtitle wow fadeInUp">Shareable Link</div>
+                            <h2 class="wow fadeInUp" data-wow-delay=".2s">Copy invite link</h2>
+                            <p class="wow fadeInUp" data-wow-delay=".4s">Use this link in group chats or social posts.</p>
+
+                            <div class="row g-3 mt-2">
+                                <div class="col-md-9">
+                                    <input type="text" class="form-control form-control-lg" value="https://familyweather.local/invite/your-event" readonly>
+                                </div>
+                                <div class="col-md-3 d-grid">
+                                    <button class="btn-main fx-slide">Copy Link</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </div>
+
+    <!-- footer begin -->
+    <footer class="text-light section-dark">
+        <div class="container">
+            <div class="row g-4 align-items-center">
+                <div class="col-md-12">
+                    <div class="d-lg-flex align-items-center justify-content-between text-center">
+                        <div>
+                            <h3 class="fs-20">Family Weather Events</h3>
+                            Plan together with the people you care about.
+                        </div>
+                        <div>
+                            <img src="images/assets/Family%20Weather%20Logo.png%233.png" class="w-150px" alt=""><br>
+                            <div class="social-icons mb-sm-30 mt-4">
+                                <a href="#"><i class="fa-brands fa-facebook-f"></i></a>
+                                <a href="#"><i class="fa-brands fa-instagram"></i></a>
+                                <a href="#"><i class="fa-brands fa-twitter"></i></a>
+                                <a href="#"><i class="fa-brands fa-youtube"></i></a>
+                            </div>
+
+                        </div>
+                        <div>
+                            <h3 class="fs-20">Contact Us</h3>
+                            T. +1 123 456 789<br>
+                            M. contact@familyweather.com
+                        </div>
+                    </div>
+                </div>                    
+            </div>
+        </div>
+        <div class="subfooter">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-12 text-center">
+                        Copyright 2026 - Family Weather Events
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <!-- footer end -->
+    
+    <!-- Javascript Files
+    ================================================== -->
+    <script src="js/vendors.js"></script>\r\n    <script src="js/fw-settings.js"></script>\r\n<script src="js/designesia.js"></script>
+    <script src="js/countdown-custom.js"></script>
+    <script src="js/custom-marquee.js"></script>
+
+</body>
+
+</html>
+
+
+
+
+
+
+
+
