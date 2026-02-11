@@ -16,6 +16,15 @@ function clearAuthItems(menu) {
     menu.querySelectorAll("li[data-auth-item='true']").forEach((item) => item.remove());
 }
 
+function getAccountSlot() {
+    return document.getElementById("fw-account-slot");
+}
+
+function clearAccountSlot() {
+    const slot = getAccountSlot();
+    if (slot) slot.innerHTML = "";
+}
+
 function getIdentityLabel(user) {
     if (user?.displayName && user.displayName.trim()) return user.displayName.trim();
     if (user?.email) return user.email;
@@ -44,11 +53,29 @@ function createAuthIdentityItem(user) {
     return li;
 }
 
+function createAccountButton(user) {
+    const link = document.createElement("a");
+    link.href = "settings.html";
+    link.className = "btn-main btn-line fx-slide nav-cta fw-account-btn";
+    link.innerHTML = `<span><span class="fw-avatar">${getInitial(user)}</span><span class="fw-account-name">${getIdentityLabel(user)}</span></span>`;
+    return link;
+}
+
+function createSignInButton() {
+    const link = document.createElement("a");
+    link.href = "login.html";
+    link.className = "btn-main btn-line fx-slide nav-cta";
+    link.innerHTML = "<span><i class=\"fa fa-sign-in me-2\"></i>Sign In</span>";
+    return link;
+}
+
 function renderAuthItems(menu, user) {
     clearAuthItems(menu);
+    clearAccountSlot();
+    const slot = getAccountSlot();
 
     if (user && user.email) {
-        const logout = createAuthNavItem("Sign Out", "#", "fa fa-right-from-bracket");
+        const logout = createAuthNavItem("Sign Out", "#", "fa fa-sign-out");
         logout.link.addEventListener("click", async (event) => {
             event.preventDefault();
             try {
@@ -58,14 +85,19 @@ function renderAuthItems(menu, user) {
             }
         });
         menu.appendChild(logout.li);
-        menu.appendChild(createAuthIdentityItem(user));
+        if (slot) {
+            slot.appendChild(createAccountButton(user));
+        } else {
+            menu.appendChild(createAuthIdentityItem(user));
+        }
         return;
     }
 
-    const login = createAuthNavItem("Sign In", "login.html", "fa fa-right-to-bracket");
+    const login = createAuthNavItem("Sign In", "login.html", "fa fa-sign-in");
     const signup = createAuthNavItem("Sign Up", "login.html#signup", "fa fa-user-plus");
     menu.appendChild(login.li);
     menu.appendChild(signup.li);
+    if (slot) slot.appendChild(createSignInButton());
 }
 
 document.addEventListener("DOMContentLoaded", () => {

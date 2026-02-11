@@ -13191,6 +13191,23 @@ header .nav-actions .nav-cta {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+.fw-account-btn > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.fw-account-name {
+  display: inline-block;
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+@media (max-width: 991px) {
+  #fw-account-slot {
+    display: none;
+  }
+}
 body.light-scheme .section-dark,
 body.light-scheme .bg-dark,
 body.light-scheme .bg-dark-2 {

@@ -11,6 +11,15 @@ function createItem(text, href, iconClass) {
     return { li, link };
 }
 
+function getAccountSlot() {
+    return document.getElementById("fw-account-slot");
+}
+
+function clearAccountSlot() {
+    const slot = getAccountSlot();
+    if (slot) slot.innerHTML = "";
+}
+
 function createIdentity(user) {
     const label = user?.displayName?.trim() || user?.email || "My Account";
     const initial = label.charAt(0).toUpperCase() || "U";
@@ -24,6 +33,24 @@ function createIdentity(user) {
     return li;
 }
 
+function createAccountButton(user) {
+    const label = user?.displayName?.trim() || user?.email || "Account";
+    const initial = label.charAt(0).toUpperCase() || "U";
+    const link = document.createElement("a");
+    link.href = "settings.html";
+    link.className = "btn-main btn-line fx-slide nav-cta fw-account-btn";
+    link.innerHTML = `<span><span class="fw-avatar">${initial}</span><span class="fw-account-name">${label}</span></span>`;
+    return link;
+}
+
+function createSignInButton() {
+    const link = document.createElement("a");
+    link.href = "login.html";
+    link.className = "btn-main btn-line fx-slide nav-cta";
+    link.innerHTML = "<span><i class=\"fa fa-sign-in me-2\"></i>Sign In</span>";
+    return link;
+}
+
 document.addEventListener("DOMContentLoaded", () => {
     const menu = document.getElementById("mainmenu");
     if (!menu) return;
@@ -32,21 +59,28 @@ document.addEventListener("DOMContentLoaded", () => {
 
     onAuthChanged((user) => {
         menu.querySelectorAll("li[data-auth-item='true']").forEach((el) => el.remove());
+        clearAccountSlot();
+        const slot = getAccountSlot();
 
         if (user && user.email) {
             privateLinks.forEach((el) => (el.style.display = ""));
-            const logout = createItem("Sign Out", "#", "fa fa-right-from-bracket");
+            const logout = createItem("Sign Out", "#", "fa fa-sign-out");
             logout.link.addEventListener("click", async (event) => {
                 event.preventDefault();
                 await signOutUser();
             });
             menu.appendChild(logout.li);
-            menu.appendChild(createIdentity(user));
+            if (slot) {
+                slot.appendChild(createAccountButton(user));
+            } else {
+                menu.appendChild(createIdentity(user));
+            }
             return;
         }
 
         privateLinks.forEach((el) => (el.style.display = "none"));
-        menu.appendChild(createItem("Sign In", "login.html", "fa fa-right-to-bracket").li);
+        menu.appendChild(createItem("Sign In", "login.html", "fa fa-sign-in").li);
         menu.appendChild(createItem("Sign Up", "login.html#signup", "fa fa-user-plus").li);
+        if (slot) slot.appendChild(createSignInButton());
     });
 });
