@@ -40,8 +40,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 event.preventDefault();
                 await signOutUser();
             });
-            menu.appendChild(createIdentity(user));
             menu.appendChild(logout.li);
+            menu.appendChild(createIdentity(user));
             return;
         }
 
@@ -50,4 +50,3 @@ document.addEventListener("DOMContentLoaded", () => {
         menu.appendChild(createItem("Sign Up", "login.html#signup", "fa fa-user-plus").li);
     });
 });
-

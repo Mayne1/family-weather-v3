@@ -57,8 +57,8 @@ function renderAuthItems(menu, user) {
                 console.error(err);
             }
         });
-        menu.appendChild(createAuthIdentityItem(user));
         menu.appendChild(logout.li);
+        menu.appendChild(createAuthIdentityItem(user));
         return;
     }
 
