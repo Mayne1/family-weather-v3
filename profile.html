@@ -2,23 +2,18 @@
 <html lang="en">
 
 <head>
-    <title>Family Weather Events - Community Feed</title>
+    <title>Family Weather Events - My Profile</title>
     <link rel="icon" href="images/icon.webp" type="image/gif" sizes="16x16">
     <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
     <meta content="width=device-width, initial-scale=1.0" name="viewport" >
     <meta content="FamilyWeather" name="description" >
     <meta content="" name="keywords" >
     <meta content="" name="author" >
-    
     <link href="css/bootstrap.min.css" rel="stylesheet" type="text/css" id="bootstrap">
-    
     <link href="css/vendors.css" rel="stylesheet" type="text/css" >
-    
     <link href="fonts/fontawesome4/css/font-awesome.min.css" rel="stylesheet" type="text/css" >
     <link href="css/style.css" rel="stylesheet" type="text/css" >
-    <!-- color scheme -->
     <link id="colors" href="css/colors/scheme-01.css" rel="stylesheet" type="text/css" >
-
 </head>
 
 <body class="dark-scheme">
@@ -30,10 +25,9 @@
         </div>
         <div class="scrollbar-v show-on-scroll"></div>
 
-        <!-- page preloader begin -->
         <div id="de-loader"></div>
 
-<header class="transparent">
+        <header class="transparent">
             <div class="container">
                 <div class="row">
                     <div class="col-md-12">
@@ -44,8 +38,8 @@
                                         <li><a class="menu-item" href="index.html"><i class="fa fa-home me-2"></i>Home</a></li>
                                         <li><a class="menu-item" href="create-event.html"><i class="fa fa-plus me-2"></i>Create Event</a></li>
                                         <li><a class="menu-item" href="my-events.html"><i class="fa fa-calendar me-2"></i>My Events</a></li>
-                                        <li><a class="menu-item active" href="/feeds.html"><i class="fa fa-comments me-2"></i>Feeds</a></li>
-                                        <li><a class="menu-item" href="/profile.html"><i class="fa fa-user me-2"></i>Profile</a></li>
+                                        <li><a class="menu-item" href="/feeds.html"><i class="fa fa-comments me-2"></i>Feeds</a></li>
+                                        <li><a class="menu-item active" href="profile.html"><i class="fa fa-user me-2"></i>Profile</a></li>
                                         <li><a class="menu-item" href="invite.html"><i class="fa fa-envelope me-2"></i>Invite</a></li>
                                         <li><a class="menu-item" href="rsvp.html"><i class="fa fa-check me-2"></i>RSVP</a></li>
                                         <li><a class="menu-item" href="settings.html"><i class="fa fa-cog me-2"></i>Settings</a></li>
@@ -73,40 +67,90 @@
                 <div class="container wow scaleIn" data-wow-duration="3s">
                     <div class="row">
                         <div class="col-lg-12 text-center">
-                            <img src="images/fw-icons/cloudy.svg" class="w-80px mb-3" alt="">
+                            <img src="images/fw-icons/compass.svg" class="w-80px mb-3" alt="">
                             <div class="subtitle">Family Weather Events</div>
-                            <h1 class="fs-120 text-uppercase fs-sm-12vw mb-4 lh-1">Community Feed</h1>
-                            <p class="lead">A shared space for weather updates and family activity check-ins.</p>
-
-                            <div class="spacer-single"></div>
-
-                            <a class="btn-main mx-2 fx-slide" href="#section-feed"><span><i class="fa fa-comments me-2"></i>View Feed</span></a>
-                            <a class="btn-main btn-line mx-2 fx-slide" href="index.html"><span><i class="fa fa-home me-2"></i>Back to Home</span></a>
+                            <h1 class="fs-120 text-uppercase fs-sm-12vw mb-4 lh-1">My Profile</h1>
+                            <p class="lead">Manage your personal profile and account details.</p>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
-        <section class="bg-dark section-dark text-light pt-30 pb-30">
-            <div class="container">
-                <div class="bg-dark-2 rounded-1 p-30 d-lg-flex align-items-center justify-content-between">
-                    <div id="fw-auth-state-label" class="mb-3 mb-lg-0">Checking sign-in status...</div>
-                    <a id="fw-auth-state-action" class="btn-main btn-line fx-slide" href="login.html"><span>Sign In</span></a>
-                </div>
-            </div>
-        </section>
 
-                        <section id="section-feed" class="bg-dark section-dark text-light">
+        <section id="section-profile" class="bg-dark section-dark text-light">
             <div class="container">
-                <div class="row g-4 justify-content-center">
+                <div id="fw-profile-gate" class="row g-4 justify-content-center d-none">
+                    <div class="col-lg-8">
+                        <div class="bg-dark-2 rounded-1 p-60 relative text-center">
+                            <div class="subtitle">Profile Access</div>
+                            <h2>Please sign in to view your profile</h2>
+                            <p class="mb-4">Your profile information is available after authentication.</p>
+                            <a class="btn-main fx-slide" href="login.html"><span><i class="fa fa-sign-in me-2"></i>Go to Sign In</span></a>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="fw-profile-content" class="row g-4 justify-content-center">
                     <div class="col-lg-8">
                         <div class="bg-dark-2 rounded-1 p-60 relative">
-                            <div class="subtitle wow fadeInUp">Coming Soon</div>
-                            <h2 class="wow fadeInUp" data-wow-delay=".2s">Community Feed</h2>
-                            <p class="wow fadeInUp" data-wow-delay=".4s">Users will post weather updates, event attendance, and activity here.</p>
-                            <div class="mt-4 p-30 rounded-1 bg-dark text-light border border-dark-subtle">
-                                <h4 class="mb-2">Placeholder</h4>
-                                <p class="mb-0 text-light-50">This page is live and ready for upcoming feed functionality.</p>
+                            <div class="subtitle wow fadeInUp">Avatar</div>
+                            <h2 class="wow fadeInUp" data-wow-delay=".2s">Profile Photo</h2>
+                            <div class="d-flex flex-wrap align-items-center gap-4 mt-3">
+                                <div id="fw-profile-avatar-fallback" class="fw-avatar" style="width:72px;height:72px;font-size:28px;">U</div>
+                                <img id="fw-profile-avatar-img" src="" alt="Avatar" class="rounded-circle d-none" style="width:72px;height:72px;object-fit:cover;">
+                                <div>
+                                    <label for="fw-profile-avatar-input" class="btn-main btn-line fx-slide"><span>Upload Photo</span></label>
+                                    <input id="fw-profile-avatar-input" type="file" accept="image/*" class="d-none">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-8">
+                        <div class="bg-dark-2 rounded-1 p-60 relative">
+                            <div class="subtitle wow fadeInUp">Bio</div>
+                            <h2 class="wow fadeInUp" data-wow-delay=".2s">Personal Info</h2>
+                            <form id="fw-profile-form" class="row g-4 mt-2">
+                                <div class="col-md-6">
+                                    <label class="form-label" for="fw-profile-display-name">Display Name</label>
+                                    <input type="text" id="fw-profile-display-name" class="form-control form-control-lg" maxlength="40">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label" for="fw-profile-username">Username</label>
+                                    <input type="text" id="fw-profile-username" class="form-control form-control-lg" maxlength="20">
+                                </div>
+                                <div class="col-md-12">
+                                    <label class="form-label" for="fw-profile-bio">Short Bio</label>
+                                    <textarea id="fw-profile-bio" class="form-control form-control-lg" rows="4" maxlength="240"></textarea>
+                                </div>
+                                <div class="col-md-12">
+                                    <label class="form-label" for="fw-profile-city">City / Home Location</label>
+                                    <input type="text" id="fw-profile-city" class="form-control form-control-lg">
+                                </div>
+                                <div class="col-12 d-flex align-items-center gap-3">
+                                    <button type="submit" class="btn-main fx-slide"><span>Save Profile</span></button>
+                                    <div id="fw-profile-save-msg" class="small"></div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-8">
+                        <div class="bg-dark-2 rounded-1 p-60 relative">
+                            <div class="subtitle wow fadeInUp">Account</div>
+                            <h2 class="wow fadeInUp" data-wow-delay=".2s">Account Details</h2>
+                            <div class="row g-3 mt-2">
+                                <div class="col-md-6">
+                                    <label class="form-label">Signed-in Email</label>
+                                    <input id="fw-profile-email" type="text" class="form-control form-control-lg" readonly>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Member Since</label>
+                                    <input id="fw-profile-member-since" type="text" class="form-control form-control-lg" readonly>
+                                </div>
+                                <div class="col-12">
+                                    <button id="fw-profile-signout" type="button" class="btn-main btn-line fx-slide"><span><i class="fa fa-sign-out me-2"></i>Sign out</span></button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -116,7 +160,6 @@
 
     </div>
 
-    <!-- footer begin -->
     <footer class="text-light section-dark">
         <div class="container">
             <div class="row g-4 align-items-center">
@@ -134,7 +177,6 @@
                                 <a href="#"><i class="fa-brands fa-twitter"></i></a>
                                 <a href="#"><i class="fa-brands fa-youtube"></i></a>
                             </div>
-
                         </div>
                         <div>
                             <h3 class="fs-20">Contact Us</h3>
@@ -142,7 +184,7 @@
                             M. contact@familyweather.com
                         </div>
                     </div>
-                </div>                    
+                </div>
             </div>
         </div>
         <div class="subfooter">
@@ -155,28 +197,16 @@
             </div>
         </div>
     </footer>
-    <!-- footer end -->
-    
-    <!-- Javascript Files
-    ================================================== -->
+
     <script src="js/vendors.js"></script>
     <script src="js/fw-settings.js"></script>
     <script src="js/designesia.js"></script>
     <script src="js/countdown-custom.js"></script>
     <script src="js/custom-marquee.js"></script>
     <script type="module" src="js/authNav.js"></script>
-    <script type="module" src="js/authHome.js"></script>
     <script type="module" src="js/authGate.js"></script>
+    <script type="module" src="js/profile.js"></script>
 
 </body>
 
 </html>
-
-
-
-
-
-
-
-
-
