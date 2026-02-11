@@ -1,0 +1,10 @@
+.fw-auth-card {
+    max-width: 620px;
+    margin: 0 auto;
+}
+
+.fw-auth-help {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.95rem;
+}
+

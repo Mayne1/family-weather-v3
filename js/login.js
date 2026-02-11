@@ -1,0 +1,57 @@
+import { signInWithEmail, signUpWithEmail, onAuthChanged, getAuthErrorMessage } from "../firebase/firebaseAuth.js";
+
+function setMessage(text, isError) {
+    const message = document.getElementById("auth-message");
+    if (!message) return;
+    message.textContent = text || "";
+    message.className = isError ? "mt-3 text-danger" : "mt-3 text-success";
+}
+
+function getFormValues() {
+    const email = (document.getElementById("auth-email")?.value || "").trim();
+    const password = document.getElementById("auth-password")?.value || "";
+    return { email, password };
+}
+
+async function handleSignIn(event) {
+    event.preventDefault();
+    const { email, password } = getFormValues();
+    try {
+        await signInWithEmail(email, password);
+        setMessage("Signed in. Redirecting...", false);
+        window.location.href = "index.html";
+    } catch (err) {
+        setMessage(getAuthErrorMessage(err), true);
+    }
+}
+
+async function handleSignUp(event) {
+    event.preventDefault();
+    const { email, password } = getFormValues();
+    try {
+        await signUpWithEmail(email, password);
+        setMessage("Account created. Redirecting...", false);
+        window.location.href = "index.html";
+    } catch (err) {
+        setMessage(getAuthErrorMessage(err), true);
+    }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    const signInBtn = document.getElementById("btn-sign-in");
+    const signUpBtn = document.getElementById("btn-sign-up");
+
+    signInBtn?.addEventListener("click", handleSignIn);
+    signUpBtn?.addEventListener("click", handleSignUp);
+
+    if (window.location.hash === "#signup") {
+        setMessage("Create an account with email and password.", false);
+    }
+
+    onAuthChanged((user) => {
+        const status = document.getElementById("auth-current-user");
+        if (!status) return;
+        status.textContent = user?.email ? `Signed in as ${user.email}` : "Signed out";
+    });
+});
+
