@@ -16,16 +16,38 @@ function clearAuthItems(menu) {
     menu.querySelectorAll("li[data-auth-item='true']").forEach((item) => item.remove());
 }
 
-function safeEmail(email) {
-    if (!email) return "My Account";
-    return email.length > 28 ? `${email.slice(0, 28)}...` : email;
+function getIdentityLabel(user) {
+    if (user?.displayName && user.displayName.trim()) return user.displayName.trim();
+    if (user?.email) return user.email;
+    return "My Account";
+}
+
+function getInitial(user) {
+    const source = getIdentityLabel(user);
+    return source.charAt(0).toUpperCase() || "U";
+}
+
+function createAuthIdentityItem(user) {
+    const li = document.createElement("li");
+    li.setAttribute("data-auth-item", "true");
+    li.className = "fw-auth-identity-wrap";
+
+    const link = document.createElement("a");
+    link.href = "settings.html";
+    link.className = "menu-item menu-item-auth";
+    link.innerHTML = `
+        <span class="fw-avatar">${getInitial(user)}</span>
+        <span class="fw-auth-text">${getIdentityLabel(user)}</span>
+    `;
+
+    li.appendChild(link);
+    return li;
 }
 
 function renderAuthItems(menu, user) {
     clearAuthItems(menu);
 
     if (user && user.email) {
-        const account = createAuthNavItem(`My Account (${safeEmail(user.email)})`, "settings.html", "fa fa-user");
         const logout = createAuthNavItem("Sign Out", "#", "fa fa-right-from-bracket");
         logout.link.addEventListener("click", async (event) => {
             event.preventDefault();
@@ -35,7 +57,7 @@ function renderAuthItems(menu, user) {
                 console.error(err);
             }
         });
-        menu.appendChild(account.li);
+        menu.appendChild(createAuthIdentityItem(user));
         menu.appendChild(logout.li);
         return;
     }
@@ -54,4 +76,3 @@ document.addEventListener("DOMContentLoaded", () => {
         renderAuthItems(menu, user);
     });
 });
-

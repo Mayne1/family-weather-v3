@@ -30,25 +30,20 @@
 
         <!-- page preloader begin -->
         <div id="de-loader"></div>
-        <!-- page preloader close -->
+        
+        <div class="fw-brand-banner">
+            <div class="container text-center text-lg-start">
+                <a class="fw-brand-link" href="index.html">
+                    <img src="images/assets/Family%20Weather%20Logo.png%233.png" alt="Family Weather Events" >
+                </a>
+            </div>
+        </div>
 
         <header class="transparent">
             <div class="container">
                 <div class="row">
                     <div class="col-md-12">
                         <div class="de-flex">
-                            <div class="de-flex-col">
-                                <!-- logo begin -->
-                                <div id="logo">
-                                    <a href="index.html">
-                                        <img class="logo-main" src="images/assets/Family%20Weather%20Logo.png%233.png" alt="" >
-                                        <img class="logo-scroll" src="images/assets/Family%20Weather%20Logo.png%233.png" alt="" >
-                                        <img class="logo-mobile" src="images/assets/Family%20Weather%20Logo.png%233.png" alt="" >
-                                    </a>
-                                </div>
-                                <!-- logo close -->
-                            </div>
-
                             <div class="de-flex-col">
                                 <div class="de-flex-col header-col-mid">
                                     <ul id="mainmenu">
@@ -63,8 +58,8 @@
                                 </div>
                             </div>
 
-                            <div class="de-flex-col">
-                                <a class="btn-main fx-slide w-100" href="#section-invite"><span><i class="fa fa-envelope me-2"></i>Invite Guests</span></a>
+                            <div class="de-flex-col nav-actions">
+                                <a class="btn-main fx-slide nav-cta" href="#section-invite"><span><i class="fa fa-envelope me-2"></i>Invite Guests</span></a>
 
                                 <div class="menu_side_area">
                                     <span id="menu-btn"></span>
@@ -108,18 +103,21 @@
                             <h2 class="wow fadeInUp" data-wow-delay=".2s">Send invitations</h2>
                             <p class="wow fadeInUp" data-wow-delay=".4s">Add guest emails and a message to invite them.</p>
 
-                            <form class="row g-4 mt-2">
+                            <form class="row g-4 mt-2" id="fw-invite-form">
                                 <div class="col-md-12">
-                                    <input type="text" class="form-control form-control-lg" placeholder="Event Name" required>
+                                    <input type="text" class="form-control form-control-lg" id="fw-invite-event" placeholder="Event Name" required>
                                 </div>
                                 <div class="col-md-12">
-                                    <input type="text" class="form-control form-control-lg" placeholder="Guest Emails (comma-separated)" required>
+                                    <label class="form-label mb-2" for="fw-invite-emails">Paste guest emails (comma, space, or newline separated)</label>
+                                    <textarea class="form-control form-control-lg" id="fw-invite-emails" rows="4" placeholder="friend1@email.com, friend2@email.com" required></textarea>
+                                    <div id="fw-email-count" class="small mt-2 text-light-50">0 valid emails / 0 invalid</div>
                                 </div>
                                 <div class="col-md-12">
-                                    <textarea class="form-control form-control-lg" rows="4" placeholder="Personal message"></textarea>
+                                    <textarea class="form-control form-control-lg" id="fw-invite-message" rows="4" placeholder="Personal message"></textarea>
                                 </div>
                                 <div class="col-12">
                                     <button type="submit" class="btn-main fx-slide w-100"><span>Send Invites</span></button>
+                                    <div id="fw-invite-status" class="mt-3"></div>
                                 </div>
                             </form>
                         </div>
@@ -202,8 +200,70 @@
     <script src="js/custom-marquee.js"></script>
     <script type="module" src="js/authNav.js"></script>
     <script type="module" src="js/authGate.js"></script>
+    <script>
+        (function () {
+            const emailInput = document.getElementById("fw-invite-emails");
+            const countEl = document.getElementById("fw-email-count");
+            const statusEl = document.getElementById("fw-invite-status");
+            const form = document.getElementById("fw-invite-form");
+            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+            function parseEmails(raw) {
+                const tokens = (raw || "")
+                    .split(/[\s,;]+/)
+                    .map((x) => x.trim())
+                    .filter(Boolean);
+                const valid = [];
+                const invalid = [];
+                tokens.forEach((token) => {
+                    if (emailPattern.test(token)) {
+                        valid.push(token.toLowerCase());
+                    } else {
+                        invalid.push(token);
+                    }
+                });
+                return {
+                    valid: Array.from(new Set(valid)),
+                    invalid
+                };
+            }
+
+            function renderCount() {
+                const parsed = parseEmails(emailInput ? emailInput.value : "");
+                if (countEl) {
+                    countEl.textContent = `${parsed.valid.length} valid emails / ${parsed.invalid.length} invalid`;
+                }
+                return parsed;
+            }
+
+            if (emailInput) {
+                emailInput.addEventListener("input", renderCount);
+            }
+
+            if (form) {
+                form.addEventListener("submit", (event) => {
+                    event.preventDefault();
+                    const parsed = renderCount();
+                    if (statusEl) {
+                        if (!parsed.valid.length) {
+                            statusEl.className = "mt-3 text-danger";
+                            statusEl.textContent = "Add at least one valid email before sending invites.";
+                        } else {
+                            statusEl.className = "mt-3 text-success";
+                            statusEl.textContent = `Ready to send ${parsed.valid.length} invites.`;
+                        }
+                    }
+                });
+            }
+
+            renderCount();
+        })();
+    </script>
 
 </body>
 
 </html>
+
+
+
 

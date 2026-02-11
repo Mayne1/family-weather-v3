@@ -30,25 +30,20 @@
 
         <!-- page preloader begin -->
         <div id="de-loader"></div>
-        <!-- page preloader close -->
+        
+        <div class="fw-brand-banner">
+            <div class="container text-center text-lg-start">
+                <a class="fw-brand-link" href="index.html">
+                    <img src="images/assets/Family%20Weather%20Logo.png%233.png" alt="Family Weather Events" >
+                </a>
+            </div>
+        </div>
 
         <header class="transparent">
             <div class="container">
                 <div class="row">
                     <div class="col-md-12">
                         <div class="de-flex">
-                            <div class="de-flex-col">
-                                <!-- logo begin -->
-                                <div id="logo">
-                                    <a href="index.html">
-                                        <img class="logo-main" src="images/assets/Family%20Weather%20Logo.png%233.png" alt="" >
-                                        <img class="logo-scroll" src="images/assets/Family%20Weather%20Logo.png%233.png" alt="" >
-                                        <img class="logo-mobile" src="images/assets/Family%20Weather%20Logo.png%233.png" alt="" >
-                                    </a>
-                                </div>
-                                <!-- logo close -->
-                            </div>
-
                             <div class="de-flex-col">
                                 <div class="de-flex-col header-col-mid">
                                     <ul id="mainmenu">
@@ -63,8 +58,8 @@
                                 </div>
                             </div>
 
-                            <div class="de-flex-col">
-                                <a class="btn-main fx-slide w-100" href="#section-form"><span><i class="fa fa-plus me-2"></i>Create Event</span></a>
+                            <div class="de-flex-col nav-actions">
+                                <a class="btn-main fx-slide nav-cta" href="#section-form"><span><i class="fa fa-plus me-2"></i>Create Event</span></a>
 
                                 <div class="menu_side_area">
                                     <span id="menu-btn"></span>
@@ -119,7 +114,19 @@
                                     <input type="time" class="form-control form-control-lg" id="fw-event-time" required>
                                 </div>
                                 <div class="col-md-12">
-                                    <input type="text" class="form-control form-control-lg" id="fw-event-location" placeholder="Location or Meeting Link" required>
+                                    <input type="text" class="form-control form-control-lg" id="fw-event-street" placeholder="Street Address (line 1)" required>
+                                </div>
+                                <div class="col-md-12">
+                                    <input type="text" class="form-control form-control-lg" id="fw-event-unit" placeholder="Apt / Unit (optional)">
+                                </div>
+                                <div class="col-md-5">
+                                    <input type="text" class="form-control form-control-lg" id="fw-event-city" placeholder="City" required>
+                                </div>
+                                <div class="col-md-3">
+                                    <input type="text" class="form-control form-control-lg" id="fw-event-state" placeholder="State" maxlength="2" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <input type="text" class="form-control form-control-lg" id="fw-event-zip" placeholder="ZIP" maxlength="10" required>
                                 </div>
                                 <div class="col-md-12">
                                     <textarea class="form-control form-control-lg" id="fw-event-desc" rows="4" placeholder="Short Description"></textarea>
@@ -235,12 +242,17 @@
                     const date = document.getElementById("fw-event-date").value;
                     const time = document.getElementById("fw-event-time").value;
                     const visibility = document.getElementById("fw-event-visibility").value || "Private";
-                    const location = document.getElementById("fw-event-location").value.trim();
+                    const street = document.getElementById("fw-event-street").value.trim();
+                    const unit = document.getElementById("fw-event-unit").value.trim();
+                    const city = document.getElementById("fw-event-city").value.trim();
+                    const state = document.getElementById("fw-event-state").value.trim().toUpperCase();
+                    const zip = document.getElementById("fw-event-zip").value.trim();
+                    const location = [street, unit, city, state, zip].filter(Boolean).join(", ");
                     const description = document.getElementById("fw-event-desc").value.trim();
                     const host = document.getElementById("fw-event-host").value.trim();
                     const email = document.getElementById("fw-event-email").value.trim();
 
-                    if (!title || !date || !time) {
+                    if (!title || !date || !time || !street || !city || !state || !zip) {
                         const msg = document.getElementById("fw-create-message");
                         if (msg) msg.textContent = "Please complete the required fields.";
                         return;
@@ -272,4 +284,7 @@
 </body>
 
 </html>
+
+
+
 
