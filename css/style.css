@@ -13276,3 +13276,65 @@ body.light-scheme .text-light .subtitle {
   pointer-events: none;
   transform: none;
 }
+
+/* Visual Upgrade v1 */
+.bg-dark-2.rounded-1 {
+  background: rgba(10, 25, 55, 0.35) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  position: relative;
+  overflow: hidden;
+}
+
+.bg-dark-2.rounded-1::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 20%, rgba(255, 255, 255, 0.01) 100%);
+}
+
+.bg-dark-2.rounded-1 > * {
+  position: relative;
+  z-index: 1;
+}
+
+.bg-dark-2.rounded-1 h1,
+.bg-dark-2.rounded-1 h2,
+.bg-dark-2.rounded-1 h3,
+.bg-dark-2.rounded-1 h4,
+.bg-dark-2.rounded-1 p,
+.bg-dark-2.rounded-1 .subtitle {
+  color: rgba(255, 255, 255, 0.96);
+}
+
+#section-hero {
+  position: relative;
+}
+
+#section-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(7, 16, 34, 0.72) 0%, rgba(9, 20, 43, 0.38) 48%, rgba(7, 16, 34, 0.76) 100%);
+}
+
+#section-hero .subtitle,
+#section-hero h1,
+#section-hero .lead,
+#section-hero .btn-main {
+  text-shadow: 0 4px 18px rgba(0, 0, 0, 0.45);
+}
+
+body.dark-scheme #wrapper {
+  background-image:
+    radial-gradient(1200px 600px at 100% -10%, rgba(72, 136, 215, 0.12), transparent 65%),
+    radial-gradient(900px 500px at 0% 30%, rgba(75, 157, 214, 0.1), transparent 60%),
+    linear-gradient(180deg, rgba(8, 16, 35, 0.95) 0%, rgba(12, 23, 47, 0.97) 55%, rgba(9, 18, 38, 0.98) 100%);
+  background-repeat: no-repeat;
+  background-size: cover;
+}
