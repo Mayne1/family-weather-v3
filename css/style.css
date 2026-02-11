@@ -13162,6 +13162,7 @@ header .nav-actions {
   display: flex;
   align-items: center;
   gap: 12px;
+  position: relative;
 }
 header .nav-actions .nav-cta {
   width: auto;
@@ -13203,6 +13204,46 @@ header .nav-actions .nav-cta {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+.fw-account-icon {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  text-decoration: none;
+}
+.fw-account-icon .fw-avatar {
+  width: 36px;
+  height: 36px;
+  font-size: 14px;
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+}
+.fw-account-icon::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  z-index: 12;
+  background: rgba(0, 0, 0, 0.85);
+  color: #fff;
+  border-radius: 6px;
+  font-size: 11px;
+  line-height: 1.2;
+  padding: 6px 8px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-3px);
+  transition: opacity .2s ease, transform .2s ease;
+}
+.fw-account-icon:hover::after,
+.fw-account-icon:focus-visible::after {
+  opacity: 1;
+  transform: translateY(0);
+}
 @media (max-width: 991px) {
   #fw-account-slot {
     display: none;
@@ -13222,4 +13263,16 @@ body.light-scheme .text-light p,
 body.light-scheme .text-light .lead,
 body.light-scheme .text-light .subtitle {
   color: #1b2133 !important;
+}
+
+/* Home fixed background video */
+#fw-bg-video {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  object-fit: cover;
+  z-index: -1;
+  pointer-events: none;
+  transform: none;
 }

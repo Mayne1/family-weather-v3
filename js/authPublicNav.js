@@ -27,7 +27,7 @@ function createIdentity(user) {
     li.setAttribute("data-auth-item", "true");
     const link = document.createElement("a");
     link.className = "menu-item menu-item-auth";
-    link.href = "settings.html";
+    link.href = "profile.html";
     link.innerHTML = `<span class="fw-avatar">${initial}</span><span class="fw-auth-text">${label}</span>`;
     li.appendChild(link);
     return li;
@@ -37,9 +37,12 @@ function createAccountButton(user) {
     const label = user?.displayName?.trim() || user?.email || "Account";
     const initial = label.charAt(0).toUpperCase() || "U";
     const link = document.createElement("a");
-    link.href = "settings.html";
-    link.className = "btn-main btn-line fx-slide nav-cta fw-account-btn";
-    link.innerHTML = `<span><span class="fw-avatar">${initial}</span><span class="fw-account-name">${label}</span></span>`;
+    link.href = "profile.html";
+    link.className = "fw-account-icon";
+    link.setAttribute("aria-label", label);
+    link.setAttribute("title", label);
+    link.setAttribute("data-tooltip", label);
+    link.innerHTML = `<span class="fw-avatar">${initial}</span>`;
     return link;
 }
 

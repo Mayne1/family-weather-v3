@@ -42,7 +42,7 @@ function createAuthIdentityItem(user) {
     li.className = "fw-auth-identity-wrap";
 
     const link = document.createElement("a");
-    link.href = "settings.html";
+    link.href = "profile.html";
     link.className = "menu-item menu-item-auth";
     link.innerHTML = `
         <span class="fw-avatar">${getInitial(user)}</span>
@@ -54,10 +54,15 @@ function createAuthIdentityItem(user) {
 }
 
 function createAccountButton(user) {
+    const label = getIdentityLabel(user);
+    const initial = getInitial(user);
     const link = document.createElement("a");
-    link.href = "settings.html";
-    link.className = "btn-main btn-line fx-slide nav-cta fw-account-btn";
-    link.innerHTML = `<span><span class="fw-avatar">${getInitial(user)}</span><span class="fw-account-name">${getIdentityLabel(user)}</span></span>`;
+    link.href = "profile.html";
+    link.className = "fw-account-icon";
+    link.setAttribute("aria-label", label);
+    link.setAttribute("title", label);
+    link.setAttribute("data-tooltip", label);
+    link.innerHTML = `<span class="fw-avatar">${initial}</span>`;
     return link;
 }
 
