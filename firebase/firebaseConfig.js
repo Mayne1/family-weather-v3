@@ -4,4 +4,3 @@ export const firebaseConfig = {
     projectId: "REPLACE_ME",
     appId: "REPLACE_ME"
 };
-
