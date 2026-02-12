@@ -164,7 +164,7 @@
                     <div class="col-lg-3 col-md-6">
                         <div class="hover">
                             <div class="feature-card video-card bg-dark-2 relative rounded-1 overflow-hidden hover-bg-color hover-text-light wow scale-in-mask" onclick="window.location.href='create-event.html'">
-                              <video autoplay muted loop playsinline class="card-video">
+                              <video autoplay muted loop playsinline webkit-playsinline preload="auto" class="card-video" id="create-event-card-video">
                                 <source src="/video/The-welcome-video2.mp4" type="video/mp4">
                               </video>
 
@@ -355,6 +355,23 @@
     <script type="module" src="js/authNav.js"></script>
     <script type="module" src="js/authHome.js"></script>
     <script type="module" src="js/authGate.js"></script>
+    <script>
+      (function () {
+        var video = document.getElementById("create-event-card-video");
+        if (!video) return;
+        function tryPlay() {
+          var p = video.play();
+          if (p && typeof p.catch === "function") p.catch(function () {});
+        }
+        video.muted = true;
+        video.defaultMuted = true;
+        tryPlay();
+        document.addEventListener("visibilitychange", function () {
+          if (!document.hidden) tryPlay();
+        });
+        document.addEventListener("pointerdown", tryPlay, { once: true });
+      })();
+    </script>
 
 </body>
 
