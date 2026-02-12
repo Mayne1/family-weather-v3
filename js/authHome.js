@@ -7,17 +7,16 @@ function updateAuthState(user) {
 
     if (user && user.email) {
         label.textContent = `Signed in as ${user.email}`;
-        action.textContent = "Manage Account";
-        action.href = "settings.html";
+        action.textContent = "My Profile";
+        action.href = "profile.html";
         return;
     }
 
     label.textContent = "You are not signed in.";
     action.textContent = "Sign In";
-    action.href = "login.html";
+        action.href = "auth.html";
 }
 
 document.addEventListener("DOMContentLoaded", () => {
     onAuthChanged((user) => updateAuthState(user));
 });
-

@@ -48,7 +48,7 @@ function createAccountButton(user) {
 
 function createSignInButton() {
     const link = document.createElement("a");
-    link.href = "login.html";
+    link.href = "auth.html";
     link.className = "btn-main btn-line fx-slide nav-cta";
     link.innerHTML = "<span><i class=\"fa fa-sign-in me-2\"></i>Sign In</span>";
     return link;
@@ -82,8 +82,8 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         privateLinks.forEach((el) => (el.style.display = "none"));
-        menu.appendChild(createItem("Sign In", "login.html", "fa fa-sign-in").li);
-        menu.appendChild(createItem("Sign Up", "login.html#signup", "fa fa-user-plus").li);
+        menu.appendChild(createItem("Sign In", "auth.html", "fa fa-sign-in").li);
+        menu.appendChild(createItem("Sign Up", "auth.html#signup", "fa fa-user-plus").li);
         if (slot) slot.appendChild(createSignInButton());
     });
 });

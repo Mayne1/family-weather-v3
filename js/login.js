@@ -9,17 +9,20 @@ function setMessage(text, isError) {
 
 function getFormValues() {
     const email = (document.getElementById("auth-email")?.value || "").trim();
+    const username = (document.getElementById("auth-username")?.value || "").trim();
     const password = document.getElementById("auth-password")?.value || "";
-    return { email, password };
+    return { email, username, password };
 }
 
 async function handleSignIn(event) {
     event.preventDefault();
     const { email, password } = getFormValues();
+    const params = new URLSearchParams(window.location.search);
+    const next = params.get("next");
     try {
         await signInWithEmail(email, password);
         setMessage("Signed in. Redirecting...", false);
-        window.location.href = "index.html";
+        window.location.href = next || "index.html";
     } catch (err) {
         setMessage(getAuthErrorMessage(err), true);
     }
@@ -27,11 +30,15 @@ async function handleSignIn(event) {
 
 async function handleSignUp(event) {
     event.preventDefault();
-    const { email, password } = getFormValues();
+    const { email, username, password } = getFormValues();
+    if (!username) {
+        setMessage("Username is required for sign up.", true);
+        return;
+    }
     try {
-        await signUpWithEmail(email, password);
+        await signUpWithEmail(email, password, username);
         setMessage("Account created. Redirecting...", false);
-        window.location.href = "index.html";
+        window.location.href = "profile.html";
     } catch (err) {
         setMessage(getAuthErrorMessage(err), true);
     }
@@ -54,4 +61,3 @@ document.addEventListener("DOMContentLoaded", () => {
         status.textContent = user?.email ? `Signed in as ${user.email}` : "Signed out";
     });
 });
-

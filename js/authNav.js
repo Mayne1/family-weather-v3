@@ -68,7 +68,7 @@ function createAccountButton(user) {
 
 function createSignInButton() {
     const link = document.createElement("a");
-    link.href = "login.html";
+    link.href = "auth.html";
     link.className = "btn-main btn-line fx-slide nav-cta";
     link.innerHTML = "<span><i class=\"fa fa-sign-in me-2\"></i>Sign In</span>";
     return link;
@@ -85,6 +85,7 @@ function renderAuthItems(menu, user) {
             event.preventDefault();
             try {
                 await signOutUser();
+                window.location.href = "index.html";
             } catch (err) {
                 console.error(err);
             }
@@ -98,8 +99,9 @@ function renderAuthItems(menu, user) {
         return;
     }
 
-    const login = createAuthNavItem("Sign In", "login.html", "fa fa-sign-in");
-    const signup = createAuthNavItem("Sign Up", "login.html#signup", "fa fa-user-plus");
+    const login = createAuthNavItem("Sign In", "auth.html", "fa fa-sign-in");
+    const signup = createAuthNavItem("Sign Up", "auth.html#signup", "fa fa-user-plus");
+    login.link.href = "auth.html";
     menu.appendChild(login.li);
     menu.appendChild(signup.li);
     if (slot) slot.appendChild(createSignInButton());

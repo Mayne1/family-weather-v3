@@ -180,116 +180,12 @@
     <script src="js/custom-marquee.js"></script>
     <script type="module" src="js/authNav.js"></script>
     <script type="module" src="js/authGate.js"></script>
-        <script>
-        (function () {
-            const STORAGE_KEYS = {
-                invites: "fw_invites",
-                rsvps: "fw_rsvps",
-                events: "fw_events"
-            };
-
-            function readStorage(key, fallback) {
-                try {
-                    const raw = localStorage.getItem(key);
-                    return raw ? JSON.parse(raw) : fallback;
-                } catch (err) {
-                    return fallback;
-                }
-            }
-
-            function writeStorage(key, value) {
-                localStorage.setItem(key, JSON.stringify(value));
-            }
-
-            function setMessage(el, text, type) {
-                if (!el) return;
-                el.textContent = text;
-                el.className = type === "success" ? "mt-3 text-success" : "mt-3 text-danger";
-            }
-
-            function initRsvp() {
-                const params = new URLSearchParams(window.location.search);
-                const token = params.get("token");
-                const messageEl = document.getElementById("rsvp-message");
-                const form = document.getElementById("rsvp-form");
-                const nameInput = document.getElementById("rsvp-name");
-                const emailInput = document.getElementById("rsvp-email");
-                const statusSelect = document.getElementById("rsvp-status");
-                const notesInput = document.getElementById("rsvp-notes");
-
-                if (!token) {
-                    setMessage(messageEl, "Invalid RSVP link.", "error");
-                    if (form) form.addEventListener("submit", (e) => e.preventDefault());
-                    return;
-                }
-
-                const invites = readStorage(STORAGE_KEYS.invites, []);
-                const invite = invites.find((inv) => inv.token === token);
-                if (!invite) {
-                    setMessage(messageEl, "Invalid RSVP link.", "error");
-                    if (form) form.addEventListener("submit", (e) => e.preventDefault());
-                    return;
-                }
-
-                if (emailInput) {
-                    emailInput.value = invite.invitee || "";
-                    emailInput.readOnly = true;
-                }
-
-                const events = readStorage(STORAGE_KEYS.events, []);
-                const event = events.find((evt) => evt.id === invite.event_id);
-                const summaryEl = document.getElementById("rsvp-event-summary");
-                const metaEl = document.getElementById("rsvp-event-meta");
-                if (summaryEl) {
-                    if (event) {
-                        summaryEl.innerHTML = `
-                            <div class="subtitle">Event Details</div>
-                            <h4 class="mb-2">${event.title || "Event"}</h4>
-                            <div class="small">${event.date || ""}${event.time ? ` ? ${event.time}` : ""}</div>
-                            <div class="small">Visibility: ${event.visibility || ""}</div>
-                        `;
-                    } else {
-                        summaryEl.innerHTML = `<div class="small">Event details unavailable.</div>`;
-                    }
-                }
-                if (metaEl) {
-                    metaEl.textContent = `Invited as: ${invite.invitee}`;
-                }
-
-                if (form) {
-                    form.addEventListener("submit", (e) => {
-                        e.preventDefault();
-                        const statusValue = statusSelect ? statusSelect.value : "";
-                        if (!statusValue || statusValue === "RSVP Status") {
-                            setMessage(messageEl, "Please choose an RSVP status.", "error");
-                            return;
-                        }
-
-                        const rsvps = readStorage(STORAGE_KEYS.rsvps, []);
-                        const updated = rsvps.filter((r) => !(r.event_id === invite.event_id && r.invitee === invite.invitee));
-                        updated.push({
-                            event_id: invite.event_id,
-                            invitee: invite.invitee,
-                            name: nameInput ? nameInput.value.trim() : "",
-                            status: statusValue === "Can't Go" ? "No" : statusValue,
-                            note: notesInput ? notesInput.value.trim() : ""
-                        ,
-                            created_at: new Date().toISOString()
-                        });
-                        writeStorage(STORAGE_KEYS.rsvps, updated);
-                        const stamp = new Date().toLocaleString();
-                        setMessage(messageEl, `RSVP saved \u2705 (${stamp})`, "success");
-                        if (form) form.querySelector("button[type=submit]").disabled = true;
-                    }, { once: true });
-                }
-            }
-
-            initRsvp();
-        })();
-    </script>
+    <script type="module" src="js/rsvp-page.js"></script>
 </body>
 
 </html>
+
+
 
 
 

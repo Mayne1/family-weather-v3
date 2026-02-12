@@ -194,69 +194,12 @@
     <script src="js/custom-marquee.js"></script>
     <script type="module" src="js/authNav.js"></script>
     <script type="module" src="js/authGate.js"></script>
-    <script>
-        (function () {
-            const emailInput = document.getElementById("fw-invite-emails");
-            const countEl = document.getElementById("fw-email-count");
-            const statusEl = document.getElementById("fw-invite-status");
-            const form = document.getElementById("fw-invite-form");
-            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-            function parseEmails(raw) {
-                const tokens = (raw || "")
-                    .split(/[\s,;]+/)
-                    .map((x) => x.trim())
-                    .filter(Boolean);
-                const valid = [];
-                const invalid = [];
-                tokens.forEach((token) => {
-                    if (emailPattern.test(token)) {
-                        valid.push(token.toLowerCase());
-                    } else {
-                        invalid.push(token);
-                    }
-                });
-                return {
-                    valid: Array.from(new Set(valid)),
-                    invalid
-                };
-            }
-
-            function renderCount() {
-                const parsed = parseEmails(emailInput ? emailInput.value : "");
-                if (countEl) {
-                    countEl.textContent = `${parsed.valid.length} valid emails / ${parsed.invalid.length} invalid`;
-                }
-                return parsed;
-            }
-
-            if (emailInput) {
-                emailInput.addEventListener("input", renderCount);
-            }
-
-            if (form) {
-                form.addEventListener("submit", (event) => {
-                    event.preventDefault();
-                    const parsed = renderCount();
-                    if (statusEl) {
-                        if (!parsed.valid.length) {
-                            statusEl.className = "mt-3 text-danger";
-                            statusEl.textContent = "Add at least one valid email before sending invites.";
-                        } else {
-                            statusEl.className = "mt-3 text-success";
-                            statusEl.textContent = `Ready to send ${parsed.valid.length} invites.`;
-                        }
-                    }
-                });
-            }
-
-            renderCount();
-        })();
-    </script>
-
+    <script type="module" src="js/invite-page.js"></script>
 </body>
 
 </html>
+
+
 
 
 
