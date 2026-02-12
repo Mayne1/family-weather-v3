@@ -1,2 +1,4 @@
 firebase/firebaseConfig.local.js
+srcfirebaseconfig.js
+firebase/*.local.js
 backup-*/

@@ -7,6 +7,10 @@ function setMessage(text, isError) {
     message.className = isError ? "mt-3 text-danger" : "mt-3 text-success";
 }
 
+function isFirebaseConfigured() {
+    return window.__FW_FIREBASE_CONFIG_OK !== false;
+}
+
 function getFormValues() {
     const email = (document.getElementById("auth-email")?.value || "").trim();
     const username = (document.getElementById("auth-username")?.value || "").trim();
@@ -16,6 +20,10 @@ function getFormValues() {
 
 async function handleSignIn(event) {
     event.preventDefault();
+    if (!isFirebaseConfigured()) {
+        setMessage("Firebase not configured", true);
+        return;
+    }
     const { email, password } = getFormValues();
     const params = new URLSearchParams(window.location.search);
     const next = params.get("next");
@@ -30,6 +38,10 @@ async function handleSignIn(event) {
 
 async function handleSignUp(event) {
     event.preventDefault();
+    if (!isFirebaseConfigured()) {
+        setMessage("Firebase not configured", true);
+        return;
+    }
     const { email, username, password } = getFormValues();
     if (!username) {
         setMessage("Username is required for sign up.", true);
@@ -53,6 +65,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (window.location.hash === "#signup") {
         setMessage("Create an account with email and password.", false);
+    }
+
+    if (!isFirebaseConfigured()) {
+        setMessage("Firebase not configured", true);
     }
 
     onAuthChanged((user) => {
