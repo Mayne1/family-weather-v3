@@ -13432,3 +13432,86 @@ body.dark-scheme #wrapper {
   transform: scale(1.05);
   transition: transform 0.4s ease;
 }
+
+.my-events-card {
+  background: rgba(9, 28, 56, 0.52);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: transform 0.28s ease, box-shadow 0.28s ease, border-color 0.28s ease;
+}
+
+.my-events-card:hover,
+.my-events-card:focus-within {
+  transform: translateY(-4px);
+  border-color: rgba(163, 236, 255, 0.38);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.42), 0 0 24px rgba(103, 215, 255, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.my-events-card-link {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: block;
+  text-decoration: none;
+}
+
+.my-events-card-link:focus-visible {
+  outline: 2px solid rgba(182, 235, 255, 0.86);
+  outline-offset: -2px;
+}
+
+.my-events-media-wrap {
+  position: relative;
+  width: calc(100% - 32px);
+  margin: 16px 16px 0;
+  border-radius: 12px;
+  overflow: hidden;
+  aspect-ratio: 16 / 9;
+  background: rgba(4, 18, 38, 0.65);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.my-events-media {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.my-events-media-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(3, 14, 31, 0.45), rgba(3, 14, 31, 0.12));
+  pointer-events: none;
+}
+
+.my-events-sound-toggle {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  z-index: 5;
+  width: 36px;
+  height: 36px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 999px;
+  background: rgba(5, 19, 39, 0.78);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.22s ease, border-color 0.22s ease, transform 0.22s ease;
+}
+
+.my-events-sound-toggle:hover,
+.my-events-sound-toggle:focus-visible {
+  background: rgba(16, 65, 118, 0.9);
+  border-color: rgba(163, 236, 255, 0.6);
+  transform: scale(1.05);
+}
+
+.my-events-icon {
+  filter: drop-shadow(0 0 9px rgba(120, 221, 255, 0.42));
+}

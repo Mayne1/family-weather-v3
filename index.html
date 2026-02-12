@@ -181,17 +181,24 @@
 
                     <div class="col-lg-3 col-md-6">
                         <div class="hover">
-                            <div class="bg-dark-2 relative rounded-1 overflow-hidden hover-bg-color hover-text-light wow scale-in-mask">
-                                <div class="abs p-40 bottom-0 z-2">
+                            <div class="my-events-card bg-dark-2 relative rounded-1 overflow-hidden wow scale-in-mask h-100">
+                                <a class="my-events-card-link" href="my-events.html" aria-label="Go to My Events"></a>
+                                <div class="my-events-media-wrap">
+                                    <video id="my-events-preview-video" class="my-events-media" autoplay muted loop playsinline preload="metadata">
+                                        <source src="/video/events_slow_trim_web.mp4" type="video/mp4">
+                                    </video>
+                                    <div class="my-events-media-overlay"></div>
+                                    <button id="my-events-sound-toggle" class="my-events-sound-toggle" type="button" aria-label="Enable sound" aria-pressed="false">
+                                        <i class="fa fa-volume-off" aria-hidden="true"></i>
+                                    </button>
+                                </div>
+                                <div class="p-40 pt-24">
                                     <div class="relative wow fadeInUp">
-                                        <img src="images/fw-icons/cloudy.svg" class="w-60px mb-3" alt="">
+                                        <img src="images/fw-icons/cloudy.svg" class="w-60px mb-3 my-events-icon" alt="">
                                         <h4>My Events</h4>
                                         <p class="mb-0">See upcoming, past, and draft events.</p>
                                     </div>
                                 </div>
-                                <div class="gradient-edge-bottom h-100"></div>
-                                <img src="images/assets/feature-events.svg" class="w-100 hover-scale-1-1" alt="My events visual">
-                                <div class="abs w-100 h-100 start-0 top-0 hover-op-1 radial-gradient-color"></div>
                             </div>
                         </div>
                     </div>
@@ -370,6 +377,41 @@
           if (!document.hidden) tryPlay();
         });
         document.addEventListener("pointerdown", tryPlay, { once: true });
+      })();
+    </script>
+    <script>
+      (function () {
+        var storageKey = "fw_events_video_sound";
+        var video = document.getElementById("my-events-preview-video");
+        var toggle = document.getElementById("my-events-sound-toggle");
+        if (!video || !toggle) return;
+
+        function setUi(state) {
+          var soundOn = state === "on";
+          video.muted = !soundOn;
+          toggle.setAttribute("aria-pressed", soundOn ? "true" : "false");
+          toggle.setAttribute("aria-label", soundOn ? "Mute video" : "Enable sound");
+          toggle.innerHTML = soundOn
+            ? '<i class="fa fa-volume-up" aria-hidden="true"></i>'
+            : '<i class="fa fa-volume-off" aria-hidden="true"></i>';
+        }
+
+        var savedState = localStorage.getItem(storageKey) === "on" ? "on" : "off";
+        setUi(savedState);
+        video.play().catch(function () {
+          video.muted = true;
+          setUi("off");
+          localStorage.setItem(storageKey, "off");
+        });
+
+        toggle.addEventListener("click", function (event) {
+          event.preventDefault();
+          event.stopPropagation();
+          var nextState = video.muted ? "on" : "off";
+          localStorage.setItem(storageKey, nextState);
+          setUi(nextState);
+          video.play().catch(function () {});
+        });
       })();
     </script>
 
