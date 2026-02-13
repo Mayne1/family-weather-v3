@@ -15,6 +15,16 @@
         return /^#[0-9a-fA-F]{6}$/.test(normalized) ? normalized.toLowerCase() : "";
     }
 
+    function hexToRgbString(hex) {
+        const clean = normalizeHexColor(hex);
+        if (!clean) return "";
+        const value = clean.replace("#", "");
+        const r = parseInt(value.slice(0, 2), 16);
+        const g = parseInt(value.slice(2, 4), 16);
+        const b = parseInt(value.slice(4, 6), 16);
+        return `${r}, ${g}, ${b}`;
+    }
+
     function safeParse(raw) {
         try {
             const data = JSON.parse(raw);
@@ -43,6 +53,7 @@
 
     function applySettings(settings) {
         const body = document.body;
+        const root = document.documentElement;
         if (!body) return;
 
         body.classList.remove("dark-scheme", "light-scheme");
@@ -58,6 +69,15 @@
         const bgVideo = document.getElementById("fw-bg-video");
         const customColor = normalizeHexColor(settings.backgroundColor);
         if (customColor) {
+            const rgb = hexToRgbString(customColor);
+            if (root) {
+                root.style.setProperty("--bg-dark-1", customColor);
+                root.style.setProperty("--bg-dark-2", customColor);
+                root.style.setProperty("--bg-dark-3", customColor);
+                if (rgb) {
+                    root.style.setProperty("--bg-dark-1-rgb", rgb);
+                }
+            }
             body.style.backgroundColor = customColor;
             if (wrapper) {
                 wrapper.style.backgroundImage = "none";
@@ -67,6 +87,12 @@
                 bgVideo.style.display = "none";
             }
         } else {
+            if (root) {
+                root.style.removeProperty("--bg-dark-1");
+                root.style.removeProperty("--bg-dark-2");
+                root.style.removeProperty("--bg-dark-3");
+                root.style.removeProperty("--bg-dark-1-rgb");
+            }
             body.style.removeProperty("background-color");
             if (wrapper) {
                 wrapper.style.removeProperty("background-color");
