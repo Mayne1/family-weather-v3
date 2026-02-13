@@ -4,8 +4,16 @@
         theme: "dark",
         scheme: "scheme-01",
         background: "default",
-        font: "system"
+        font: "system",
+        backgroundColor: ""
     };
+
+    function normalizeHexColor(value) {
+        const raw = String(value || "").trim();
+        if (!raw) return "";
+        const normalized = raw.startsWith("#") ? raw : `#${raw}`;
+        return /^#[0-9a-fA-F]{6}$/.test(normalized) ? normalized.toLowerCase() : "";
+    }
 
     function safeParse(raw) {
         try {
@@ -15,7 +23,8 @@
                 theme: data.theme || defaults.theme,
                 scheme: data.scheme || defaults.scheme,
                 background: data.background || defaults.background,
-                font: data.font || defaults.font
+                font: data.font || defaults.font,
+                backgroundColor: normalizeHexColor(data.backgroundColor)
             };
         } catch (err) {
             return { ...defaults };
@@ -45,6 +54,29 @@
         body.classList.remove("fw-font-system", "fw-font-serif", "fw-font-mono");
         body.classList.add(`fw-font-${settings.font}`);
 
+        const wrapper = document.getElementById("wrapper");
+        const bgVideo = document.getElementById("fw-bg-video");
+        const customColor = normalizeHexColor(settings.backgroundColor);
+        if (customColor) {
+            body.style.backgroundColor = customColor;
+            if (wrapper) {
+                wrapper.style.backgroundImage = "none";
+                wrapper.style.backgroundColor = customColor;
+            }
+            if (bgVideo) {
+                bgVideo.style.display = "none";
+            }
+        } else {
+            body.style.removeProperty("background-color");
+            if (wrapper) {
+                wrapper.style.removeProperty("background-color");
+                wrapper.style.removeProperty("background-image");
+            }
+            if (bgVideo) {
+                bgVideo.style.removeProperty("display");
+            }
+        }
+
         const colorsLink = document.getElementById("colors");
         if (colorsLink) {
             const scheme = settings.scheme || defaults.scheme;
@@ -62,6 +94,8 @@
         const schemeSelect = document.getElementById("fw-scheme");
         const bgSelect = document.getElementById("fw-background");
         const fontSelect = document.getElementById("fw-font");
+        const bgColorInput = document.getElementById("fw-bg-color");
+        const bgColorHexInput = document.getElementById("fw-bg-color-hex");
         const resetBtn = document.getElementById("fw-reset");
 
         if (themeLight && themeDark) {
@@ -74,17 +108,42 @@
         if (schemeSelect) schemeSelect.value = settings.scheme;
         if (bgSelect) bgSelect.value = settings.background;
         if (fontSelect) fontSelect.value = settings.font;
+        if (bgColorInput) bgColorInput.value = normalizeHexColor(settings.backgroundColor) || "#0b1226";
+        if (bgColorHexInput) bgColorHexInput.value = normalizeHexColor(settings.backgroundColor) || "";
 
-        form.addEventListener("change", () => {
+        function saveFromControls() {
+            const bgColor = normalizeHexColor(bgColorHexInput ? bgColorHexInput.value : (bgColorInput ? bgColorInput.value : ""));
             const next = {
                 theme: themeLight && themeLight.checked ? "light" : "dark",
                 scheme: schemeSelect ? schemeSelect.value : defaults.scheme,
                 background: bgSelect ? bgSelect.value : defaults.background,
-                font: fontSelect ? fontSelect.value : defaults.font
+                font: fontSelect ? fontSelect.value : defaults.font,
+                backgroundColor: bgColor
             };
+            if (bgColorInput) bgColorInput.value = bgColor || "#0b1226";
+            if (bgColorHexInput) bgColorHexInput.value = bgColor;
             saveSettings(next);
             applySettings(next);
+        }
+
+        form.addEventListener("change", () => {
+            saveFromControls();
         });
+
+        if (bgColorInput) {
+            bgColorInput.addEventListener("input", () => {
+                if (bgColorHexInput) bgColorHexInput.value = bgColorInput.value.toLowerCase();
+                saveFromControls();
+            });
+        }
+
+        if (bgColorHexInput) {
+            bgColorHexInput.addEventListener("input", () => {
+                const normalized = normalizeHexColor(bgColorHexInput.value);
+                if (normalized && bgColorInput) bgColorInput.value = normalized;
+                saveFromControls();
+            });
+        }
 
         if (resetBtn) {
             resetBtn.addEventListener("click", () => {
@@ -96,6 +155,8 @@
                 if (schemeSelect) schemeSelect.value = defaults.scheme;
                 if (bgSelect) bgSelect.value = defaults.background;
                 if (fontSelect) fontSelect.value = defaults.font;
+                if (bgColorInput) bgColorInput.value = "#0b1226";
+                if (bgColorHexInput) bgColorHexInput.value = "";
             });
         }
     }
