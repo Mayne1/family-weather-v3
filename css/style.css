@@ -13748,3 +13748,42 @@ body.dark-scheme #wrapper {
     border-radius: 16px !important;
   }
 }
+
+/* Global legal footer links */
+.subfooter .text-center {
+  border-top: 1px solid rgba(180, 225, 255, 0.14);
+  padding-top: 14px;
+}
+
+.fw-legal-links {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  opacity: 0.86;
+  letter-spacing: 0.01em;
+}
+
+.fw-legal-links a {
+  color: rgba(220, 243, 255, 0.88) !important;
+  text-decoration: none;
+  transition: color .22s ease, text-shadow .22s ease, opacity .22s ease;
+}
+
+.fw-legal-links a:hover,
+.fw-legal-links a:focus-visible {
+  color: #d7f3ff !important;
+  text-shadow: 0 0 10px rgba(116, 214, 255, 0.55);
+  opacity: 1;
+}
+
+.fw-legal-links span {
+  color: rgba(210, 238, 252, 0.45);
+}
+
+.fw-legal-copy {
+  margin-top: 7px;
+  font-size: 12px;
+  opacity: 0.66;
+  letter-spacing: 0.02em;
+}
