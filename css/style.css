@@ -13777,6 +13777,17 @@ body.dark-scheme #wrapper {
   opacity: 1;
 }
 
+.subfooter .text-center a[href="privacy.html"],
+.subfooter .text-center a[href="terms.html"],
+.subfooter .text-center a[href="sms-consent.html"],
+.subfooter .text-center a[href="/privacy"],
+.subfooter .text-center a[href="/terms"],
+.subfooter .text-center a[href="/sms-consent"] {
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
 .fw-legal-links span {
   color: rgba(210, 238, 252, 0.45);
 }
