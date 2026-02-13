@@ -214,15 +214,16 @@
         const aqi = payload.aqi != null ? payload.aqi : "-";
 
         target.innerHTML = `
-            <div class="subtitle">Right Now</div>
+            <div class="subtitle fw-widget-kicker">Right Now</div>
             <div class="small text-muted">${payload.location.label || ""}</div>
             <div class="small text-muted">Updated: ${updated}</div>
 
-            <div class="d-flex align-items-center gap-3 my-3">
-                ${iconImg(current.weather_code, "w-50px")}
+            <div class="d-flex align-items-center gap-3 my-3 fw-rightnow-main">
+                <div class="fw-rightnow-icon">${iconImg(current.weather_code, "w-50px")}</div>
                 <div>
                     <div class="fs-60 lh-1 fw-temp">${temp}&deg;F</div>
                     <div class="small">${label}</div>
+                    <div class="small fw-rightnow-subtitle">Feels calm outside</div>
                 </div>
             </div>
 
@@ -246,9 +247,9 @@
             const wind = daily.wind_speed_10m_max ? daily.wind_speed_10m_max[idx] : null;
             const badge = riskBadge(code, wind, hi);
             return `
-                <div class="text-center bg-dark-2 rounded-1 p-20" style="min-width:110px;">
+                <div class="text-center bg-dark-2 rounded-1 p-20 fw-forecast-tile" style="min-width:110px;">
                     <div class="small">${day}</div>
-                    <div class="my-2">${iconImg(code, "w-40px")}</div>
+                    <div class="my-2 fw-forecast-icon">${iconImg(code, "w-40px")}</div>
                     <div class="small">${hi}&deg;F / ${lo}&deg;F</div>
                     ${badge ? `<div class=\"small text-muted mt-1\">${badge}</div>` : ""}
                 </div>
@@ -266,6 +267,7 @@
         if (!list) return;
         const daily = payload.weather.daily;
         const items = [];
+        let hasSevere = false;
         for (let idx = 0; idx < Math.min(5, daily.time.length); idx += 1) {
             const day = formatDay(new Date(daily.time[idx]));
             const code = daily.weather_code[idx];
@@ -273,14 +275,17 @@
             const wind = daily.wind_speed_10m_max ? daily.wind_speed_10m_max[idx] : null;
             const badge = riskBadge(code, wind, hi);
             if (!badge) continue;
-            items.push(`${day} - ${badge}`);
+            if (badge === "Storm Risk") hasSevere = true;
+            items.push({ day, badge });
             if (items.length >= 4) break;
         }
         if (!items.length) {
             list.innerHTML = "<div class=\"small text-muted\">No heads-up right now.</div>";
+            list.classList.remove("fw-has-severe");
             return;
         }
-        list.innerHTML = items.map((item) => `<div class="small">${item}</div>`).join("");
+        list.classList.toggle("fw-has-severe", hasSevere);
+        list.innerHTML = items.map((item) => `<div class="small fw-headsup-item"><i class="fa fa-exclamation-circle me-2" aria-hidden="true"></i>${item.day} - ${item.badge}</div>`).join("");
     }
 
     async function geocodeZip(zip) {
