@@ -4,7 +4,9 @@ const KEYS = {
   events: "fw_events",
   invites: "fw_invites",
   rsvps: "fw_rsvps",
-  authAccounts: "fw_auth_accounts"
+  authAccounts: "fw_auth_accounts",
+  contacts: "fw_contacts",
+  groups: "fw_groups"
 };
 
 const AUTH_EVENT = "fw-auth-changed";
@@ -146,6 +148,22 @@ export function getRsvps() {
 
 export function saveRsvps(rsvps) {
   writeJson(KEYS.rsvps, rsvps);
+}
+
+export function getContacts() {
+  return readJson(KEYS.contacts, []);
+}
+
+export function saveContacts(contacts) {
+  writeJson(KEYS.contacts, contacts);
+}
+
+export function getGroups() {
+  return readJson(KEYS.groups, []);
+}
+
+export function saveGroups(groups) {
+  writeJson(KEYS.groups, groups);
 }
 
 export function generateToken(length = 16) {

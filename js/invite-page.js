@@ -1,7 +1,9 @@
 import {
   generateToken,
   getCurrentUser,
+  getContacts,
   getEvents,
+  getGroups,
   getInvites,
   saveInvites,
   requireAuth,
@@ -36,6 +38,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const countEl = document.getElementById("fw-email-count");
   const statusEl = document.getElementById("fw-invite-status");
   const form = document.getElementById("fw-invite-form");
+  const groupSelect = document.getElementById("fw-invite-group");
+  const groupPreview = document.getElementById("fw-invite-group-preview");
 
   const events = getEvents();
   const ownedEvent = events.find((e) => e.id === eventId && normalizeEmail(e.owner_email) === normalizeEmail(user.email));
@@ -55,6 +59,44 @@ document.addEventListener("DOMContentLoaded", () => {
 
   emailInput?.addEventListener("input", refreshCount);
   refreshCount();
+
+  function renderGroupOptions() {
+    if (!groupSelect) return;
+    const groups = getGroups();
+    const currentValue = groupSelect.value;
+    groupSelect.innerHTML = '<option value="">No group selected</option>' +
+      groups.map((g) => `<option value="${g.id}">${g.name}</option>`).join("");
+    if (currentValue && groups.some((g) => g.id === currentValue)) {
+      groupSelect.value = currentValue;
+    }
+    updateGroupSelection();
+  }
+
+  function updateGroupSelection() {
+    if (!groupSelect || !groupPreview || !emailInput) return;
+    const selected = getGroups().find((g) => g.id === groupSelect.value);
+    if (!selected) {
+      groupPreview.textContent = "No group selected.";
+      return;
+    }
+    const contacts = getContacts();
+    const members = (selected.members || [])
+      .map((id) => contacts.find((c) => c.id === id))
+      .filter(Boolean);
+    const names = members.map((m) => m.name).join(", ");
+    const memberEmails = members.map((m) => normalizeEmail(m.email)).filter(Boolean);
+    if (memberEmails.length) {
+      emailInput.value = memberEmails.join(", ");
+      refreshCount();
+    }
+    groupPreview.textContent = `${members.length} member(s): ${names || "No linked contacts"}`;
+  }
+
+  groupSelect?.addEventListener("change", updateGroupSelection);
+  window.addEventListener("storage", (event) => {
+    if (event.key === "fw_groups" || event.key === "fw_contacts") renderGroupOptions();
+  });
+  renderGroupOptions();
 
   form?.addEventListener("submit", (event) => {
     event.preventDefault();

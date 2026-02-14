@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Family Weather Events - Contacts</title>
+    <link rel="icon" href="images/icon.webp" type="image/gif" sizes="16x16">
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" >
+    <meta content="FamilyWeather" name="description" >
+    <meta content="" name="keywords" >
+    <meta content="" name="author" >
+    <link href="css/bootstrap.min.css" rel="stylesheet" type="text/css" id="bootstrap">
+    <link href="css/vendors.css" rel="stylesheet" type="text/css" >
+    <link href="fonts/fontawesome4/css/font-awesome.min.css" rel="stylesheet" type="text/css" >
+    <link href="css/style.css" rel="stylesheet" type="text/css" >
+    <link id="colors" href="css/colors/scheme-01.css" rel="stylesheet" type="text/css" >
+</head>
+
+<body class="dark-scheme">
+    <div id="wrapper">
+        <div id="de-loader"></div>
+        <header class="transparent">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="de-flex">
+                            <div class="de-flex-col">
+                                <div class="de-flex-col header-col-mid">
+                                    <ul id="mainmenu">
+                                        <li><a class="menu-item" href="index.html"><i class="fa fa-home me-2"></i>Home</a></li>
+                                        <li><a class="menu-item" href="create-event.html"><i class="fa fa-plus me-2"></i>Create Event</a></li>
+                                        <li><a class="menu-item" href="my-events.html"><i class="fa fa-calendar me-2"></i>My Events</a></li>
+                                        <li><a class="menu-item" href="feeds.html"><i class="fa fa-comments me-2"></i>Feeds</a></li>
+                                        <li><a class="menu-item" href="profile.html"><i class="fa fa-user me-2"></i>Profile</a></li>
+                                        <li><a class="menu-item" href="invite.html"><i class="fa fa-envelope me-2"></i>Invite</a></li>
+                                        <li><a class="menu-item" href="rsvp.html"><i class="fa fa-check me-2"></i>RSVP</a></li>
+                                        <li><a class="menu-item" href="settings.html"><i class="fa fa-cog me-2"></i>Settings</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="de-flex-col nav-actions">
+                                <div id="fw-account-slot"></div>
+                                <div class="menu_side_area"><span id="menu-btn"></span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <section id="section-hero" class="section-dark no-top no-bottom text-light jarallax relative mh-800" data-video-src="mp4:video/2.mp4">
+            <div class="gradient-edge-top op-6 h-50 color"></div>
+            <div class="gradient-edge-bottom"></div>
+            <div class="sw-overlay op-8"></div>
+            <div class="abs abs-centered z-2 w-80">
+                <div class="container wow scaleIn">
+                    <div class="row">
+                        <div class="col-lg-12 text-center">
+                            <img src="images/fw-icons/windsock.svg" class="w-80px mb-3" alt="">
+                            <div class="subtitle">Family Weather Events</div>
+                            <h1 class="fs-120 text-uppercase fs-sm-12vw mb-4 lh-1">Contacts</h1>
+                            <p class="lead">Manage people you invite to events.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="bg-dark section-dark text-light">
+            <div class="container">
+                <div class="row g-4 justify-content-center">
+                    <div class="col-lg-8">
+                        <div class="bg-dark-2 rounded-1 p-40 p-lg-60 relative">
+                            <div class="subtitle">Add Contact</div>
+                            <h2>Save contact details</h2>
+                            <form id="fw-contact-form" class="row g-3 mt-2">
+                                <input type="hidden" id="fw-contact-id">
+                                <div class="col-md-12">
+                                    <label class="form-label" for="fw-contact-name">Name</label>
+                                    <input id="fw-contact-name" type="text" class="form-control form-control-lg" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label" for="fw-contact-phone">Phone (optional)</label>
+                                    <input id="fw-contact-phone" type="text" class="form-control form-control-lg">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label" for="fw-contact-email">Email (optional)</label>
+                                    <input id="fw-contact-email" type="email" class="form-control form-control-lg">
+                                </div>
+                                <div class="col-12 d-flex gap-2">
+                                    <button type="submit" class="btn-main fx-slide"><span>Save</span></button>
+                                    <button id="fw-contact-cancel" type="button" class="btn-main btn-line fx-slide d-none"><span>Cancel Edit</span></button>
+                                </div>
+                                <div id="fw-contact-status" class="small mt-2"></div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-4 justify-content-center mt-1">
+                    <div class="col-lg-8">
+                        <div class="bg-dark-2 rounded-1 p-40 p-lg-60 relative">
+                            <div class="subtitle">Saved Contacts</div>
+                            <h2>Your contact list</h2>
+                            <div id="fw-contact-empty" class="small mt-3">No contacts yet.</div>
+                            <div id="fw-contact-list" class="row g-3 mt-1"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <footer class="text-light section-dark">
+        <div class="subfooter">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-12 text-center">
+                        <a href="privacy.html">Privacy</a> | <a href="terms.html">Terms</a> | <a href="sms-consent.html">SMS Consent</a><br>
+                        Copyright 2026 - Family Weather Events
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/vendors.js"></script>
+    <script src="js/fw-settings.js"></script>
+    <script src="js/designesia.js"></script>
+    <script src="js/custom-marquee.js"></script>
+    <script type="module" src="js/authNav.js"></script>
+    <script type="module" src="js/authGate.js"></script>
+    <script type="module" src="js/contacts-page.js"></script>
+    <script src="js/fw-legal-footer.js"></script>
+</body>
+
+</html>

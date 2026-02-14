@@ -187,9 +187,31 @@
         }
     }
 
+    function ensureNavLinks() {
+        const menu = document.getElementById("mainmenu");
+        if (!menu) return;
+        if (menu.querySelector('a[href="contacts.html"]') || menu.querySelector('a[href="/contacts.html"]')) return;
+
+        const contactsLi = document.createElement("li");
+        contactsLi.innerHTML = '<a class="menu-item" href="contacts.html"><i class="fa fa-address-book me-2"></i>Contacts</a>';
+
+        const groupsLi = document.createElement("li");
+        groupsLi.innerHTML = '<a class="menu-item" href="groups.html"><i class="fa fa-users me-2"></i>Groups</a>';
+
+        const settingsLi = menu.querySelector('a[href="settings.html"]')?.closest("li");
+        if (settingsLi && settingsLi.parentNode) {
+            settingsLi.parentNode.insertBefore(contactsLi, settingsLi);
+            settingsLi.parentNode.insertBefore(groupsLi, settingsLi);
+        } else {
+            menu.appendChild(contactsLi);
+            menu.appendChild(groupsLi);
+        }
+    }
+
     const settings = loadSettings();
     applySettings(settings);
     document.addEventListener("DOMContentLoaded", () => {
+        ensureNavLinks();
         initControls(loadSettings());
     });
 })();

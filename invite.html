@@ -102,6 +102,13 @@
                                     <input type="text" class="form-control form-control-lg" id="fw-invite-event" placeholder="Event Name" required>
                                 </div>
                                 <div class="col-md-12">
+                                    <label class="form-label mb-2" for="fw-invite-group">Select Group</label>
+                                    <select id="fw-invite-group" class="form-control form-control-lg">
+                                        <option value="">No group selected</option>
+                                    </select>
+                                    <div id="fw-invite-group-preview" class="small mt-2 text-light-50"></div>
+                                </div>
+                                <div class="col-md-12">
                                     <label class="form-label mb-2" for="fw-invite-emails">Paste guest emails (comma, space, or newline separated)</label>
                                     <textarea class="form-control form-control-lg" id="fw-invite-emails" rows="4" placeholder="friend1@email.com, friend2@email.com" required></textarea>
                                     <div id="fw-email-count" class="small mt-2 text-light-50">0 valid emails / 0 invalid</div>
