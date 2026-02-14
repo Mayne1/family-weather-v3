@@ -71,7 +71,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (!eventId && statusEl) {
     statusEl.className = "mt-3 text-warning";
-    statusEl.textContent = "Select an event from My Events.";
+    statusEl.textContent = "No eventId in URL. Invites will use the event name.";
   }
 
   function refreshEmailCount() {
@@ -179,7 +179,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   form?.addEventListener("submit", async (event) => {
     event.preventDefault();
-    if (!eventId) return;
+    const effectiveEventId = eventId || (eventInput?.value || "").trim() || `evt-${generateToken(8)}`;
     const invites = getInvites();
     const links = [];
 
@@ -195,12 +195,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const outbound = [];
       parsedPhones.valid.forEach((phone) => {
-        const existing = invites.find((inv) => inv.eventId === eventId && inv.invitee_phone === phone);
+        const existing = invites.find((inv) => inv.eventId === effectiveEventId && inv.invitee_phone === phone);
         const token = existing ? existing.token : generateToken();
         if (!existing) {
           invites.push({
             token,
-            eventId,
+            eventId: effectiveEventId,
             invitee_phone: phone,
             invitee_email: `${phone.replace(/[^\d]/g, "")}@sms.local`,
             owner_email: normalizeEmail(user.email),
@@ -214,19 +214,40 @@ document.addEventListener("DOMContentLoaded", () => {
       saveInvites(invites);
 
       const payload = {
-        eventId,
+        eventId: effectiveEventId,
         eventTitle: eventInput?.value?.trim() || "",
         message: (document.getElementById("fw-invite-message")?.value || "").trim(),
         invites: outbound
       };
 
       try {
-        const res = await fetch("/api/invites/send-sms", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
-        });
-        if (!res.ok) throw new Error(`SMS send failed (${res.status})`);
+        const endpoints = ["/api/invites/send-sms", "/api/vonage/invites/send-sms"];
+        let successResponse = null;
+        let lastError = "SMS send failed";
+
+        for (const endpoint of endpoints) {
+          const res = await fetch(endpoint, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          });
+          let body = null;
+          try {
+            body = await res.json();
+          } catch (jsonErr) {
+            body = null;
+          }
+
+          if (res.ok && (!body || body.ok !== false)) {
+            successResponse = body || { ok: true };
+            break;
+          }
+
+          const apiErr = body?.error ? String(body.error) : `HTTP ${res.status}`;
+          lastError = `${endpoint}: ${apiErr}`;
+        }
+
+        if (!successResponse) throw new Error(lastError);
         if (statusEl) {
           statusEl.className = "mt-3 text-success";
           statusEl.textContent = `Sent ${outbound.length} SMS invite(s).`;
@@ -250,12 +271,12 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     parsed.valid.forEach((inviteeEmail) => {
-      const existing = invites.find((inv) => inv.eventId === eventId && inv.invitee_email === inviteeEmail);
+      const existing = invites.find((inv) => inv.eventId === effectiveEventId && inv.invitee_email === inviteeEmail);
       const token = existing ? existing.token : generateToken();
       if (!existing) {
         invites.push({
           token,
-          eventId,
+          eventId: effectiveEventId,
           invitee_email: inviteeEmail,
           owner_email: normalizeEmail(user.email),
           createdAt: getNow()
