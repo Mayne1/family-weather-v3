@@ -43,6 +43,22 @@ function parsePhones(raw) {
   return { valid: Array.from(new Set(valid)), invalid };
 }
 
+async function buildApiHeaders() {
+  const headers = { "Content-Type": "application/json" };
+  try {
+    if (window.firebase?.auth) {
+      const current = window.firebase.auth().currentUser;
+      if (current) {
+        const idToken = await current.getIdToken();
+        if (idToken) headers.Authorization = `Bearer ${idToken}`;
+      }
+    }
+  } catch (_err) {
+    // Keep request unauthenticated if token retrieval fails.
+  }
+  return headers;
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   const user = requireAuth("auth.html");
   if (!user) return;
@@ -224,11 +240,12 @@ document.addEventListener("DOMContentLoaded", () => {
         const endpoints = ["/api/invites/send-sms", "/api/vonage/invites/send-sms"];
         let successResponse = null;
         let lastError = "SMS send failed";
+        const headers = await buildApiHeaders();
 
         for (const endpoint of endpoints) {
           const res = await fetch(endpoint, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers,
             body: JSON.stringify(payload)
           });
           let body = null;
