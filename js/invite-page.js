@@ -102,6 +102,14 @@ document.addEventListener("DOMContentLoaded", () => {
     if (phoneWrap) phoneWrap.style.display = sms ? "" : "none";
     if (emailInput) emailInput.required = !sms;
     if (phoneInput) phoneInput.required = sms;
+    if (sendEmailBtn) {
+      sendEmailBtn.classList.toggle("btn-line", sms);
+      sendEmailBtn.setAttribute("aria-pressed", sms ? "false" : "true");
+    }
+    if (sendSmsBtn) {
+      sendSmsBtn.classList.toggle("btn-line", !sms);
+      sendSmsBtn.setAttribute("aria-pressed", sms ? "true" : "false");
+    }
     if (statusEl) {
       statusEl.className = "mt-3 text-light-50";
       statusEl.textContent = sms
