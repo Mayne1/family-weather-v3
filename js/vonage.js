@@ -58,12 +58,7 @@ router.post("/dlr", (req, res) => {
   return res.status(200).send("ok");
 });
 
-/**
- * Website SMS transport bridge (POST-JSON)
- * Endpoint expected by frontend:
- *   POST /api/invites/send-sms
- */
-router.post("/invites/send-sms", async (req, res) => {
+async function handleSendSms(req, res) {
   try {
     const { eventId, eventTitle, message, invites } = req.body || {};
     if (!Array.isArray(invites) || invites.length === 0) {
@@ -119,7 +114,17 @@ router.post("/invites/send-sms", async (req, res) => {
       error: err?.message || "server_error"
     });
   }
-});
+}
+
+/**
+ * Website SMS transport bridge (POST-JSON)
+ * Supported endpoints:
+ *   POST /api/invites/send-sms
+ *   POST /api/vonage/invites/send-sms
+ *   POST /api/vonage/send-sms
+ */
+router.post("/invites/send-sms", handleSendSms);
+router.post("/send-sms", handleSendSms);
 
 // Optional GET endpoints (kept open for quick manual testing)
 router.get("/inbound", (req, res) => res.status(200).send("ok"));

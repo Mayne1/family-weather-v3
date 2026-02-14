@@ -237,7 +237,7 @@ document.addEventListener("DOMContentLoaded", () => {
       };
 
       try {
-        const endpoints = ["/api/invites/send-sms", "/api/vonage/invites/send-sms"];
+        const endpoints = ["/api/vonage/send-sms", "/api/invites/send-sms", "/api/vonage/invites/send-sms"];
         let successResponse = null;
         let lastError = "SMS send failed";
         const headers = await buildApiHeaders();
