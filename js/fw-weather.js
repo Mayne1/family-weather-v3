@@ -169,6 +169,16 @@
         return date.toLocaleDateString([], { weekday: "short" });
     }
 
+    function parseYmdLocal(ymd) {
+        const parts = String(ymd || "").split("-");
+        if (parts.length !== 3) return new Date(ymd);
+        const year = Number(parts[0]);
+        const month = Number(parts[1]) - 1;
+        const day = Number(parts[2]);
+        if (!Number.isFinite(year) || !Number.isFinite(month) || !Number.isFinite(day)) return new Date(ymd);
+        return new Date(year, month, day);
+    }
+
     function toCardinal(deg) {
         if (typeof deg !== "number") return "-";
         const dirs = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"];
@@ -240,7 +250,7 @@
         const daily = payload.weather.daily;
         const count = Math.min(10, daily.time.length);
         const tiles = Array.from({ length: count }).map((_, idx) => {
-            const day = formatDay(new Date(daily.time[idx]));
+            const day = formatDay(parseYmdLocal(daily.time[idx]));
             const hi = Math.round(daily.temperature_2m_max[idx]);
             const lo = Math.round(daily.temperature_2m_min[idx]);
             const code = daily.weather_code[idx];
@@ -269,7 +279,7 @@
         const items = [];
         let hasSevere = false;
         for (let idx = 0; idx < Math.min(5, daily.time.length); idx += 1) {
-            const day = formatDay(new Date(daily.time[idx]));
+            const day = formatDay(parseYmdLocal(daily.time[idx]));
             const code = daily.weather_code[idx];
             const hi = daily.temperature_2m_max[idx];
             const wind = daily.wind_speed_10m_max ? daily.wind_speed_10m_max[idx] : null;
