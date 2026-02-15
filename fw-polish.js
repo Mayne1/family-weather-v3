@@ -17,15 +17,43 @@
 
   function dayOverlayColor() {
     const colors = [
-      "rgba(105, 153, 255, 0.08)",
-      "rgba(104, 188, 255, 0.08)",
-      "rgba(95, 210, 196, 0.08)",
-      "rgba(118, 205, 130, 0.08)",
-      "rgba(241, 187, 86, 0.08)",
-      "rgba(226, 149, 106, 0.08)",
-      "rgba(170, 145, 230, 0.08)"
+      "rgba(105, 153, 255, 0.006)",
+      "rgba(104, 188, 255, 0.006)",
+      "rgba(95, 210, 196, 0.006)",
+      "rgba(118, 205, 130, 0.006)",
+      "rgba(241, 187, 86, 0.006)",
+      "rgba(226, 149, 106, 0.006)",
+      "rgba(170, 145, 230, 0.006)"
     ];
     return colors[new Date().getDay() % colors.length];
+  }
+
+  function ensureGlobalBackgroundVideo() {
+    if (document.getElementById("fw-bg-video")) return;
+    const video = document.createElement("video");
+    video.id = "fw-bg-video";
+    video.autoplay = true;
+    video.muted = true;
+    video.loop = true;
+    video.playsInline = true;
+    video.setAttribute("aria-hidden", "true");
+    video.style.position = "fixed";
+    video.style.inset = "0";
+    video.style.width = "100%";
+    video.style.height = "100%";
+    video.style.objectFit = "cover";
+    video.style.zIndex = "0";
+    video.style.pointerEvents = "none";
+
+    const source = document.createElement("source");
+    source.src = "video/Tranquil-forest2.mp4";
+    source.type = "video/mp4";
+    video.appendChild(source);
+    document.body.prepend(video);
+    const playPromise = video.play();
+    if (playPromise && typeof playPromise.catch === "function") {
+      playPromise.catch(function () {});
+    }
   }
 
   function ensureDailyOverlay() {
@@ -282,6 +310,7 @@
   }
 
   document.addEventListener("DOMContentLoaded", function () {
+    ensureGlobalBackgroundVideo();
     ensureDailyOverlay();
     const isHome = !!document.getElementById("fw-rightnow") && !!document.getElementById("fw-forecast");
     if (isHome) initHome();

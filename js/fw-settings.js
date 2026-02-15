@@ -8,7 +8,9 @@
         background: "default",
         font: "system",
         backgroundColor: "",
-        uiColor: "#9fd0ff"
+        uiColor: "#9fd0ff",
+        fontColor: "#e8f3ff",
+        heroBoxColor: "#1b2942"
     };
 
     function normalizeHexColor(value) {
@@ -38,7 +40,9 @@
                 background: data.background || defaults.background,
                 font: data.font || defaults.font,
                 backgroundColor: normalizeHexColor(data.backgroundColor),
-                uiColor: normalizeHexColor(data.uiColor) || defaults.uiColor
+                uiColor: normalizeHexColor(data.uiColor) || defaults.uiColor,
+                fontColor: normalizeHexColor(data.fontColor) || defaults.fontColor,
+                heroBoxColor: normalizeHexColor(data.heroBoxColor) || defaults.heroBoxColor
             };
         } catch (err) {
             return { ...defaults };
@@ -70,6 +74,10 @@
         body.classList.add(`fw-font-${settings.font}`);
         const uiColor = normalizeHexColor(settings.uiColor) || defaults.uiColor;
         root.style.setProperty("--fw-ui-accent", uiColor);
+        const fontColor = normalizeHexColor(settings.fontColor) || defaults.fontColor;
+        root.style.setProperty("--fw-font-color", fontColor);
+        const heroBoxColor = normalizeHexColor(settings.heroBoxColor) || defaults.heroBoxColor;
+        root.style.setProperty("--fw-hero-box-color", heroBoxColor);
 
         const wrapper = document.getElementById("wrapper");
         const bgVideo = document.getElementById("fw-bg-video");
@@ -130,6 +138,10 @@
         const bgColorHexInput = document.getElementById("fw-bg-color-hex");
         const uiColorInput = document.getElementById("fw-ui-color");
         const uiColorHexInput = document.getElementById("fw-ui-color-hex");
+        const fontColorInput = document.getElementById("fw-font-color");
+        const fontColorHexInput = document.getElementById("fw-font-color-hex");
+        const heroBoxColorInput = document.getElementById("fw-hero-box-color");
+        const heroBoxColorHexInput = document.getElementById("fw-hero-box-color-hex");
         const resetBtn = document.getElementById("fw-reset");
 
         if (themeLight && themeDark) {
@@ -146,6 +158,10 @@
         if (bgColorHexInput) bgColorHexInput.value = normalizeHexColor(settings.backgroundColor) || "";
         if (uiColorInput) uiColorInput.value = normalizeHexColor(settings.uiColor) || defaults.uiColor;
         if (uiColorHexInput) uiColorHexInput.value = normalizeHexColor(settings.uiColor) || defaults.uiColor;
+        if (fontColorInput) fontColorInput.value = normalizeHexColor(settings.fontColor) || defaults.fontColor;
+        if (fontColorHexInput) fontColorHexInput.value = normalizeHexColor(settings.fontColor) || defaults.fontColor;
+        if (heroBoxColorInput) heroBoxColorInput.value = normalizeHexColor(settings.heroBoxColor) || defaults.heroBoxColor;
+        if (heroBoxColorHexInput) heroBoxColorHexInput.value = normalizeHexColor(settings.heroBoxColor) || defaults.heroBoxColor;
 
         function saveFromControls() {
             const bgColor = normalizeHexColor(bgColorHexInput ? bgColorHexInput.value : (bgColorInput ? bgColorInput.value : ""));
@@ -155,12 +171,18 @@
                 background: bgSelect ? bgSelect.value : defaults.background,
                 font: fontSelect ? fontSelect.value : defaults.font,
                 backgroundColor: bgColor,
-                uiColor: normalizeHexColor(uiColorHexInput ? uiColorHexInput.value : (uiColorInput ? uiColorInput.value : defaults.uiColor)) || defaults.uiColor
+                uiColor: normalizeHexColor(uiColorHexInput ? uiColorHexInput.value : (uiColorInput ? uiColorInput.value : defaults.uiColor)) || defaults.uiColor,
+                fontColor: normalizeHexColor(fontColorHexInput ? fontColorHexInput.value : (fontColorInput ? fontColorInput.value : defaults.fontColor)) || defaults.fontColor,
+                heroBoxColor: normalizeHexColor(heroBoxColorHexInput ? heroBoxColorHexInput.value : (heroBoxColorInput ? heroBoxColorInput.value : defaults.heroBoxColor)) || defaults.heroBoxColor
             };
             if (bgColorInput) bgColorInput.value = bgColor || "#0b1226";
             if (bgColorHexInput) bgColorHexInput.value = bgColor;
             if (uiColorInput) uiColorInput.value = next.uiColor;
             if (uiColorHexInput) uiColorHexInput.value = next.uiColor;
+            if (fontColorInput) fontColorInput.value = next.fontColor;
+            if (fontColorHexInput) fontColorHexInput.value = next.fontColor;
+            if (heroBoxColorInput) heroBoxColorInput.value = next.heroBoxColor;
+            if (heroBoxColorHexInput) heroBoxColorHexInput.value = next.heroBoxColor;
             saveSettings(next);
             applySettings(next);
         }
@@ -199,6 +221,36 @@
             });
         }
 
+        if (fontColorInput) {
+            fontColorInput.addEventListener("input", () => {
+                if (fontColorHexInput) fontColorHexInput.value = fontColorInput.value.toLowerCase();
+                saveFromControls();
+            });
+        }
+
+        if (fontColorHexInput) {
+            fontColorHexInput.addEventListener("input", () => {
+                const normalized = normalizeHexColor(fontColorHexInput.value);
+                if (normalized && fontColorInput) fontColorInput.value = normalized;
+                saveFromControls();
+            });
+        }
+
+        if (heroBoxColorInput) {
+            heroBoxColorInput.addEventListener("input", () => {
+                if (heroBoxColorHexInput) heroBoxColorHexInput.value = heroBoxColorInput.value.toLowerCase();
+                saveFromControls();
+            });
+        }
+
+        if (heroBoxColorHexInput) {
+            heroBoxColorHexInput.addEventListener("input", () => {
+                const normalized = normalizeHexColor(heroBoxColorHexInput.value);
+                if (normalized && heroBoxColorInput) heroBoxColorInput.value = normalized;
+                saveFromControls();
+            });
+        }
+
         if (resetBtn) {
             resetBtn.addEventListener("click", () => {
                 saveSettings({ ...defaults });
@@ -213,6 +265,10 @@
                 if (bgColorHexInput) bgColorHexInput.value = "";
                 if (uiColorInput) uiColorInput.value = defaults.uiColor;
                 if (uiColorHexInput) uiColorHexInput.value = defaults.uiColor;
+                if (fontColorInput) fontColorInput.value = defaults.fontColor;
+                if (fontColorHexInput) fontColorHexInput.value = defaults.fontColor;
+                if (heroBoxColorInput) heroBoxColorInput.value = defaults.heroBoxColor;
+                if (heroBoxColorHexInput) heroBoxColorHexInput.value = defaults.heroBoxColor;
             });
         }
     }

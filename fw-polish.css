@@ -1,6 +1,8 @@
 /* Family Weather Polish overrides (additive only) */
 :root {
   --fw-ui-accent: #9fd0ff;
+  --fw-font-color: #e8f3ff;
+  --fw-hero-box-color: #1b2942;
 }
 
 /* Daily soft overlay */
@@ -9,7 +11,7 @@
   inset: 0;
   pointer-events: none;
   z-index: 1;
-  background: var(--fw-day-overlay, rgba(120, 160, 255, 0.015));
+  background: var(--fw-day-overlay, rgba(120, 160, 255, 0.006));
   mix-blend-mode: normal;
   opacity: 0.9;
 }
@@ -18,7 +20,7 @@
   content: "";
   position: absolute;
   inset: 0;
-  background: radial-gradient(1200px 700px at 10% -10%, rgba(255, 255, 255, 0.06), transparent 60%);
+  background: radial-gradient(1200px 700px at 10% -10%, rgba(255, 255, 255, 0.025), transparent 60%);
 }
 
 @supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
@@ -35,6 +37,24 @@ section,
 footer {
   position: relative;
   z-index: 2;
+}
+
+/* Site-wide font color control */
+body,
+body p,
+body h1,
+body h2,
+body h3,
+body h4,
+body h5,
+body h6,
+body span,
+body a,
+body li,
+body label,
+body .small,
+body .lead {
+  color: var(--fw-font-color);
 }
 
 /* Option A: standalone hourly card near weather area */
@@ -99,6 +119,15 @@ footer {
   grid-template-columns: 1fr;
   gap: 8px;
   overflow: visible;
+}
+
+/* Hero/weather box background color control */
+#section-weather .bg-dark-2,
+#section-weather-extras .bg-dark-2,
+#section-flows .bg-dark-2,
+#section-form .bg-dark-2,
+.fw-hourly-card {
+  background-color: var(--fw-hero-box-color) !important;
 }
 
 .fw-fab5-row {
