@@ -15,19 +15,6 @@
     }
   }
 
-  function dayOverlayColor() {
-    const colors = [
-      "rgba(105, 153, 255, 0.006)",
-      "rgba(104, 188, 255, 0.006)",
-      "rgba(95, 210, 196, 0.006)",
-      "rgba(118, 205, 130, 0.006)",
-      "rgba(241, 187, 86, 0.006)",
-      "rgba(226, 149, 106, 0.006)",
-      "rgba(170, 145, 230, 0.006)"
-    ];
-    return colors[new Date().getDay() % colors.length];
-  }
-
   function ensureGlobalBackgroundVideo() {
     if (document.getElementById("fw-bg-video")) return;
     const video = document.createElement("video");
@@ -56,12 +43,10 @@
     }
   }
 
-  function ensureDailyOverlay() {
-    if (document.getElementById("fw-day-overlay")) return;
-    const overlay = document.createElement("div");
-    overlay.id = "fw-day-overlay";
-    document.body.prepend(overlay);
-    document.documentElement.style.setProperty("--fw-day-overlay", dayOverlayColor());
+  function removeDailyOverlay() {
+    const overlay = document.getElementById("fw-day-overlay");
+    if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay);
+    document.documentElement.style.removeProperty("--fw-day-overlay");
   }
 
   function iconForCode(code) {
@@ -311,7 +296,7 @@
 
   document.addEventListener("DOMContentLoaded", function () {
     ensureGlobalBackgroundVideo();
-    ensureDailyOverlay();
+    removeDailyOverlay();
     const isHome = !!document.getElementById("fw-rightnow") && !!document.getElementById("fw-forecast");
     if (isHome) initHome();
   });

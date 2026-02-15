@@ -1,4 +1,19 @@
 (function () {
+  function ensurePolishAssets() {
+    var head = document.head || document.getElementsByTagName("head")[0];
+    if (head && !document.querySelector('link[href="fw-polish.css"]')) {
+      var link = document.createElement("link");
+      link.rel = "stylesheet";
+      link.href = "fw-polish.css";
+      head.appendChild(link);
+    }
+    if (!document.querySelector('script[src="fw-polish.js"]')) {
+      var script = document.createElement("script");
+      script.src = "fw-polish.js";
+      document.body.appendChild(script);
+    }
+  }
+
   function buildLegalHtml() {
     return (
       '<div class="fw-legal-links">' +
@@ -33,4 +48,5 @@
   }
 
   document.addEventListener("DOMContentLoaded", ensureFooter);
+  document.addEventListener("DOMContentLoaded", ensurePolishAssets);
 })();
