@@ -37,14 +37,15 @@
   }
 
   function resolveIcon(code) {
-    if (code === 0) return "images/fw-icons/sun.svg";
-    if (code === 1 || code === 2) return "images/fw-icons/partly-cloudy.svg";
-    if (code === 3) return "images/fw-icons/cloudy.svg";
-    if (code >= 45 && code <= 48) return "images/fw-icons/fog.svg";
-    if (code >= 51 && code <= 67) return "images/fw-icons/rain.svg";
-    if (code >= 71 && code <= 86) return "images/fw-icons/snow.svg";
-    if (code >= 95) return "images/fw-icons/thunderstorm.svg";
-    return "images/fw-icons/cloudy.svg";
+    if (code === 0) return "images/mgc-weather-icons-pack-v12/01_sun_fill.svg";
+    if (code === 1 || code === 2) return "images/mgc-weather-icons-pack-v12/04_sun_cloudy_fill.svg";
+    if (code === 3) return "images/mgc-weather-icons-pack-v12/06_clouds_fill.svg";
+    if (code >= 45 && code <= 48) return "images/mgc-weather-icons-pack-v12/15_fog_fill.svg";
+    if (code >= 51 && code <= 57) return "images/mgc-weather-icons-pack-v12/09_drizzle_fill.svg";
+    if ((code >= 61 && code <= 67) || (code >= 80 && code <= 82)) return "images/mgc-weather-icons-pack-v12/10_showers_fill.svg";
+    if ((code >= 71 && code <= 77) || (code >= 85 && code <= 86)) return "images/mgc-weather-icons-pack-v12/18_moderate_snow_fill.svg";
+    if (code >= 95) return "images/mgc-weather-icons-pack-v12/14_thunderstorm_fill.svg";
+    return "images/mgc-weather-icons-pack-v12/06_clouds_fill.svg";
   }
 
   function hourLabel(timeValue, idx) {
@@ -67,11 +68,13 @@
       const label = hourLabel(row.time, idx);
       const temp = row.temperature_2m != null ? Math.round(row.temperature_2m) : "-";
       const icon = resolveIcon(row.weather_code);
+      const precip = row.precipChance != null ? Math.round(row.precipChance) + "%" : "-";
       return (
         '<div class="hour-chip">' +
           '<div class="hour-label">' + label + "</div>" +
           '<img class="hour-icon" src="' + icon + '" alt="Weather icon">' +
           '<div class="hour-temp">' + temp + '&deg;F</div>' +
+          '<div class="hour-precip">' + precip + '</div>' +
         "</div>"
       );
     }).join("");
@@ -97,107 +100,88 @@
     });
   }
 
-  async function initHourly() {
-    const host = document.getElementById("fw-hourly-row");
-    if (!host || !window.apiBox || typeof window.apiBox.getHourlyForecast !== "function") return;
-    host.innerHTML = '<div class="small text-muted">Loading hourly forecast...</div>';
-    try {
-      const loc = await getLocation();
-      const rows = await window.apiBox.getHourlyForecast(loc.lat, loc.lon);
-      renderHourlyForecast(rows);
-    } catch (_err) {
-      host.innerHTML = '<div class="small text-muted">Hourly forecast unavailable</div>';
-    }
-  }
-
-  function weatherClassFromCode(code) {
-    if (code == null) return "rn-wx--cloudy";
-    if (code >= 95) return "rn-wx--thunder";
-    if ((code >= 71 && code <= 77) || (code >= 85 && code <= 86)) return "rn-wx--snow";
-    if ((code >= 51 && code <= 67) || (code >= 80 && code <= 82)) return "rn-wx--rain";
-    if (code >= 45 && code <= 48) return "rn-wx--wind";
-    if (code === 0) return "rn-wx--clear";
-    if (code === 1 || code === 2 || code === 3) return "rn-wx--cloudy";
-    return "rn-wx--cloudy";
-  }
-
-  function rightNowSceneHtml() {
-    return (
-      '<div class="rn-scene" aria-hidden="true">' +
-        '<div class="rn-layer rn-clouds"></div>' +
-        '<div class="rn-layer rn-rain"><span></span><span></span><span></span><span></span></div>' +
-        '<div class="rn-layer rn-snow"><span></span><span></span><span></span><span></span></div>' +
-        '<div class="rn-layer rn-clear"></div>' +
-        '<div class="rn-layer rn-thunder"></div>' +
-        '<div class="rn-layer rn-wind"><span></span><span></span><span></span></div>' +
-        '<svg class="rn-house" viewBox="0 0 120 120" role="img" aria-label="House">' +
-          '<path d="M20 58 L60 26 L100 58" fill="none" stroke="rgba(255,255,255,0.9)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"></path>' +
-          '<rect x="30" y="58" width="60" height="42" rx="4" fill="rgba(255,255,255,0.16)" stroke="rgba(255,255,255,0.9)" stroke-width="4"></rect>' +
-          '<rect x="54" y="74" width="12" height="26" rx="2" fill="rgba(255,255,255,0.25)" stroke="rgba(255,255,255,0.8)" stroke-width="2"></rect>' +
-          '<rect x="40" y="69" width="10" height="10" rx="1" fill="rgba(255,255,255,0.25)"></rect>' +
-          '<rect x="70" y="69" width="10" height="10" rx="1" fill="rgba(255,255,255,0.25)"></rect>' +
-        '</svg>' +
-      '</div>'
-    );
+  function sceneClassFromCode(code) {
+    if (code == null) return "rn-scene--cloudy";
+    if (code >= 95) return "rn-scene--storm";
+    if ((code >= 71 && code <= 77) || (code >= 85 && code <= 86)) return "rn-scene--snow";
+    if ((code >= 51 && code <= 67) || (code >= 80 && code <= 82)) return "rn-scene--rain";
+    if (code >= 45 && code <= 48) return "rn-scene--fog";
+    if (code === 0) return "rn-scene--clear";
+    return "rn-scene--cloudy";
   }
 
   function setRightNowScene(wxCodeOrCondition) {
-    const card = document.getElementById("fw-rightnow");
-    if (!card) return;
-    if (!card.querySelector(".rn-scene")) {
-      card.insertAdjacentHTML("beforeend", rightNowSceneHtml());
-    }
+    const scene = document.querySelector("#fw-rightnow .rn-scene");
+    if (!scene) return;
 
     const classes = [
-      "rn-wx--rain",
-      "rn-wx--snow",
-      "rn-wx--cloudy",
-      "rn-wx--clear",
-      "rn-wx--thunder",
-      "rn-wx--wind"
+      "rn-scene--rain",
+      "rn-scene--snow",
+      "rn-scene--cloudy",
+      "rn-scene--clear",
+      "rn-scene--storm",
+      "rn-scene--fog"
     ];
-    classes.forEach(function (c) { card.classList.remove(c); });
+    classes.forEach(function (c) { scene.classList.remove(c); });
 
-    let effectClass = "rn-wx--cloudy";
     if (typeof wxCodeOrCondition === "number") {
-      effectClass = weatherClassFromCode(wxCodeOrCondition);
-    } else if (typeof wxCodeOrCondition === "string" && wxCodeOrCondition.trim()) {
-      const value = wxCodeOrCondition.trim().toLowerCase();
-      if (value.indexOf("rain") >= 0) effectClass = "rn-wx--rain";
-      else if (value.indexOf("snow") >= 0) effectClass = "rn-wx--snow";
-      else if (value.indexOf("thunder") >= 0 || value.indexOf("storm") >= 0) effectClass = "rn-wx--thunder";
-      else if (value.indexOf("wind") >= 0 || value.indexOf("tornado") >= 0 || value.indexOf("fog") >= 0) effectClass = "rn-wx--wind";
-      else if (value.indexOf("clear") >= 0 || value.indexOf("sun") >= 0) effectClass = "rn-wx--clear";
-      else effectClass = "rn-wx--cloudy";
+      scene.classList.add(sceneClassFromCode(wxCodeOrCondition));
+      return;
     }
 
-    card.classList.add(effectClass);
+    const value = String(wxCodeOrCondition || "").toLowerCase();
+    if (value.indexOf("rain") >= 0) scene.classList.add("rn-scene--rain");
+    else if (value.indexOf("snow") >= 0) scene.classList.add("rn-scene--snow");
+    else if (value.indexOf("storm") >= 0 || value.indexOf("thunder") >= 0) scene.classList.add("rn-scene--storm");
+    else if (value.indexOf("fog") >= 0) scene.classList.add("rn-scene--fog");
+    else if (value.indexOf("clear") >= 0 || value.indexOf("sun") >= 0) scene.classList.add("rn-scene--clear");
+    else scene.classList.add("rn-scene--cloudy");
   }
 
-  function initRightNowScene() {
-    const card = document.getElementById("fw-rightnow");
-    if (!card) return;
+  async function initHourlyAndScene() {
+    const rightNow = document.getElementById("fw-rightnow");
+    let hourlyLoaded = false;
+    let hourlyLoading = false;
+    const tryRender = async function () {
+      const hourlyHost = document.getElementById("fw-hourly-row");
+      if (!hourlyHost || !window.apiBox || typeof window.apiBox.getHourlyForecast !== "function") return;
+      if (!hourlyLoaded && !hourlyLoading) {
+        hourlyLoading = true;
+        hourlyHost.innerHTML = '<div class="small text-muted">Loading hourly forecast...</div>';
+        try {
+          const loc = await getLocation();
+          const rows = await window.apiBox.getHourlyForecast(loc.lat, loc.lon);
+          renderHourlyForecast(rows);
+          hourlyLoaded = true;
+        } catch (_err) {
+          hourlyHost.innerHTML = '<div class="small text-muted">Hourly forecast unavailable</div>';
+        } finally {
+          hourlyLoading = false;
+        }
+      }
 
-    const applyFromCache = function () {
       const code = getCurrentWeatherCode();
       if (typeof code === "number") setRightNowScene(code);
       else setRightNowScene("cloudy");
     };
 
-    applyFromCache();
+    await tryRender();
 
-    const observer = new MutationObserver(function () {
-      applyFromCache();
-    });
-    observer.observe(card, { childList: true, subtree: true });
+    if (rightNow) {
+      const observer = new MutationObserver(function () {
+        hourlyLoaded = false;
+        tryRender();
+      });
+      observer.observe(rightNow, { childList: true });
+    }
 
     window.addEventListener("storage", function (evt) {
-      if (!evt || evt.key === CACHE_KEY) applyFromCache();
+      if (!evt || evt.key === CACHE_KEY) {
+        const code = getCurrentWeatherCode();
+        setRightNowScene(typeof code === "number" ? code : "cloudy");
+      }
     });
   }
 
-  document.addEventListener("DOMContentLoaded", function () {
-    initHourly();
-    initRightNowScene();
-  });
+  document.addEventListener("DOMContentLoaded", initHourlyAndScene);
 })();

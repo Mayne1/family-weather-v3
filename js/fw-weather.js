@@ -224,24 +224,64 @@
         const aqi = payload.aqi != null ? payload.aqi : "-";
 
         target.innerHTML = `
-            <div class="subtitle fw-widget-kicker">Right Now</div>
-            <div class="small text-muted">${payload.location.label || ""}</div>
-            <div class="small text-muted">Updated: ${updated}</div>
+            <div class="rn-layout">
+                <div class="rn-content">
+                    <div class="subtitle fw-widget-kicker">Right Now</div>
+                    <div class="small text-muted">${payload.location.label || ""}</div>
+                    <div class="small text-muted">Updated: ${updated}</div>
 
-            <div class="d-flex align-items-center gap-3 my-3 fw-rightnow-main">
-                <div class="fw-rightnow-icon">${iconImg(current.weather_code, "w-50px")}</div>
-                <div>
-                    <div class="fs-60 lh-1 fw-temp">${temp}&deg;F</div>
-                    <div class="small">${label}</div>
-                    <div class="small fw-rightnow-subtitle">Feels calm outside</div>
+                    <div class="d-flex align-items-center gap-3 my-3 fw-rightnow-main">
+                        <div class="fw-rightnow-icon">${iconImg(current.weather_code, "w-50px")}</div>
+                        <div>
+                            <div class="fs-60 lh-1 fw-temp">${temp}&deg;F</div>
+                            <div class="small">${label}</div>
+                            <div class="small fw-rightnow-subtitle">Feels calm outside</div>
+                        </div>
+                    </div>
+
+                    <div class="small">Feels Like: ${feels}&deg;F</div>
+                    <div class="small">Humidity: ${humidity}%</div>
+                    <div class="small">Wind: ${wind} mph ${windDir}</div>
+                    <div class="small">Chance of rain: ${precipChance != null ? `${Math.round(precipChance)}%` : "-"}</div>
+                    <div class="small">AQI: ${aqi}</div>
+                </div>
+
+                <div class="rn-scene-wrap">
+                    <div class="rn-scene" aria-hidden="true">
+                        <div class="rn-layer rn-sky"></div>
+                        <div class="rn-layer rn-clouds">
+                            <img class="rn-asset rn-asset-cloud" src="images/mgc-weather-icons-pack-v12/06_clouds_fill.svg" alt="">
+                        </div>
+                        <div class="rn-layer rn-rain"><span></span><span></span><span></span><span></span><span></span></div>
+                        <div class="rn-layer rn-snow"><span></span><span></span><span></span><span></span></div>
+                        <div class="rn-layer rn-fog"></div>
+                        <div class="rn-layer rn-clear">
+                            <img class="rn-asset rn-asset-sun" src="images/mgc-weather-icons-pack-v12/01_sun_fill.svg" alt="">
+                        </div>
+                        <div class="rn-layer rn-thunder"></div>
+                        <div class="rn-layer rn-wind"><span></span><span></span><span></span></div>
+
+                        <svg class="rn-diorama" viewBox="0 0 420 300" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Weather diorama scene">
+                            <path d="M0 245 Q85 218 190 236 T420 232 L420 300 L0 300 Z" fill="rgba(124,210,156,0.25)"></path>
+                            <path d="M130 195 L210 130 L292 195" fill="none" stroke="rgba(255,255,255,0.95)" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"></path>
+                            <rect x="150" y="194" width="120" height="82" rx="7" fill="rgba(255,255,255,0.18)" stroke="rgba(255,255,255,0.95)" stroke-width="6"></rect>
+                            <rect x="202" y="228" width="20" height="48" rx="3" fill="rgba(255,255,255,0.25)" stroke="rgba(255,255,255,0.8)" stroke-width="3"></rect>
+                            <rect x="168" y="214" width="20" height="20" rx="3" fill="rgba(255,255,255,0.25)"></rect>
+                            <rect x="232" y="214" width="20" height="20" rx="3" fill="rgba(255,255,255,0.25)"></rect>
+                            <ellipse cx="118" cy="260" rx="9" ry="20" fill="rgba(255,255,255,0.55)"></ellipse>
+                            <ellipse cx="102" cy="264" rx="7" ry="14" fill="rgba(255,255,255,0.45)"></ellipse>
+                            <ellipse cx="322" cy="264" rx="8" ry="16" fill="rgba(255,255,255,0.55)"></ellipse>
+                            <ellipse cx="336" cy="266" rx="7" ry="13" fill="rgba(255,255,255,0.45)"></ellipse>
+                            <ellipse cx="344" cy="260" rx="6" ry="12" fill="rgba(255,255,255,0.35)"></ellipse>
+                        </svg>
+                    </div>
                 </div>
             </div>
 
-            <div class="small\">Feels Like: ${feels}&deg;F</div>
-            <div class="small">Humidity: ${humidity}%</div>
-            <div class="small">Wind: ${wind} mph ${windDir}</div>
-            <div class="small">Chance of rain: ${precipChance != null ? `${Math.round(precipChance)}%` : "-"}</div>
-            <div class="small">AQI: ${aqi}</div>
+            <div class="rn-hourly-block mt-3">
+                <div class="subtitle">Hourly Forecast</div>
+                <div id="fw-hourly-row" class="hourly-row" aria-live="polite"></div>
+            </div>
         `;
     }
 
