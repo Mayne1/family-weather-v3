@@ -77,10 +77,10 @@
     container.appendChild(row);
   }
 
-  function formatHour(value, idx) {
+  function formatHour(value, idx, nowMs) {
     const d = new Date(value);
-    if (idx === 0) return "Now";
     if (Number.isNaN(d.getTime())) return "-";
+    if (idx === 0 && Math.abs(d.getTime() - nowMs) <= 90 * 60 * 1000) return "Now";
     return d.toLocaleTimeString([], { hour: "numeric" });
   }
 
@@ -109,7 +109,14 @@
     try {
       const loc = activeLocation();
       const rowsRaw = await window.apiBox.getHourlyForecast(loc.lat, loc.lon);
-      const rows = normalizeHourlyRows(rowsRaw).slice(0, 18);
+      const allRows = normalizeHourlyRows(rowsRaw);
+      const nowMs = Date.now();
+      let startIdx = allRows.findIndex(function (row) {
+        const t = Date.parse(row.time);
+        return Number.isFinite(t) && t >= nowMs - (30 * 60 * 1000);
+      });
+      if (startIdx < 0) startIdx = Math.max(0, allRows.length - 18);
+      const rows = allRows.slice(startIdx, startIdx + 18);
       if (!rows.length) {
         host.innerHTML = '<div class="small text-muted">Hourly forecast not connected yet</div>';
         return;
@@ -118,7 +125,7 @@
         const temp = row.temp != null ? Math.round(row.temp) + "&deg;F" : "--";
         return [
           '<div class="fw-hourly-tile">',
-          '  <div class="fw-hourly-time">' + formatHour(row.time, idx) + '</div>',
+          '  <div class="fw-hourly-time">' + formatHour(row.time, idx, nowMs) + '</div>',
           '  <div class="fw-hourly-icon"><img src="' + iconForCode(row.code) + '" alt=""></div>',
           '  <div class="fw-hourly-temp">' + temp + '</div>',
           '</div>'
