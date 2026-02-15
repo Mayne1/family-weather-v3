@@ -16,6 +16,7 @@
     
     <link href="fonts/fontawesome4/css/font-awesome.min.css" rel="stylesheet" type="text/css" >
     <link href="css/style.css" rel="stylesheet" type="text/css" >
+    <link href="styles.css" rel="stylesheet" type="text/css" >
     <!-- color scheme -->
     <link id="colors" href="css/colors/scheme-01.css" rel="stylesheet" type="text/css" >
 
@@ -112,10 +113,16 @@
         <section id="section-weather" class="bg-dark section-dark text-light">
             <div class="container">
                 <div class="row g-4">
-                    <div class="col-lg-4">
+                    <div class="col-lg-12">
                         <div id="fw-rightnow" class="bg-dark-2 rounded-1 p-30 h-100"></div>
                     </div>
-                    <div class="col-lg-8">
+                    <div class="col-lg-12">
+                        <div class="bg-dark-2 rounded-1 p-30 h-100 hourly-card">
+                            <div class="subtitle">Hourly Forecast</div>
+                            <div id="fw-hourly-row" class="hourly-row" aria-live="polite"></div>
+                        </div>
+                    </div>
+                    <div class="col-lg-12">
                         <div id="fw-forecast" class="bg-dark-2 rounded-1 p-30 h-100"></div>
                     </div>
                 </div>
@@ -357,7 +364,9 @@
     <script src="js/vendors.js"></script>
     <script src="js/fw-settings.js"></script>
     <script src="js/designesia.js"></script>
+    <script src="js/apiBox.js"></script>
     <script src="js/fw-weather.js"></script>
+    <script src="js/app.js"></script>
     <script src="js/countdown-custom.js"></script>
     <script src="js/custom-marquee.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
