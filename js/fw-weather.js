@@ -230,7 +230,7 @@
             <div class="rn-layout">
                 <div class="rn-content">
                     <div class="subtitle fw-widget-kicker">Right Now</div>
-                    <div class="small text-muted">${payload.location.label || ""}</div>
+                    <div class="fw-rn-location">${payload.location.label || ""}</div>
                     <div class="small text-muted">Updated: ${updated}</div>
 
                     <div class="d-flex align-items-center gap-3 my-3 fw-rightnow-main">

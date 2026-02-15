@@ -1,4 +1,7 @@
 /* Family Weather Polish overrides (additive only) */
+:root {
+  --fw-ui-accent: #9fd0ff;
+}
 
 /* Daily soft overlay */
 #fw-day-overlay {
@@ -123,6 +126,35 @@ footer {
 .fw-fab5-updated {
   font-size: 10px;
   opacity: 0.72;
+}
+
+/* Right Now location text emphasis */
+.fw-rn-location {
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--fw-ui-accent);
+  margin-bottom: 4px;
+}
+
+/* Accent color across forecast + hero style boxes */
+#fw-forecast .subtitle,
+#fw-forecast .small,
+#section-weather-extras .subtitle,
+#section-weather-extras .small,
+#section-flows .bg-dark-2 h3,
+#section-flows .bg-dark-2 h4,
+#section-flows .bg-dark-2 p {
+  color: var(--fw-ui-accent);
+}
+
+/* Icons in forecast and hero boxes */
+#fw-forecast .fw-forecast-icon img,
+#section-weather-extras img,
+#section-flows .bg-dark-2 img,
+#section-flows .bg-dark-2 i,
+#section-weather-extras i {
+  filter: drop-shadow(0 0 5px var(--fw-ui-accent));
 }
 
 @media (max-width: 767px) {

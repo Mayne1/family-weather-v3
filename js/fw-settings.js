@@ -7,7 +7,8 @@
         scheme: "scheme-01",
         background: "default",
         font: "system",
-        backgroundColor: ""
+        backgroundColor: "",
+        uiColor: "#9fd0ff"
     };
 
     function normalizeHexColor(value) {
@@ -36,7 +37,8 @@
                 scheme: data.scheme || defaults.scheme,
                 background: data.background || defaults.background,
                 font: data.font || defaults.font,
-                backgroundColor: normalizeHexColor(data.backgroundColor)
+                backgroundColor: normalizeHexColor(data.backgroundColor),
+                uiColor: normalizeHexColor(data.uiColor) || defaults.uiColor
             };
         } catch (err) {
             return { ...defaults };
@@ -66,6 +68,8 @@
 
         body.classList.remove("fw-font-system", "fw-font-serif", "fw-font-mono");
         body.classList.add(`fw-font-${settings.font}`);
+        const uiColor = normalizeHexColor(settings.uiColor) || defaults.uiColor;
+        root.style.setProperty("--fw-ui-accent", uiColor);
 
         const wrapper = document.getElementById("wrapper");
         const bgVideo = document.getElementById("fw-bg-video");
@@ -124,6 +128,8 @@
         const fontSelect = document.getElementById("fw-font");
         const bgColorInput = document.getElementById("fw-bg-color");
         const bgColorHexInput = document.getElementById("fw-bg-color-hex");
+        const uiColorInput = document.getElementById("fw-ui-color");
+        const uiColorHexInput = document.getElementById("fw-ui-color-hex");
         const resetBtn = document.getElementById("fw-reset");
 
         if (themeLight && themeDark) {
@@ -138,6 +144,8 @@
         if (fontSelect) fontSelect.value = settings.font;
         if (bgColorInput) bgColorInput.value = normalizeHexColor(settings.backgroundColor) || "#0b1226";
         if (bgColorHexInput) bgColorHexInput.value = normalizeHexColor(settings.backgroundColor) || "";
+        if (uiColorInput) uiColorInput.value = normalizeHexColor(settings.uiColor) || defaults.uiColor;
+        if (uiColorHexInput) uiColorHexInput.value = normalizeHexColor(settings.uiColor) || defaults.uiColor;
 
         function saveFromControls() {
             const bgColor = normalizeHexColor(bgColorHexInput ? bgColorHexInput.value : (bgColorInput ? bgColorInput.value : ""));
@@ -146,10 +154,13 @@
                 scheme: schemeSelect ? schemeSelect.value : defaults.scheme,
                 background: bgSelect ? bgSelect.value : defaults.background,
                 font: fontSelect ? fontSelect.value : defaults.font,
-                backgroundColor: bgColor
+                backgroundColor: bgColor,
+                uiColor: normalizeHexColor(uiColorHexInput ? uiColorHexInput.value : (uiColorInput ? uiColorInput.value : defaults.uiColor)) || defaults.uiColor
             };
             if (bgColorInput) bgColorInput.value = bgColor || "#0b1226";
             if (bgColorHexInput) bgColorHexInput.value = bgColor;
+            if (uiColorInput) uiColorInput.value = next.uiColor;
+            if (uiColorHexInput) uiColorHexInput.value = next.uiColor;
             saveSettings(next);
             applySettings(next);
         }
@@ -173,6 +184,21 @@
             });
         }
 
+        if (uiColorInput) {
+            uiColorInput.addEventListener("input", () => {
+                if (uiColorHexInput) uiColorHexInput.value = uiColorInput.value.toLowerCase();
+                saveFromControls();
+            });
+        }
+
+        if (uiColorHexInput) {
+            uiColorHexInput.addEventListener("input", () => {
+                const normalized = normalizeHexColor(uiColorHexInput.value);
+                if (normalized && uiColorInput) uiColorInput.value = normalized;
+                saveFromControls();
+            });
+        }
+
         if (resetBtn) {
             resetBtn.addEventListener("click", () => {
                 saveSettings({ ...defaults });
@@ -185,6 +211,8 @@
                 if (fontSelect) fontSelect.value = defaults.font;
                 if (bgColorInput) bgColorInput.value = "#0b1226";
                 if (bgColorHexInput) bgColorHexInput.value = "";
+                if (uiColorInput) uiColorInput.value = defaults.uiColor;
+                if (uiColorHexInput) uiColorHexInput.value = defaults.uiColor;
             });
         }
     }
