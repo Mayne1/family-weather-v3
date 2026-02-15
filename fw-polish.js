@@ -256,16 +256,10 @@
     ensureHourlyCard();
     renderHourlyCard();
     polishDiorama();
-
-    const forecast = document.getElementById("fw-forecast");
-    if (forecast) {
-      const obs = new MutationObserver(function () {
-        renderFabFive();
-      });
-      obs.observe(forecast, { childList: true, subtree: true });
-    }
-
     renderFabFive();
+    // Run a couple of delayed passes after legacy widgets finish rendering.
+    setTimeout(renderFabFive, 500);
+    setTimeout(renderFabFive, 1500);
 
     window.addEventListener("storage", function (evt) {
       if (!evt) return;
