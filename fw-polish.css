@@ -9,15 +9,23 @@
   inset: 0;
   pointer-events: none;
   z-index: 1;
-  background: var(--fw-day-overlay, rgba(120, 160, 255, 0.08));
-  mix-blend-mode: screen;
+  background: var(--fw-day-overlay, rgba(120, 160, 255, 0.015));
+  mix-blend-mode: normal;
+  opacity: 0.9;
 }
 
 #fw-day-overlay::after {
   content: "";
   position: absolute;
   inset: 0;
-  background: radial-gradient(1200px 700px at 10% -10%, rgba(255, 255, 255, 0.16), transparent 60%);
+  background: radial-gradient(1200px 700px at 10% -10%, rgba(255, 255, 255, 0.06), transparent 60%);
+}
+
+@supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  #fw-day-overlay {
+    -webkit-backdrop-filter: saturate(104%) blur(1px);
+    backdrop-filter: saturate(104%) blur(1px);
+  }
 }
 
 /* Keep content above overlay */
@@ -113,6 +121,8 @@ footer {
 
 .fw-fab5-label {
   font-size: 13px;
+  font-weight: 700;
+  color: var(--fw-ui-accent);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -153,6 +163,24 @@ footer {
   color: var(--fw-ui-accent);
 }
 
+/* Slightly bigger + bolder weather/hero headings */
+#fw-rightnow .subtitle,
+#fw-forecast .subtitle,
+#fw-hourly-polish .subtitle,
+#section-weather-extras .subtitle,
+#section-flows .bg-dark-2 h3,
+#section-flows .bg-dark-2 h4 {
+  font-size: 1.08em;
+  font-weight: 800;
+}
+
+#section-flows .bg-dark-2 p,
+#section-weather-extras .small,
+#fw-forecast .small,
+#fw-rightnow .small {
+  font-weight: 600;
+}
+
 /* Icons in forecast and hero boxes */
 #fw-rightnow .fw-rightnow-icon img,
 #fw-forecast .fw-forecast-icon img,
@@ -162,6 +190,13 @@ footer {
 #section-flows .bg-dark-2 i,
 #section-weather-extras i {
   filter: drop-shadow(0 0 5px var(--fw-ui-accent));
+}
+
+#section-flows .bg-dark-2 img,
+#section-flows .bg-dark-2 i,
+#section-weather-extras i {
+  transform: scale(1.08);
+  transform-origin: center;
 }
 
 @media (max-width: 767px) {
