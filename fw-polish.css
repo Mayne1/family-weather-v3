@@ -1,0 +1,136 @@
+/* Family Weather Polish overrides (additive only) */
+
+/* Daily soft overlay */
+#fw-day-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  background: var(--fw-day-overlay, rgba(120, 160, 255, 0.08));
+  mix-blend-mode: screen;
+}
+
+#fw-day-overlay::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(1200px 700px at 10% -10%, rgba(255, 255, 255, 0.16), transparent 60%);
+}
+
+/* Keep content above overlay */
+#wrapper,
+header,
+section,
+footer {
+  position: relative;
+  z-index: 2;
+}
+
+/* Option A: standalone hourly card near weather area */
+.fw-hourly-card {
+  border-radius: 12px;
+}
+
+.fw-hourly-row {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding: 4px 0 2px;
+}
+
+.fw-hourly-tile {
+  min-width: 88px;
+  flex: 0 0 auto;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 12px;
+  padding: 10px 8px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.fw-hourly-time {
+  font-size: 12px;
+  opacity: 0.88;
+}
+
+.fw-hourly-icon img {
+  width: 22px;
+  height: 22px;
+}
+
+.fw-hourly-temp {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+/* Use only new hourly card: hide old inline hourly in Right Now */
+#fw-rightnow .rn-hourly-block {
+  display: none;
+}
+
+/* Diorama polish */
+#fw-rightnow .rn-scene {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.22);
+}
+
+#fw-rightnow .rn-scene.fw-scene-upgraded::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.14), transparent 48%);
+  pointer-events: none;
+}
+
+/* Fab Five vertical list */
+#fw-forecast .fw-favorites-strip.fw-fab5-vertical {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  overflow: visible;
+}
+
+.fw-fab5-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto auto;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 8px 10px;
+  color: #fff;
+  text-align: left;
+}
+
+.fw-fab5-row:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.fw-fab5-label {
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fw-fab5-temp {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.fw-fab5-updated {
+  font-size: 10px;
+  opacity: 0.72;
+}
+
+@media (max-width: 767px) {
+  .fw-fab5-row {
+    grid-template-columns: 1fr auto auto;
+  }
+
+  .fw-fab5-updated {
+    display: none;
+  }
+}
