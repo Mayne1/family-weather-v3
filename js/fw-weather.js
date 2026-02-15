@@ -1,7 +1,10 @@
 (function () {
     const CACHE_KEY = "fw_weather_cache";
     const LOC_KEY = "fw_weather_loc";
+    const FAVORITES_KEY = "fw_favorites_v1";
+    const FAVORITES_CACHE_KEY = "fw_fav_cache_v1";
     const CACHE_TTL_MS = 10 * 60 * 1000;
+    const FAVORITES_CACHE_TTL_MS = 10 * 60 * 1000;
     const FALLBACK_LOC = { lat: 37.9577, lon: -121.2908, label: "Stockton, CA" };
     const ICON_FALLBACK = "images/fw-icons/cloudy.svg";
 
@@ -309,7 +312,156 @@
         target.innerHTML = `
             <div class="subtitle">10-Day</div>
             <div class="d-flex gap-3 overflow-auto">${tiles}</div>
+            <div class="fw-favorites-wrap mt-4">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <div class="subtitle mb-0">Favorites (Top 5)</div>
+                    <a href="settings.html#favorites" class="small">Manage</a>
+                </div>
+                <div id="fw-favorites-strip" class="fw-favorites-strip">
+                    <div class="small text-muted">No favorites saved. Use Manage to add up to 5.</div>
+                </div>
+            </div>
         `;
+    }
+
+    function loadFavorites() {
+        try {
+            const raw = localStorage.getItem(FAVORITES_KEY);
+            const parsed = raw ? JSON.parse(raw) : [];
+            if (!Array.isArray(parsed)) return [];
+            return parsed
+                .map((row) => {
+                    const lat = Number(row && row.lat);
+                    const lon = Number(row && row.lon);
+                    return {
+                        id: String((row && row.id) || ""),
+                        label: String((row && row.label) || (row && row.query) || "").trim(),
+                        query: String((row && row.query) || "").trim(),
+                        lat: Number.isFinite(lat) ? lat : null,
+                        lon: Number.isFinite(lon) ? lon : null,
+                        updatedAt: Number(row && row.updatedAt) || 0
+                    };
+                })
+                .filter((row) => row.label && Number.isFinite(row.lat) && Number.isFinite(row.lon))
+                .slice(0, 5);
+        } catch (_err) {
+            return [];
+        }
+    }
+
+    function loadFavoritesCache() {
+        try {
+            const raw = localStorage.getItem(FAVORITES_CACHE_KEY);
+            const parsed = raw ? JSON.parse(raw) : {};
+            return parsed && typeof parsed === "object" ? parsed : {};
+        } catch (_err) {
+            return {};
+        }
+    }
+
+    function saveFavoritesCache(cache) {
+        localStorage.setItem(FAVORITES_CACHE_KEY, JSON.stringify(cache || {}));
+    }
+
+    async function fetchFavoriteCurrent(favorite) {
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${favorite.lat}&longitude=${favorite.lon}&current=temperature_2m,weather_code&temperature_unit=fahrenheit&timezone=auto`;
+        const res = await fetch(url);
+        if (!res.ok) throw new Error("favorite_weather_failed");
+        const json = await res.json();
+        if (!json || !json.current) throw new Error("favorite_weather_missing");
+        return {
+            temp: Math.round(json.current.temperature_2m),
+            code: json.current.weather_code,
+            ts: Date.now()
+        };
+    }
+
+    async function mapLimit(items, limit, iterator) {
+        const results = new Array(items.length);
+        let index = 0;
+        async function worker() {
+            while (index < items.length) {
+                const current = index;
+                index += 1;
+                results[current] = await iterator(items[current], current);
+            }
+        }
+        const workers = Array.from({ length: Math.max(1, Math.min(limit, items.length)) }).map(() => worker());
+        await Promise.all(workers);
+        return results;
+    }
+
+    function isRecentFavorite(favorite, activeLocation) {
+        if (favorite && favorite.updatedAt && Date.now() - favorite.updatedAt < 24 * 60 * 60 * 1000) return true;
+        if (!activeLocation || !Number.isFinite(activeLocation.lat) || !Number.isFinite(activeLocation.lon)) return false;
+        const latDiff = Math.abs(favorite.lat - activeLocation.lat);
+        const lonDiff = Math.abs(favorite.lon - activeLocation.lon);
+        return latDiff < 0.05 && lonDiff < 0.05;
+    }
+
+    async function renderFavoritesStrip(activeLocation) {
+        const host = document.getElementById("fw-favorites-strip");
+        if (!host) return;
+        const favorites = loadFavorites();
+        if (!favorites.length) {
+            host.innerHTML = '<div class="small text-muted">No favorites saved. Use Manage to add up to 5.</div>';
+            return;
+        }
+
+        const cache = loadFavoritesCache();
+        const now = Date.now();
+        const weatherRows = await mapLimit(favorites, 2, async (favorite) => {
+            const key = favorite.id || `${favorite.lat},${favorite.lon}`;
+            const cached = cache[key];
+            if (cached && cached.ts && now - cached.ts < FAVORITES_CACHE_TTL_MS) {
+                return { ...favorite, weather: cached };
+            }
+            try {
+                const weather = await fetchFavoriteCurrent(favorite);
+                cache[key] = weather;
+                return { ...favorite, weather };
+            } catch (_err) {
+                return { ...favorite, weather: null };
+            }
+        });
+        saveFavoritesCache(cache);
+
+        host.innerHTML = weatherRows.map((row) => {
+            const code = row.weather && row.weather.code != null ? row.weather.code : 3;
+            const temp = row.weather && row.weather.temp != null ? `${row.weather.temp}&deg;F` : "--";
+            const recent = isRecentFavorite(row, activeLocation);
+            return `
+                <button type="button" class="fw-fav-pill" data-fav-id="${row.id}" aria-label="Switch to ${row.label}">
+                    <span class="fw-fav-label">${row.label}</span>
+                    <span class="fw-fav-icon">${iconImg(code, "w-24px")}</span>
+                    <span class="fw-fav-temp">${temp}</span>
+                    ${recent ? '<span class="fw-fav-recent">RECENT</span>' : ""}
+                </button>
+            `;
+        }).join("");
+
+        host.querySelectorAll(".fw-fav-pill").forEach((btn) => {
+            btn.addEventListener("click", async () => {
+                const favId = btn.getAttribute("data-fav-id");
+                const match = favorites.find((row) => row.id === favId);
+                if (!match) return;
+                const nextLoc = { lat: match.lat, lon: match.lon, label: match.label };
+                localStorage.setItem(LOC_KEY, JSON.stringify(nextLoc));
+                localStorage.removeItem(CACHE_KEY);
+                try {
+                    const [weather, aqi] = await Promise.all([
+                        fetchWeather(nextLoc),
+                        fetchAqi(nextLoc).catch(() => null)
+                    ]);
+                    const payload = { timestamp: Date.now(), location: nextLoc, weather, aqi };
+                    saveCache(payload);
+                    renderAll(payload);
+                    renderFavoritesStrip(nextLoc).catch(() => {});
+                } catch (_err) {
+                    location.reload();
+                }
+            });
+        });
     }
 
     function renderHeadsUp(payload) {
@@ -444,6 +596,7 @@
         const forecast = document.getElementById("fw-forecast");
         renderRightNow(rightNow, payload);
         renderForecast(forecast, payload);
+        renderFavoritesStrip(payload.location).catch(() => {});
         renderHeadsUp(payload);
         initAlmanac(payload);
     }
@@ -545,6 +698,17 @@
     }
 
     if (document.getElementById("fw-rightnow") && document.getElementById("fw-forecast")) {
+        window.addEventListener("storage", (evt) => {
+            if (!evt || evt.key !== FAVORITES_KEY) return;
+            const cached = loadCache();
+            const active = cached && cached.location ? cached.location : null;
+            renderFavoritesStrip(active).catch(() => {});
+        });
+        window.addEventListener("fw:favorites", () => {
+            const cached = loadCache();
+            const active = cached && cached.location ? cached.location : null;
+            renderFavoritesStrip(active).catch(() => {});
+        });
         init();
     }
 })();
