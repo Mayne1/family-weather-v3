@@ -20,7 +20,7 @@
   content: "";
   position: absolute;
   inset: 0;
-  background: radial-gradient(1200px 700px at 10% -10%, rgba(255, 255, 255, 0.025), transparent 60%);
+  background: radial-gradient(1200px 700px at 10% -10%, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.06) 38%, transparent 68%);
 }
 
 @supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
