@@ -265,9 +265,18 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         if (!successResponse) throw new Error(lastError);
+        const sentCount = Number(successResponse?.sent ?? outbound.length);
+        const failedCount = Number(successResponse?.failed ?? 0);
+        if (failedCount > 0 || sentCount === 0) {
+          const failedRows = Array.isArray(successResponse?.results)
+            ? successResponse.results.filter((row) => !row?.ok)
+            : [];
+          const firstErr = failedRows[0]?.error || "send_failed";
+          throw new Error(`SMS not delivered (${sentCount} sent, ${failedCount} failed): ${firstErr}`);
+        }
         if (statusEl) {
           statusEl.className = "mt-3 text-success";
-          statusEl.textContent = `Sent ${outbound.length} SMS invite(s).`;
+          statusEl.textContent = `Sent ${sentCount} SMS invite(s).`;
         }
       } catch (err) {
         if (statusEl) {
