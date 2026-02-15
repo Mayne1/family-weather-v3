@@ -137,9 +137,14 @@ footer {
   margin-bottom: 4px;
 }
 
-/* Accent color across forecast + hero style boxes */
+/* Accent color across weather cards + hero style boxes */
+#fw-rightnow .subtitle,
+#fw-rightnow .small,
 #fw-forecast .subtitle,
 #fw-forecast .small,
+#fw-hourly-polish .subtitle,
+#fw-hourly-polish .fw-hourly-time,
+#fw-hourly-polish .fw-hourly-temp,
 #section-weather-extras .subtitle,
 #section-weather-extras .small,
 #section-flows .bg-dark-2 h3,
@@ -149,7 +154,9 @@ footer {
 }
 
 /* Icons in forecast and hero boxes */
+#fw-rightnow .fw-rightnow-icon img,
 #fw-forecast .fw-forecast-icon img,
+#fw-hourly-polish .fw-hourly-icon img,
 #section-weather-extras img,
 #section-flows .bg-dark-2 img,
 #section-flows .bg-dark-2 i,
