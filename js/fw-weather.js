@@ -144,7 +144,7 @@
         return Number.isFinite(n) ? n : 0;
     }
 
-    function getCurrentDisplayCode(current) {
+    function getCurrentDisplayCode(current, weather) {
         const baseCode = Number(current && current.weather_code);
         const precipitation = normalizeNumber(current && current.precipitation);
         const rain = normalizeNumber(current && current.rain) + normalizeNumber(current && current.showers);
@@ -154,6 +154,45 @@
         if (rain >= 0.01 || precipitation >= 0.05) {
             if (baseCode >= 95) return baseCode;
             return 61;
+        }
+
+        // Fallback: if current snapshot lags, infer from nearby hourly nowcast.
+        if (weather && weather.hourly && Array.isArray(weather.hourly.time)) {
+            const times = weather.hourly.time;
+            const probs = Array.isArray(weather.hourly.precipitation_probability) ? weather.hourly.precipitation_probability : [];
+            const hourlyCodes = Array.isArray(weather.hourly.weather_code) ? weather.hourly.weather_code : [];
+            const currentTime = String(current && current.time || "");
+            let idx = times.indexOf(currentTime);
+            if (idx < 0 && currentTime) {
+                const nowMs = Date.parse(currentTime);
+                if (Number.isFinite(nowMs)) {
+                    let bestDelta = Number.POSITIVE_INFINITY;
+                    for (let i = 0; i < times.length; i += 1) {
+                        const t = Date.parse(times[i]);
+                        if (!Number.isFinite(t)) continue;
+                        const delta = Math.abs(t - nowMs);
+                        if (delta < bestDelta) {
+                            bestDelta = delta;
+                            idx = i;
+                        }
+                    }
+                }
+            }
+            if (idx >= 0) {
+                const prevCode = Number(hourlyCodes[idx - 1]);
+                const nowCode = Number(hourlyCodes[idx]);
+                const nextCode = Number(hourlyCodes[idx + 1]);
+                const nowProb = normalizeNumber(probs[idx]);
+                const nextProb = normalizeNumber(probs[idx + 1]);
+
+                const hasNearbyRainCode =
+                    (prevCode >= 51 && prevCode <= 82) ||
+                    (nowCode >= 51 && nowCode <= 82) ||
+                    (nextCode >= 51 && nextCode <= 82);
+
+                if (hasNearbyRainCode && (nowProb >= 45 || nextProb >= 55)) return 61;
+                if ((nowProb >= 70 || nextProb >= 75) && (baseCode === 1 || baseCode === 2 || baseCode === 3)) return 61;
+            }
         }
         return Number.isFinite(baseCode) ? baseCode : 3;
     }
@@ -241,7 +280,7 @@
         const wind = Math.round(current.wind_speed_10m);
         const windDir = toCardinal(current.wind_direction_10m);
         const precipChance = getPrecipChance(payload.weather);
-        const displayCode = getCurrentDisplayCode(current);
+        const displayCode = getCurrentDisplayCode(current, payload.weather);
         const label = labelFromCode(displayCode);
         const updated = formatTime(new Date(current.time || payload.timestamp));
         const aqi = payload.aqi != null ? payload.aqi : "-";
@@ -622,7 +661,7 @@
     }
 
     async function fetchWeather(location) {
-        const url = `https://api.open-meteo.com/v1/forecast?latitude=${location.lat}&longitude=${location.lon}&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m,wind_direction_10m,precipitation,rain,showers,snowfall&hourly=precipitation_probability&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_speed_10m_max&forecast_days=10&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=auto`;
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${location.lat}&longitude=${location.lon}&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m,wind_direction_10m,precipitation,rain,showers,snowfall&hourly=precipitation_probability,weather_code,precipitation,rain,showers,snowfall&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_speed_10m_max&forecast_days=10&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=auto`;
         const res = await fetch(url);
         if (!res.ok) throw new Error("weather fetch failed");
         return res.json();
@@ -704,7 +743,12 @@
                     },
                     hourly: {
                         time: fallbackDays,
-                        precipitation_probability: fallbackDays.map(() => 10)
+                        precipitation_probability: fallbackDays.map(() => 10),
+                        weather_code: fallbackDays.map(() => 3),
+                        precipitation: fallbackDays.map(() => 0),
+                        rain: fallbackDays.map(() => 0),
+                        showers: fallbackDays.map(() => 0),
+                        snowfall: fallbackDays.map(() => 0)
                     },
                     daily: {
                         time: fallbackDays,
