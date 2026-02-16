@@ -1,6 +1,6 @@
-export const firebaseConfig = {
-    apiKey: "REPLACE_ME",
-    authDomain: "REPLACE_ME",
-    projectId: "REPLACE_ME",
-    appId: "REPLACE_ME"
-};
+const runtimeConfig =
+  typeof window !== "undefined" && window.firebaseConfig && typeof window.firebaseConfig === "object"
+    ? window.firebaseConfig
+    : {};
+
+export const firebaseConfig = runtimeConfig;
