@@ -3,7 +3,7 @@
     const LOC_KEY = "fw_weather_loc";
     const FAVORITES_KEY = "fw_favorites_v1";
     const FAVORITES_CACHE_KEY = "fw_fav_cache_v1";
-    const CACHE_TTL_MS = 10 * 60 * 1000;
+    const CACHE_TTL_MS = 3 * 60 * 1000;
     const FAVORITES_CACHE_TTL_MS = 10 * 60 * 1000;
     const FALLBACK_LOC = { lat: 37.9577, lon: -121.2908, label: "Stockton, CA" };
     const ICON_FALLBACK = "images/fw-icons/cloudy.svg";
@@ -139,6 +139,25 @@
         return CANONICAL.CLOUDY;
     }
 
+    function normalizeNumber(value) {
+        const n = Number(value);
+        return Number.isFinite(n) ? n : 0;
+    }
+
+    function getCurrentDisplayCode(current) {
+        const baseCode = Number(current && current.weather_code);
+        const precipitation = normalizeNumber(current && current.precipitation);
+        const rain = normalizeNumber(current && current.rain) + normalizeNumber(current && current.showers);
+        const snowfall = normalizeNumber(current && current.snowfall);
+
+        if (snowfall >= 0.01) return 71;
+        if (rain >= 0.01 || precipitation >= 0.05) {
+            if (baseCode >= 95) return baseCode;
+            return 61;
+        }
+        return Number.isFinite(baseCode) ? baseCode : 3;
+    }
+
     function resolveWxIconPath(weatherCode, isNight = false) {
         const type = canonicalFromCode(weatherCode);
         const mgc = MGC_MAP[type];
@@ -222,7 +241,8 @@
         const wind = Math.round(current.wind_speed_10m);
         const windDir = toCardinal(current.wind_direction_10m);
         const precipChance = getPrecipChance(payload.weather);
-        const label = labelFromCode(current.weather_code);
+        const displayCode = getCurrentDisplayCode(current);
+        const label = labelFromCode(displayCode);
         const updated = formatTime(new Date(current.time || payload.timestamp));
         const aqi = payload.aqi != null ? payload.aqi : "-";
 
@@ -234,7 +254,7 @@
                     <div class="small text-muted">Updated: ${updated}</div>
 
                     <div class="d-flex align-items-center gap-3 my-3 fw-rightnow-main">
-                        <div class="fw-rightnow-icon">${iconImg(current.weather_code, "w-50px")}</div>
+                        <div class="fw-rightnow-icon">${iconImg(displayCode, "w-50px")}</div>
                         <div>
                             <div class="fs-60 lh-1 fw-temp">${temp}&deg;F</div>
                             <div class="small">${label}</div>
@@ -602,7 +622,7 @@
     }
 
     async function fetchWeather(location) {
-        const url = `https://api.open-meteo.com/v1/forecast?latitude=${location.lat}&longitude=${location.lon}&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m,wind_direction_10m&hourly=precipitation_probability&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_speed_10m_max&forecast_days=10&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=auto`;
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${location.lat}&longitude=${location.lon}&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m,wind_direction_10m,precipitation,rain,showers,snowfall&hourly=precipitation_probability&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_speed_10m_max&forecast_days=10&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=auto`;
         const res = await fetch(url);
         if (!res.ok) throw new Error("weather fetch failed");
         return res.json();
@@ -676,6 +696,10 @@
                         weather_code: 3,
                         wind_speed_10m: 5,
                         wind_direction_10m: 180,
+                        precipitation: 0,
+                        rain: 0,
+                        showers: 0,
+                        snowfall: 0,
                         time: new Date().toISOString()
                     },
                     hourly: {

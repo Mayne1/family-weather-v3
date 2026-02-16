@@ -30,7 +30,15 @@
       const cacheRaw = localStorage.getItem(CACHE_KEY);
       if (!cacheRaw) return null;
       const cache = JSON.parse(cacheRaw);
-      return cache && cache.weather && cache.weather.current ? cache.weather.current.weather_code : null;
+      const current = cache && cache.weather && cache.weather.current ? cache.weather.current : null;
+      if (!current) return null;
+      const base = Number(current.weather_code);
+      const precipitation = Number(current.precipitation);
+      const rain = Number(current.rain) + Number(current.showers);
+      const snowfall = Number(current.snowfall);
+      if (Number.isFinite(snowfall) && snowfall >= 0.01) return 71;
+      if ((Number.isFinite(rain) && rain >= 0.01) || (Number.isFinite(precipitation) && precipitation >= 0.05)) return 61;
+      return Number.isFinite(base) ? base : null;
     } catch (_err) {
       return null;
     }
