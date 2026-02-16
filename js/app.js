@@ -146,9 +146,14 @@
         text = localStorage.getItem("fw_global_font_color") || localStorage.getItem("fw_font_color") || "";
       }
 
-      if (hero) root.style.setProperty("--fw-hero-bg", hero);
+      const heroColor = hero || "#1b2942";
+      root.style.setProperty("--fw-hero-bg", heroColor);
+      root.style.setProperty("--fw-hero-box-color", heroColor);
       if (overlay) root.style.setProperty("--fw-overlay", overlay);
-      if (text) root.style.setProperty("--fw-hero-text", text);
+      if (text) {
+        root.style.setProperty("--fw-hero-text", text);
+        root.style.setProperty("--fw-font-color", text);
+      }
     } catch (_err) {
       // ignore
     }

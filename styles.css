@@ -320,3 +320,37 @@
     min-height: 190px;
   }
 }
+
+/* Global hero/title overrides */
+:root {
+  --fw-hero-bg: #1b2942;
+  --fw-hero-border: rgba(255, 255, 255, 0.16);
+}
+
+/* Remove decorative [brackets] injected by template pseudo-elements */
+.section-title::before,
+.section-title::after,
+.box-title::before,
+.box-title::after,
+.subtitle::before,
+.subtitle::after,
+h1::before,
+h1::after,
+h2::before,
+h2::after,
+h3::before,
+h3::after {
+  content: none !important;
+}
+
+/* Hero cards/panels on homepage follow Settings -> Hero Box Color */
+#fw-rightnow,
+#fw-forecast,
+#section-weather .bg-dark-2,
+#section-weather-extras .bg-dark-2,
+#fw-hourly-row .hour-chip,
+#fw-favorites-strip .fw-fav-pill,
+#fw-forecast .fw-forecast-tile {
+  background: var(--fw-hero-bg, #1b2942) !important;
+  border-color: var(--fw-hero-border, rgba(255, 255, 255, 0.16)) !important;
+}
