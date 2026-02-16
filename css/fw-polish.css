@@ -1,0 +1,38 @@
+/* Luxury override layer */
+
+h1::before, h1::after,
+h2::before, h2::after,
+h3::before, h3::after,
+.section-title::before,
+.section-title::after {
+    content: "" !important;
+}
+
+.card,
+.panel,
+.box,
+.widget,
+.forecast-card,
+.right-now,
+.ten-day,
+.favorites,
+.hourly {
+    background: rgba(255,255,255,0.06) !important;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.15);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.25);
+}
+
+.section-title,
+.card-title,
+h1, h2, h3 {
+    letter-spacing: 0.5px;
+    font-weight: 600;
+}
+
+.card:hover,
+.panel:hover,
+.widget:hover {
+    transform: translateY(-2px);
+    transition: 0.2s ease;
+}
