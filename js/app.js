@@ -118,6 +118,42 @@
     return "rn-scene--cloudy";
   }
 
+  function FW_applyThemeVars() {
+    try {
+      const root = document.documentElement;
+      if (!root) return;
+
+      let hero = "";
+      let text = "";
+      let overlay = "";
+
+      const rawSettings = localStorage.getItem("fw_settings");
+      if (rawSettings) {
+        const settings = JSON.parse(rawSettings);
+        if (settings && typeof settings === "object") {
+          hero = String(settings.heroBoxColor || "").trim();
+          text = String(settings.fontColor || "").trim();
+        }
+      }
+
+      if (!hero) {
+        hero = localStorage.getItem("fw_hero_box_color") || localStorage.getItem("fw_hero_bg") || "";
+      }
+      if (!overlay) {
+        overlay = localStorage.getItem("fw_overlay") || "";
+      }
+      if (!text) {
+        text = localStorage.getItem("fw_global_font_color") || localStorage.getItem("fw_font_color") || "";
+      }
+
+      if (hero) root.style.setProperty("--fw-hero-bg", hero);
+      if (overlay) root.style.setProperty("--fw-overlay", overlay);
+      if (text) root.style.setProperty("--fw-hero-text", text);
+    } catch (_err) {
+      // ignore
+    }
+  }
+
   function setRightNowScene(wxCodeOrCondition) {
     const scene = document.querySelector("#fw-rightnow .rn-scene");
     if (!scene) return;
@@ -191,5 +227,10 @@
     });
   }
 
-  document.addEventListener("DOMContentLoaded", initHourlyAndScene);
+  document.addEventListener("DOMContentLoaded", function () {
+    FW_applyThemeVars();
+    initHourlyAndScene();
+  });
+
+  window.addEventListener("storage", FW_applyThemeVars);
 })();
