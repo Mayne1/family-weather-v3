@@ -149,6 +149,7 @@
       const heroColor = hero || "#1b2942";
       root.style.setProperty("--fw-hero-bg", heroColor);
       root.style.setProperty("--fw-hero-box-color", heroColor);
+      root.style.setProperty("--fw-card-bg", heroColor);
       if (overlay) root.style.setProperty("--fw-overlay", overlay);
       if (text) {
         root.style.setProperty("--fw-hero-text", text);

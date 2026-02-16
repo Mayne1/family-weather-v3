@@ -117,6 +117,7 @@
         root.style.setProperty("--fw-font-color", fontColor);
         const heroBoxColor = normalizeHexColor(settings.heroBoxColor) || defaults.heroBoxColor;
         root.style.setProperty("--fw-hero-box-color", heroBoxColor);
+        root.style.setProperty("--fw-card-bg", heroBoxColor);
 
         const wrapper = document.getElementById("wrapper");
         const bgVideo = document.getElementById("fw-bg-video");

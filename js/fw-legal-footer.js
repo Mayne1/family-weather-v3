@@ -13,6 +13,12 @@
       overlay.href = "overlay-override.css";
       head.appendChild(overlay);
     }
+    if (head && !document.querySelector('link[href="fw-overrides.css"]')) {
+      var fwOverrides = document.createElement("link");
+      fwOverrides.rel = "stylesheet";
+      fwOverrides.href = "fw-overrides.css";
+      head.appendChild(fwOverrides);
+    }
     if (head && !document.querySelector('link[href^="fw-override.css"]')) {
       var override = document.createElement("link");
       override.rel = "stylesheet";
