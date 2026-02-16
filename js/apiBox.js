@@ -84,7 +84,38 @@
     return fallback || [];
   }
 
+  async function getSettings(ownerEmail) {
+    const owner = String(ownerEmail || "").trim().toLowerCase();
+    if (!owner) throw new Error("owner_email_required");
+    const res = await fetch("/api/settings/me?owner_email=" + encodeURIComponent(owner));
+    if (!res.ok) throw new Error("settings_fetch_failed");
+    const json = await res.json();
+    if (json && typeof json === "object" && json.settings && typeof json.settings === "object") {
+      return json.settings;
+    }
+    if (json && typeof json === "object") return json;
+    return {};
+  }
+
+  async function saveSettings(ownerEmail, settings) {
+    const owner = String(ownerEmail || "").trim().toLowerCase();
+    if (!owner) throw new Error("owner_email_required");
+    const payload = {
+      owner_email: owner,
+      settings: settings && typeof settings === "object" ? settings : {}
+    };
+    const res = await fetch("/api/settings/me", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) throw new Error("settings_save_failed");
+    return res.json();
+  }
+
   window.apiBox = {
-    getHourlyForecast: getHourlyForecast
+    getHourlyForecast: getHourlyForecast,
+    getSettings: getSettings,
+    saveSettings: saveSettings
   };
 })();

@@ -74,27 +74,45 @@ function createSignInButton() {
     return link;
 }
 
+function createSignOutButton() {
+    const button = document.createElement("a");
+    button.href = "#";
+    button.className = "btn-main btn-line fx-slide nav-cta";
+    button.innerHTML = "<span><i class=\"fa fa-sign-out me-2\"></i>Sign Out</span>";
+    button.addEventListener("click", async (event) => {
+        event.preventDefault();
+        try {
+            await signOutUser();
+            window.location.href = "index.html";
+        } catch (err) {
+            console.error(err);
+        }
+    });
+    return button;
+}
+
 function renderAuthItems(menu, user) {
     clearAuthItems(menu);
     clearAccountSlot();
     const slot = getAccountSlot();
 
     if (user && user.email) {
-        const logout = createAuthNavItem("Sign Out", "#", "fa fa-sign-out");
-        logout.link.addEventListener("click", async (event) => {
-            event.preventDefault();
-            try {
-                await signOutUser();
-                window.location.href = "index.html";
-            } catch (err) {
-                console.error(err);
-            }
-        });
-        menu.appendChild(logout.li);
         if (slot) {
+            slot.appendChild(createSignOutButton());
             slot.appendChild(createAccountButton(user));
         } else {
             menu.appendChild(createAuthIdentityItem(user));
+            const logout = createAuthNavItem("Sign Out", "#", "fa fa-sign-out");
+            logout.link.addEventListener("click", async (event) => {
+                event.preventDefault();
+                try {
+                    await signOutUser();
+                    window.location.href = "index.html";
+                } catch (err) {
+                    console.error(err);
+                }
+            });
+            menu.appendChild(logout.li);
         }
         return;
     }

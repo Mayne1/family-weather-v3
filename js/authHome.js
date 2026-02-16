@@ -6,15 +6,15 @@ function updateAuthState(user) {
     if (!label || !action) return;
 
     if (user && user.email) {
-        label.textContent = `Signed in as ${user.email}`;
-        action.textContent = "My Profile";
+        label.innerHTML = `<span class="fw-auth-prefix">Signed in as:</span> <span class="fw-auth-email">${user.email}</span><span class="fw-auth-short">Signed in</span>`;
+        action.textContent = "Profile";
         action.href = "profile.html";
         return;
     }
 
     label.textContent = "You are not signed in.";
     action.textContent = "Sign In";
-        action.href = "auth.html";
+    action.href = "auth.html";
 }
 
 document.addEventListener("DOMContentLoaded", () => {

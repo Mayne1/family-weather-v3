@@ -59,6 +59,45 @@
         localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
     }
 
+    function getOwnerEmail() {
+        try {
+            const raw = localStorage.getItem("fw_auth_user");
+            const user = raw ? JSON.parse(raw) : null;
+            return user && user.email ? String(user.email).trim().toLowerCase() : "";
+        } catch (_err) {
+            return "";
+        }
+    }
+
+    async function syncSettingsFromServer() {
+        const ownerEmail = getOwnerEmail();
+        if (!ownerEmail || !window.apiBox || typeof window.apiBox.getSettings !== "function") return null;
+        try {
+            const remote = await window.apiBox.getSettings(ownerEmail);
+            if (remote && typeof remote === "object") {
+                const merged = {
+                    ...defaults,
+                    ...safeParse(JSON.stringify(remote))
+                };
+                saveSettings(merged);
+                return merged;
+            }
+        } catch (_err) {
+            // keep local fallback
+        }
+        return null;
+    }
+
+    async function persistSettingsToServer(settings) {
+        const ownerEmail = getOwnerEmail();
+        if (!ownerEmail || !window.apiBox || typeof window.apiBox.saveSettings !== "function") return;
+        try {
+            await window.apiBox.saveSettings(ownerEmail, settings);
+        } catch (_err) {
+            // keep local fallback
+        }
+    }
+
     function applySettings(settings) {
         const body = document.body;
         const root = document.documentElement;
@@ -185,6 +224,7 @@
             if (heroBoxColorHexInput) heroBoxColorHexInput.value = next.heroBoxColor;
             saveSettings(next);
             applySettings(next);
+            persistSettingsToServer(next);
         }
 
         form.addEventListener("change", () => {
@@ -255,6 +295,7 @@
             resetBtn.addEventListener("click", () => {
                 saveSettings({ ...defaults });
                 applySettings({ ...defaults });
+                persistSettingsToServer({ ...defaults });
                 if (themeLight && themeDark) {
                     themeDark.checked = true;
                 }
@@ -487,7 +528,11 @@
 
     const settings = loadSettings();
     applySettings(settings);
-    document.addEventListener("DOMContentLoaded", () => {
+    document.addEventListener("DOMContentLoaded", async () => {
+        const remote = await syncSettingsFromServer();
+        if (remote) {
+            applySettings(remote);
+        }
         ensureNavLinks();
         initControls(loadSettings());
         initFavoritesManager();
