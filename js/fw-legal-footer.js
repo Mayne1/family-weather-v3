@@ -7,6 +7,12 @@
       link.href = "fw-polish.css";
       head.appendChild(link);
     }
+    if (head && !document.querySelector('link[href="overlay-override.css"]')) {
+      var overlay = document.createElement("link");
+      overlay.rel = "stylesheet";
+      overlay.href = "overlay-override.css";
+      head.appendChild(overlay);
+    }
     if (!document.querySelector('script[src="fw-polish.js"]')) {
       var script = document.createElement("script");
       script.src = "fw-polish.js";
