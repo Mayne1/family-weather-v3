@@ -1,5 +1,18 @@
 (function () {
   var SETTINGS_KEY = "fw_settings";
+  var FONT_STACKS = {
+    system: 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif',
+    serif: 'Georgia, "Times New Roman", serif',
+    mono: '"SFMono-Regular", Menlo, Consolas, monospace',
+    inter: '"Inter", system-ui, sans-serif',
+    poppins: '"Poppins", system-ui, sans-serif',
+    montserrat: '"Montserrat", system-ui, sans-serif',
+    nunito: '"Nunito", system-ui, sans-serif',
+    "source-sans-3": '"Source Sans 3", system-ui, sans-serif',
+    "ibm-plex-sans": '"IBM Plex Sans", system-ui, sans-serif',
+    "roboto-slab": '"Roboto Slab", Georgia, serif',
+    "playfair-display": '"Playfair Display", Georgia, serif'
+  };
 
   function normalizeHexColor(value) {
     var raw = String(value || "").trim();
@@ -54,6 +67,9 @@
     if (settings.font) {
       body.classList.remove("fw-font-system", "fw-font-serif", "fw-font-mono");
       body.classList.add("fw-font-" + settings.font);
+      var stack = FONT_STACKS[settings.font] || FONT_STACKS.inter;
+      root.style.setProperty("--fw-font", stack);
+      root.style.setProperty("--fw-font-heading", stack);
     }
 
     var uiColor = normalizeHexColor(settings.uiColor);
@@ -69,6 +85,7 @@
     if (heroBoxColor) {
       root.style.setProperty("--fw-hero-box-color", heroBoxColor);
       root.style.setProperty("--fw-hero-bg", heroBoxColor);
+      root.style.setProperty("--fw-card-bg", heroBoxColor);
     }
   }
 

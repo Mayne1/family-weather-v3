@@ -6,11 +6,24 @@
         theme: "dark",
         scheme: "scheme-01",
         background: "default",
-        font: "system",
+        font: "inter",
         backgroundColor: "",
         uiColor: "#9fd0ff",
         fontColor: "#e8f3ff",
         heroBoxColor: "#1b2942"
+    };
+    const FONT_STACKS = {
+        system: 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif',
+        serif: 'Georgia, "Times New Roman", serif',
+        mono: '"SFMono-Regular", Menlo, Consolas, monospace',
+        inter: '"Inter", system-ui, sans-serif',
+        poppins: '"Poppins", system-ui, sans-serif',
+        montserrat: '"Montserrat", system-ui, sans-serif',
+        nunito: '"Nunito", system-ui, sans-serif',
+        "source-sans-3": '"Source Sans 3", system-ui, sans-serif',
+        "ibm-plex-sans": '"IBM Plex Sans", system-ui, sans-serif',
+        "roboto-slab": '"Roboto Slab", Georgia, serif',
+        "playfair-display": '"Playfair Display", Georgia, serif'
     };
 
     function normalizeHexColor(value) {
@@ -28,6 +41,78 @@
         const g = parseInt(value.slice(2, 4), 16);
         const b = parseInt(value.slice(4, 6), 16);
         return `${r}, ${g}, ${b}`;
+    }
+
+    function hexToRgb(hex) {
+        const clean = normalizeHexColor(hex);
+        if (!clean) return null;
+        const value = clean.replace("#", "");
+        return {
+            r: parseInt(value.slice(0, 2), 16),
+            g: parseInt(value.slice(2, 4), 16),
+            b: parseInt(value.slice(4, 6), 16)
+        };
+    }
+
+    function relativeLuminance(rgb) {
+        const channels = [rgb.r, rgb.g, rgb.b].map((channel) => {
+            const value = channel / 255;
+            return value <= 0.03928 ? value / 12.92 : Math.pow((value + 0.055) / 1.055, 2.4);
+        });
+        return (0.2126 * channels[0]) + (0.7152 * channels[1]) + (0.0722 * channels[2]);
+    }
+
+    function contrastRatio(foregroundHex, backgroundHex) {
+        const fg = hexToRgb(foregroundHex);
+        const bg = hexToRgb(backgroundHex);
+        if (!fg || !bg) return 21;
+        const l1 = relativeLuminance(fg);
+        const l2 = relativeLuminance(bg);
+        const lighter = Math.max(l1, l2);
+        const darker = Math.min(l1, l2);
+        return (lighter + 0.05) / (darker + 0.05);
+    }
+
+    function bestTextColor(backgroundHex) {
+        const white = "#ffffff";
+        const black = "#000000";
+        return contrastRatio(white, backgroundHex) >= contrastRatio(black, backgroundHex) ? white : black;
+    }
+
+    function bestSafeTextColor(backgrounds) {
+        const bgList = (Array.isArray(backgrounds) ? backgrounds : []).map(normalizeHexColor).filter(Boolean);
+        if (!bgList.length) return "#ffffff";
+        const whiteMin = Math.min(...bgList.map((bg) => contrastRatio("#ffffff", bg)));
+        const blackMin = Math.min(...bgList.map((bg) => contrastRatio("#000000", bg)));
+        return whiteMin >= blackMin ? "#ffffff" : "#000000";
+    }
+
+    function showReadabilityNotice(message) {
+        const text = String(message || "").trim();
+        if (!text) return;
+        let toast = document.getElementById("fw-readability-toast");
+        if (!toast) {
+            toast = document.createElement("div");
+            toast.id = "fw-readability-toast";
+            toast.style.position = "fixed";
+            toast.style.right = "16px";
+            toast.style.bottom = "16px";
+            toast.style.zIndex = "99999";
+            toast.style.padding = "10px 12px";
+            toast.style.borderRadius = "10px";
+            toast.style.background = "rgba(6, 16, 35, 0.92)";
+            toast.style.border = "1px solid rgba(255,255,255,0.18)";
+            toast.style.color = "#ffffff";
+            toast.style.fontSize = "13px";
+            toast.style.boxShadow = "0 8px 24px rgba(0,0,0,0.25)";
+            document.body.appendChild(toast);
+        }
+        toast.textContent = text;
+        toast.style.opacity = "1";
+        clearTimeout(window.__fwReadabilityToastTimer);
+        window.__fwReadabilityToastTimer = setTimeout(() => {
+            toast.style.opacity = "0";
+        }, 2200);
     }
 
     function safeParse(raw) {
@@ -111,6 +196,9 @@
 
         body.classList.remove("fw-font-system", "fw-font-serif", "fw-font-mono");
         body.classList.add(`fw-font-${settings.font}`);
+        const selectedFont = FONT_STACKS[settings.font] || FONT_STACKS.inter;
+        root.style.setProperty("--fw-font", selectedFont);
+        root.style.setProperty("--fw-font-heading", selectedFont);
         const uiColor = normalizeHexColor(settings.uiColor) || defaults.uiColor;
         root.style.setProperty("--fw-ui-accent", uiColor);
         const fontColor = normalizeHexColor(settings.fontColor) || defaults.fontColor;
@@ -193,7 +281,7 @@
         }
         if (schemeSelect) schemeSelect.value = settings.scheme;
         if (bgSelect) bgSelect.value = settings.background;
-        if (fontSelect) fontSelect.value = settings.font;
+        if (fontSelect) fontSelect.value = FONT_STACKS[settings.font] ? settings.font : defaults.font;
         if (bgColorInput) bgColorInput.value = normalizeHexColor(settings.backgroundColor) || "#0b1226";
         if (bgColorHexInput) bgColorHexInput.value = normalizeHexColor(settings.backgroundColor) || "";
         if (uiColorInput) uiColorInput.value = normalizeHexColor(settings.uiColor) || defaults.uiColor;
@@ -215,6 +303,14 @@
                 fontColor: normalizeHexColor(fontColorHexInput ? fontColorHexInput.value : (fontColorInput ? fontColorInput.value : defaults.fontColor)) || defaults.fontColor,
                 heroBoxColor: normalizeHexColor(heroBoxColorHexInput ? heroBoxColorHexInput.value : (heroBoxColorInput ? heroBoxColorInput.value : defaults.heroBoxColor)) || defaults.heroBoxColor
             };
+            const backgroundForText = next.backgroundColor || "#0b1226";
+            const requiredContrast = 4.5;
+            const textVsHero = contrastRatio(next.fontColor, next.heroBoxColor);
+            const textVsPage = contrastRatio(next.fontColor, backgroundForText);
+            if (textVsHero < requiredContrast || textVsPage < requiredContrast) {
+                next.fontColor = bestSafeTextColor([next.heroBoxColor, backgroundForText]);
+                showReadabilityNotice("Adjusted for readability");
+            }
             if (bgColorInput) bgColorInput.value = bgColor || "#0b1226";
             if (bgColorHexInput) bgColorHexInput.value = bgColor;
             if (uiColorInput) uiColorInput.value = next.uiColor;
