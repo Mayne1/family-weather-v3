@@ -291,7 +291,7 @@
         else if (heavyRain) image = "url('/images/background/rain-02.png')";
         else if (rainy) image = "url('/images/background/rain-01.png')";
 
-        stage.style.setProperty("--fw-stage-bg-image", image || "none");
+        stage.style.setProperty("--fw-stage-bg", image || "none");
     }
 
     function renderRightNow(target, payload) {

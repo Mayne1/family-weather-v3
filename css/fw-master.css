@@ -346,10 +346,10 @@ body::before, #wrapper::before, .overlay, .page-overlay, .site-overlay {
   z-index: 1 !important;
 }
 
-.fw-stage {
+#fw-stage{
   position: relative;
-  background-color: transparent;
-  background-image: var(--fw-stage-bg-image, none);
+  background-color: transparent !important;
+  background-image: var(--fw-stage-bg, none);
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -357,18 +357,18 @@ body::before, #wrapper::before, .overlay, .page-overlay, .site-overlay {
   overflow: hidden;
 }
 
-.fw-stage::before {
+#fw-stage::before{
   content: "";
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: rgba(255, 255, 255, 0.10);
-  z-index: 0;
+  background: rgba(0,0,0,0.25);
+  z-index: 1;
 }
 
-.fw-stage > * {
+#fw-stage > * {
   position: relative;
-  z-index: 1;
+  z-index: 2;
 }
 
 #fw-stage > section {
