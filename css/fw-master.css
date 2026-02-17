@@ -441,3 +441,80 @@ body[data-fw-bg-active="1"] #section-hero .col-lg-12 {
   pointer-events: none;
   z-index: 0;
 }
+
+/* === FINAL OVERLAY REMOVAL (SITEWIDE) === */
+:root {
+  --fw-nav-bg: rgba(0, 0, 0, 0.72);
+  --fw-nav-text: #ffffff;
+  --fw-nav-text-muted: rgba(255, 255, 255, 0.85);
+}
+
+body::before,
+#wrapper::before,
+#content::before,
+.main::before,
+.section::before,
+.hero::before,
+.bg-dark::before,
+.bg-dark-1::before,
+.bg-dark-2::before,
+.bg-dark-3::before,
+.bg-dark::after,
+.bg-dark-1::after,
+.bg-dark-2::after,
+.bg-dark-3::after,
+.overlay,
+.site-overlay,
+.page-overlay,
+.bg-overlay,
+.sw-overlay,
+#fw-day-overlay {
+  content: none !important;
+  display: none !important;
+  opacity: 0 !important;
+  background: transparent !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+/* keep weather image visible with no extra blue wash */
+#fw-stage,
+#section-hero,
+#wrapper::after,
+#fw-bg {
+  filter: none !important;
+}
+
+header,
+.header,
+.navbar,
+nav,
+#topbar,
+.topbar {
+  background: var(--fw-nav-bg) !important;
+  color: var(--fw-nav-text) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+header a,
+.navbar a,
+nav a,
+#topbar a,
+.topbar a {
+  color: var(--fw-nav-text-muted) !important;
+}
+
+header a:hover,
+.navbar a:hover,
+nav a:hover {
+  color: var(--fw-nav-text) !important;
+}
+
+.hero h1,
+.hero h2,
+.hero p,
+.hero .lead,
+.hero .subtitle {
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.55);
+}
