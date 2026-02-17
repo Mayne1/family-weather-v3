@@ -405,6 +405,19 @@ body[data-fw-bg-active="1"] #section-hero > * {
   z-index: 2;
 }
 
+body[data-fw-bg-active="1"] #section-hero .abs.abs-centered {
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  margin: 0 !important;
+}
+
+body[data-fw-bg-active="1"] #section-hero .container,
+body[data-fw-bg-active="1"] #section-hero .row,
+body[data-fw-bg-active="1"] #section-hero .col-lg-12 {
+  align-items: center;
+}
+
 #wrapper::after {
   content: "";
   position: fixed;
