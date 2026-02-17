@@ -113,9 +113,19 @@ header .header-col-mid {
   }
 }
 
-@media (max-width: 800px) {
+@media (max-width: 1100px) {
   header .header-col-mid {
     position: static;
+  }
+
+  .menu_side_area {
+    display: block !important;
+    z-index: 1200;
+  }
+
+  #menu-btn {
+    display: inline-block !important;
+    cursor: pointer;
   }
 
   #mainmenu {

@@ -1,4 +1,6 @@
 (function () {
+  var MOBILE_BREAKPOINT = 1100;
+
   function initNavBehavior() {
     var header = document.querySelector("header");
     var menu = document.getElementById("mainmenu");
@@ -11,7 +13,7 @@
     }
 
     function toggleMenu(event) {
-      if (window.innerWidth > 800) return;
+      if (window.innerWidth > MOBILE_BREAKPOINT) return;
       if (event) {
         event.preventDefault();
         event.stopPropagation();
@@ -37,14 +39,14 @@
     });
 
     document.addEventListener("click", function (event) {
-      if (window.innerWidth > 800) return;
+      if (window.innerWidth > MOBILE_BREAKPOINT) return;
       var target = event.target;
       if (!(target instanceof HTMLElement)) return;
       if (!target.closest("header")) closeMenu();
     });
 
     window.addEventListener("resize", function () {
-      if (window.innerWidth > 800) closeMenu();
+      if (window.innerWidth > MOBILE_BREAKPOINT) closeMenu();
     });
   }
 
