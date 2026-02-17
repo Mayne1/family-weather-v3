@@ -1,7 +1,25 @@
+/* Family Weather Master Controls
+   Edit these variables for full global control. */
 :root {
+  --fw-page-bg: #071b33;
+  --fw-page-text: #eaf3ff;
+  --fw-muted-text: rgba(234, 243, 255, 0.78);
+
+  --fw-accent: #8cd7ff;
+  --fw-link: #cceaff;
+
   --fw-card-bg: rgba(27, 41, 66, 0.9);
   --fw-card-border: rgba(185, 230, 255, 0.2);
   --fw-card-text: #eaf3ff;
+  --fw-card-shadow: 0 12px 30px rgba(0, 0, 0, 0.34);
+
+  --fw-nav-bg: rgba(7, 18, 38, 0.78);
+  --fw-nav-border: rgba(255, 255, 255, 0.28);
+  --fw-nav-text: #ffffff;
+}
+
+body {
+  color: var(--fw-page-text);
 }
 
 /* Mobile nav: always-visible, clickable hamburger */
@@ -19,9 +37,9 @@
     height: 40px;
     margin: 0 !important;
     border-radius: 10px;
-    border: 1px solid rgba(255, 255, 255, 0.28);
-    background: rgba(7, 18, 38, 0.78);
-    color: #fff !important;
+    border: 1px solid var(--fw-nav-border);
+    background: var(--fw-nav-bg);
+    color: var(--fw-nav-text) !important;
     opacity: 1 !important;
     visibility: visible !important;
     cursor: pointer !important;
@@ -55,8 +73,8 @@
     padding: 10px;
     z-index: 3000;
     border-radius: 14px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    background: rgba(7, 18, 38, 0.94);
+    border: 1px solid var(--fw-nav-border);
+    background: var(--fw-nav-bg);
     box-shadow: 0 18px 44px rgba(0, 0, 0, 0.42);
   }
 
@@ -64,6 +82,7 @@
     width: 100%;
     padding: 10px 8px !important;
     white-space: nowrap;
+    color: var(--fw-nav-text) !important;
   }
 }
 
@@ -98,10 +117,14 @@
 .bg-dark-2,
 .bg-dark-2.rounded-1,
 .bg-dark-1,
+.bg-dark,
+.bg-dark-3,
 .card,
 .hero-box,
 .fw-card,
 .fw-box,
+.panel,
+.widget,
 .feature-card,
 .my-events-card,
 #fw-rightnow,
@@ -112,6 +135,7 @@
   background: var(--fw-card-bg) !important;
   border-color: var(--fw-card-border) !important;
   color: var(--fw-card-text) !important;
+  box-shadow: var(--fw-card-shadow) !important;
 }
 
 /* Remove tint overlays that block true card color */
@@ -144,4 +168,19 @@
 .bg-dark-1 *,
 .card * {
   color: inherit !important;
+}
+
+.bg-dark-2 .small,
+.bg-dark-2.rounded-1 .small,
+.bg-dark-1 .small,
+.card .small,
+.text-muted {
+  color: var(--fw-muted-text) !important;
+}
+
+.bg-dark-2 a,
+.bg-dark-2.rounded-1 a,
+.bg-dark-1 a,
+.card a {
+  color: var(--fw-link) !important;
 }
