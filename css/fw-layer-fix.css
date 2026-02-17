@@ -47,3 +47,89 @@ body {
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--fw-font-heading, var(--fw-font));
 }
+
+/* --- Mobile nav toggler: force visible + restore icon --- */
+.navbar .navbar-toggler {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  opacity: 1 !important;
+  visibility: visible !important;
+  z-index: 5000 !important;
+}
+
+.navbar .navbar-toggler:focus {
+  box-shadow: none !important;
+}
+
+/* If bootstrap icon got lost/overridden, re-add a standard hamburger SVG */
+.navbar .navbar-toggler-icon {
+  width: 1.5rem !important;
+  height: 1.5rem !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  background-size: 100% 100% !important;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(255,255,255,0.95)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e") !important;
+}
+
+/* If your navbar background is light sometimes, also support dark lines */
+:root[data-fw-nav-icon='dark'] .navbar .navbar-toggler-icon {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(0,0,0,0.9)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e") !important;
+}
+
+/* Project-specific fallback: custom toggler id used by this template */
+#menu-btn {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  opacity: 1 !important;
+  visibility: visible !important;
+  z-index: 5000 !important;
+}
+
+/* --- Global card/box background system --- */
+:root{
+  --fw-card-bg: rgba(255,255,255,0.92);
+  --fw-card-text: #0b0f14;
+}
+
+/* Any “template card box” classes should follow our vars */
+.bg-dark-2,
+.bg-dark-2.rounded-1,
+.bg-dark-1,
+.card,
+.hero-box,
+.fw-card,
+.fw-box {
+  background: var(--fw-card-bg) !important;
+  color: var(--fw-card-text) !important;
+}
+
+/* Kill template tints/overlays that sit on top of backgrounds */
+.bg-dark-2::before,
+.bg-dark-2::after,
+.bg-dark-2.rounded-1::before,
+.bg-dark-2.rounded-1::after,
+.bg-dark-1::before,
+.bg-dark-1::after,
+#fw-rightnow::before,
+#fw-rightnow::after {
+  content: none !important;
+  display: none !important;
+}
+
+/* Make sure typical text elements inside boxes inherit the readable color */
+.bg-dark-2 *,
+.bg-dark-2.rounded-1 *,
+.bg-dark-1 *,
+.card * {
+  color: inherit !important;
+}
+
+/* Buttons/links inside boxes: keep readable but still “link-ish” */
+.bg-dark-2 a,
+.bg-dark-2.rounded-1 a,
+.card a {
+  opacity: 0.95;
+  text-decoration-thickness: 2px;
+}
