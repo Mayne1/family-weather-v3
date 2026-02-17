@@ -293,6 +293,7 @@
 
         if (stage) stage.style.setProperty("--fw-stage-bg", image || "none");
         document.documentElement.style.setProperty("--fw-site-stage-bg", image || "none");
+        document.body && document.body.setAttribute("data-fw-bg-active", image ? "1" : "0");
         try {
             localStorage.setItem(STAGE_BG_KEY, image || "none");
         } catch (_err) {}

@@ -377,6 +377,11 @@ body::before, #wrapper::before, .overlay, .page-overlay, .site-overlay {
   background: transparent !important;
 }
 
+body[data-fw-bg-active="1"] .section-dark.bg-dark,
+body[data-fw-bg-active="1"] .bg-dark.section-dark {
+  background: transparent !important;
+}
+
 #wrapper::after {
   content: "";
   position: fixed;

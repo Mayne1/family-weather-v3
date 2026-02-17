@@ -79,6 +79,7 @@
             const value = String(localStorage.getItem(STAGE_BG_KEY) || "").trim();
             if (!value) return;
             document.documentElement.style.setProperty("--fw-site-stage-bg", value);
+            document.body && document.body.setAttribute("data-fw-bg-active", value && value !== "none" ? "1" : "0");
         } catch (_err) {
             // no-op
         }
