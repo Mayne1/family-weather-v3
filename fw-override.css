@@ -124,8 +124,27 @@ header .header-col-mid {
   }
 
   #menu-btn {
-    display: inline-block !important;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    background: rgba(8, 20, 42, 0.72);
+    color: #ffffff !important;
+    font-size: 24px;
+    line-height: 1;
+    text-indent: 0;
     cursor: pointer;
+    z-index: 2001;
+  }
+
+  #menu-btn::before {
+    content: "\2630" !important;
+    font-family: inherit !important;
+    font-size: 22px !important;
+    line-height: 1;
   }
 
   #mainmenu {
@@ -154,6 +173,11 @@ header .header-col-mid {
     width: 100%;
     padding: 10px 8px !important;
     justify-content: flex-start;
+  }
+
+  header.fw-nav-open #menu-btn::before {
+    content: "\2715" !important;
+    font-size: 18px !important;
   }
 }
 
