@@ -1,0 +1,52 @@
+body.fw-home-v2 #fw-stage .bg-dark-2,
+body.fw-home-v2 #fw-stage .bg-dark-1,
+body.fw-home-v2 #fw-stage .bg-dark,
+body.fw-home-v2 #section-weather .bg-dark-2,
+body.fw-home-v2 #section-weather-extras .bg-dark-2,
+body.fw-home-v2 #section-flows .bg-dark-2,
+body.fw-home-v2 .card,
+body.fw-home-v2 .panel,
+body.fw-home-v2 .widget,
+body.fw-home-v2 .feature-card,
+body.fw-home-v2 .my-events-card {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+body.fw-home-v2 #section-weather,
+body.fw-home-v2 #section-weather-extras,
+body.fw-home-v2 #section-flows,
+body.fw-home-v2 #section-how {
+  background: transparent !important;
+}
+
+body.fw-home-v2 #fw-stage {
+  background-image: var(--fw-stage-bg, none) !important;
+  border: none !important;
+}
+
+body.fw-home-v2 #fw-stage::before {
+  background: rgba(0, 0, 0, 0.14) !important;
+}
+
+body.fw-home-v2 #section-weather .p-30,
+body.fw-home-v2 #section-weather-extras .p-30,
+body.fw-home-v2 #section-flows .p-40 {
+  padding: 1.25rem !important;
+}
+
+body.fw-home-v2 #fw-rightnow h2,
+body.fw-home-v2 #fw-forecast h2,
+body.fw-home-v2 .subtitle {
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.42);
+}
+
+@media (max-width: 991px) {
+  body.fw-home-v2 #section-weather .p-30,
+  body.fw-home-v2 #section-weather-extras .p-30,
+  body.fw-home-v2 #section-flows .p-40 {
+    padding: 1rem !important;
+  }
+}

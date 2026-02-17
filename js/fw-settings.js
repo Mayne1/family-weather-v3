@@ -1,5 +1,6 @@
 (function () {
     const SETTINGS_KEY = "fw_settings";
+    const HOME_LAYOUT_KEY = "fw_home_layout";
     const STAGE_BG_KEY = "fw_stage_bg_v1";
     const WEATHER_CACHE_KEY = "fw_weather_cache";
     const FAVORITES_KEY = "fw_favorites_v1";
@@ -28,6 +29,39 @@
         "playfair-display": '"Playfair Display", Georgia, serif'
     };
     let settingsApiBlocked = false;
+
+    function loadHomeLayout() {
+        try {
+            const value = String(localStorage.getItem(HOME_LAYOUT_KEY) || "classic").toLowerCase();
+            return value === "clean" ? "clean" : "classic";
+        } catch (_err) {
+            return "classic";
+        }
+    }
+
+    function saveHomeLayout(value) {
+        const next = value === "clean" ? "clean" : "classic";
+        localStorage.setItem(HOME_LAYOUT_KEY, next);
+        return next;
+    }
+
+    function enforceHomepageLayout() {
+        try {
+            const page = (window.location.pathname.split("/").pop() || "index.html").toLowerCase();
+            const layout = loadHomeLayout();
+            if (layout === "clean" && page === "index.html") {
+                window.location.replace("index-v2.html");
+                return true;
+            }
+            if (layout !== "clean" && page === "index-v2.html") {
+                window.location.replace("index.html");
+                return true;
+            }
+        } catch (_err) {
+            return false;
+        }
+        return false;
+    }
 
     function normalizeHexColor(value) {
         const raw = String(value || "").trim();
@@ -246,6 +280,7 @@
         const fontColorHexInput = document.getElementById("fw-font-color-hex");
         const heroBoxColorInput = document.getElementById("fw-hero-box-color");
         const heroBoxColorHexInput = document.getElementById("fw-hero-box-color-hex");
+        const homeLayoutSelect = document.getElementById("fw-home-layout");
         const resetBtn = document.getElementById("fw-reset");
 
         if (themeLight && themeDark) {
@@ -266,6 +301,7 @@
         if (fontColorHexInput) fontColorHexInput.value = normalizeHexColor(settings.fontColor) || defaults.fontColor;
         if (heroBoxColorInput) heroBoxColorInput.value = normalizeHexColor(settings.heroBoxColor) || defaults.heroBoxColor;
         if (heroBoxColorHexInput) heroBoxColorHexInput.value = normalizeHexColor(settings.heroBoxColor) || defaults.heroBoxColor;
+        if (homeLayoutSelect) homeLayoutSelect.value = loadHomeLayout();
 
         function saveFromControls() {
             const bgColor = normalizeHexColor(bgColorHexInput ? bgColorHexInput.value : (bgColorInput ? bgColorInput.value : ""));
@@ -287,6 +323,7 @@
             if (fontColorHexInput) fontColorHexInput.value = next.fontColor;
             if (heroBoxColorInput) heroBoxColorInput.value = next.heroBoxColor;
             if (heroBoxColorHexInput) heroBoxColorHexInput.value = next.heroBoxColor;
+            if (homeLayoutSelect) saveHomeLayout(homeLayoutSelect.value);
             saveSettings(next);
             applySettings(next);
             persistSettingsToServer(next);
@@ -375,6 +412,8 @@
                 if (fontColorHexInput) fontColorHexInput.value = defaults.fontColor;
                 if (heroBoxColorInput) heroBoxColorInput.value = defaults.heroBoxColor;
                 if (heroBoxColorHexInput) heroBoxColorHexInput.value = defaults.heroBoxColor;
+                if (homeLayoutSelect) homeLayoutSelect.value = "classic";
+                saveHomeLayout("classic");
             });
         }
     }
@@ -590,6 +629,8 @@
             }
         });
     }
+
+    if (enforceHomepageLayout()) return;
 
     const settings = loadSettings();
     applySettings(settings);

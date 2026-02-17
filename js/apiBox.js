@@ -82,13 +82,23 @@
   }
 
   async function getHourlyForecast(lat, lon) {
+    let backendRows = [];
     try {
-      const rows = await fetchBackendHourly(lat, lon);
-      return Array.isArray(rows) ? rows : [];
+      backendRows = await fetchBackendHourly(lat, lon);
+      if (Array.isArray(backendRows) && backendRows.length) {
+        return backendRows;
+      }
     } catch (err) {
-      if (err && err.message === "backend_hourly_unavailable") return [];
+      if (!err || err.message !== "backend_hourly_unavailable") {
+        // continue to fallback below
+      }
     }
-    return [];
+    try {
+      const fallbackRows = await fetchOpenMeteoHourly(lat, lon);
+      return Array.isArray(fallbackRows) ? fallbackRows : [];
+    } catch (_err) {
+      return Array.isArray(backendRows) ? backendRows : [];
+    }
   }
 
   async function getSettings(ownerEmail) {

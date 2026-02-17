@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Family Weather Events</title>
+    <link rel="icon" href="images/icon.webp" type="image/gif" sizes="16x16">
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" >
+    <meta content="FamilyWeather" name="description" >
+    <meta content="" name="keywords" >
+    <meta content="" name="author" >
+    
+    <link href="css/bootstrap.min.css" rel="stylesheet" type="text/css" id="bootstrap">
+    
+    <link href="css/vendors.css" rel="stylesheet" type="text/css" >
+    
+    <link href="fonts/fontawesome4/css/font-awesome.min.css" rel="stylesheet" type="text/css" >
+    <link href="css/style.css" rel="stylesheet" type="text/css" >
+    <link href="styles.css" rel="stylesheet" type="text/css" >
+    <link href="fw-overrides.css" rel="stylesheet" type="text/css" >
+    <link rel="stylesheet" href="overrides.css?v=2">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Montserrat:wght@400;600;700;800&family=Nunito:wght@400;600;700;800&family=Poppins:wght@400;600;700;800&family=Roboto+Slab:wght@400;600;700&family=Source+Sans+3:wght@400;600;700;800&family=IBM+Plex+Sans:wght@400;600;700&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
+    <!-- color scheme -->
+    <link id="colors" href="css/colors/scheme-01.css" rel="stylesheet" type="text/css" >
+    <link href="fw-polish.css" rel="stylesheet" type="text/css" >
+    <link href="overlay-override.css" rel="stylesheet" type="text/css" >
+
+    <link rel="stylesheet" href="/css/fw-polish.css">
+    <link href="fw-override.css?v=1" rel="stylesheet" type="text/css" >
+    <link href="css/fw-layer-fix.css?v=1" rel="stylesheet" type="text/css" >
+    <link href="css/fw-master.css?v=1" rel="stylesheet" type="text/css" >
+    <link href="css/home-v2.css?v=1" rel="stylesheet" type="text/css" >
+
+</head>
+
+<body class="dark-scheme fw-home-v2">
+    <div id="fw-bg" aria-hidden="true"></div>
+
+    <div id="wrapper">
+
+        <div class="float-text show-on-scroll">
+            <span><a href="#">Scroll to top</a></span>
+        </div>
+        <div class="scrollbar-v show-on-scroll"></div>
+
+        <!-- page preloader begin -->
+        <div id="de-loader"></div>
+
+<header class="transparent">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="de-flex">
+                            <div class="de-flex-col">
+                                <div class="de-flex-col header-col-mid">
+                                    <ul id="mainmenu">
+                                        <li><a class="menu-item active" href="index.html"><i class="fa fa-home me-2"></i>Home</a></li>
+                                        <li><a class="menu-item" href="create-event.html"><i class="fa fa-plus me-2"></i>Create Event</a></li>
+                                        <li><a class="menu-item" href="my-events.html"><i class="fa fa-calendar me-2"></i>My Events</a></li>
+                                        <li><a class="menu-item" href="/feeds.html"><i class="fa fa-comments me-2"></i>Feeds</a></li>
+                                        <li><a class="menu-item" href="/profile.html"><i class="fa fa-user me-2"></i>Profile</a></li>
+                                        <li><a class="menu-item" href="invite.html"><i class="fa fa-envelope me-2"></i>Invite</a></li>
+                                        <li><a class="menu-item" href="rsvp.html"><i class="fa fa-check me-2"></i>RSVP</a></li>
+                                        <li><a class="menu-item" href="settings.html"><i class="fa fa-cog me-2"></i>Settings</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div class="de-flex-col nav-actions">
+                                <div id="fw-account-slot"></div>
+                                <div class="menu_side_area">
+                                    <span id="menu-btn"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div id="fw-stage" class="fw-stage rounded-1">
+        <section id="section-hero" class="section-dark no-top no-bottom text-light jarallax relative mh-800">
+            <div class="gradient-edge-top op-6 h-50 color"></div>
+            <div class="gradient-edge-bottom"></div>
+            <div class="sw-overlay op-8"></div>
+            <div class="abs abs-centered z-2 w-80">
+                <div class="container wow scaleIn" data-wow-duration="3s">
+                    <div class="row">
+                        <div class="col-lg-12 text-center">
+                            <div class="subtitle">Family Weather Events</div>
+                            <h1 class="fs-120 text-uppercase fs-sm-12vw mb-4 lh-1">Plan Together</h1>
+
+                            <div class="d-block d-md-flex justify-content-center">
+                                <div class="d-flex justify-content-center align-items-center mx-4">
+                                    <i class="fa fa-calendar id-color me-3"></i>
+                                    <h4 class="mb-0">Create events in minutes</h4>
+                                </div>
+
+                                <div class="d-flex justify-content-center align-items-center mx-4">
+                                    <i class="fa fa-users id-color me-3"></i>
+                                    <h4 class="mb-0">Track invites and RSVPs</h4>
+                                </div>
+                            </div>
+
+                            <div class="spacer-single"></div>
+
+                            <a class="btn-main mx-2 fx-slide" href="create-event.html"><span><i class="fa fa-plus me-2"></i>Create Event</span></a>
+                            <a class="btn-main btn-line mx-2 fx-slide" href="my-events.html"><span><i class="fa fa-calendar me-2"></i>My Events</span></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section class="bg-dark section-dark text-light pt-30 pb-30">
+            <div class="container">
+                <div class="bg-dark-2 rounded-1 p-30 d-lg-flex align-items-center justify-content-between">
+                    <div id="fw-auth-state-label" class="mb-3 mb-lg-0">Checking sign-in status...</div>
+                    <a id="fw-auth-state-action" class="btn-main btn-line fx-slide" href="auth.html"><span>Sign In</span></a>
+                </div>
+            </div>
+        </section>
+        <section id="section-weather" class="bg-dark section-dark text-light">
+            <div class="container">
+                <div class="row g-4">
+                    <div class="col-lg-5">
+                        <div id="fw-rightnow" class="bg-dark-2 rounded-1 p-30 h-100"></div>
+                    </div>
+                    <div class="col-lg-7">
+                        <div id="fw-forecast" class="bg-dark-2 rounded-1 p-30 h-100"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section id="section-weather-extras" class="bg-dark section-dark text-light">
+            <div class="container">
+                <div class="row g-4">
+                    <div class="col-lg-6">
+                        <div class="bg-dark-2 rounded-1 p-30 h-100">
+                            <div class="subtitle">Heads-up</div>
+                            <div class="small text-muted">Forecast-based heads-up (fog, wind, rain, heat).</div>
+                            <div id="headsUpList" class="mt-3"></div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="bg-dark-2 rounded-1 p-30 h-100">
+                            <div class="subtitle">Almanac Lookup</div>
+                            <div class="small text-muted">Check typical weather for a future date.</div>
+                            <div class="mt-3 d-flex flex-wrap gap-2 align-items-center">
+                                <input id="almanacZip" class="form-control" inputmode="numeric" maxlength="10" placeholder="ZIP (optional)" style="max-width:140px;">
+                                <input id="almanacDate" type="date" class="form-control" style="max-width:180px;">
+                                <button id="btnAlmanacGo" class="btn-main btn-line" type="button">Check</button>
+                            </div>
+                            <div id="almanacMiniOut" class="small mt-3" style="white-space:pre-wrap"></div>
+                            <div class="small text-muted mt-3">Tip: Pick a date next year. We show what usually happens on that date. ZIP is optional - if blank, we use your saved base (if available).</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        </div>
+
+        <section id="section-flows" class="bg-dark section-dark text-light">
+            <div class="container">
+                <div class="row g-4">
+                    <div class="col-lg-6 offset-lg-3 text-center">
+                        <div class="subtitle wow fadeInUp mb-3">Core Flows</div>
+                        <h2 class="wow fadeInUp" data-wow-delay=".2s">Everything you need to run events</h2>
+                        <p class="lead mb-0 wow fadeInUp">Four simple steps to create, share, and manage your gatherings.</p>
+                    </div>
+                </div>
+
+                <div class="spacer-single"></div>
+
+                <div class="row g-4">
+                    <div class="col-lg-3 col-md-6">
+                        <div class="hover">
+                            <div class="feature-card video-card bg-dark-2 relative rounded-1 overflow-hidden hover-bg-color hover-text-light wow scale-in-mask" onclick="window.location.href='create-event.html'">
+                              <video autoplay muted loop playsinline webkit-playsinline preload="auto" class="card-video" id="create-event-card-video">
+                                <source src="/video/The-welcome-video2.mp4" type="video/mp4">
+                              </video>
+
+                              <div class="card-overlay"></div>
+
+                              <div class="card-content abs p-40 bottom-0 z-2">
+                                <div class="card-icon">☀️</div>
+                                <h3>Create Event</h3>
+                                <p>Name it, set the time, and add details.</p>
+                              </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-3 col-md-6">
+                        <div class="hover">
+                            <div class="my-events-card bg-dark-2 relative rounded-1 overflow-hidden wow scale-in-mask h-100">
+                                <a class="my-events-card-link" href="my-events.html" aria-label="Go to My Events"></a>
+                                <div class="my-events-media-wrap">
+                                    <video id="my-events-preview-video" class="my-events-media" autoplay muted loop playsinline preload="metadata">
+                                        <source src="/video/events_slow_trim_web.mp4" type="video/mp4">
+                                    </video>
+                                    <div class="my-events-media-overlay"></div>
+                                    <button id="my-events-sound-toggle" class="my-events-sound-toggle" type="button" aria-label="Enable sound" aria-pressed="false">
+                                        <i class="fa fa-volume-off" aria-hidden="true"></i>
+                                    </button>
+                                </div>
+                                <div class="p-40 pt-24">
+                                    <div class="relative wow fadeInUp">
+                                        <img src="images/fw-icons/cloudy.svg" class="w-60px mb-3 my-events-icon" alt="">
+                                        <h4>My Events</h4>
+                                        <p class="mb-0">See upcoming, past, and draft events.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-3 col-md-6">
+                        <div class="hover">
+                            <div class="bg-dark-2 relative rounded-1 overflow-hidden hover-bg-color hover-text-light wow scale-in-mask">
+                                <div class="abs p-40 bottom-0 z-2">
+                                    <div class="relative wow fadeInUp">
+                                        <img src="images/fw-icons/wind.svg" class="w-60px mb-3" alt="">
+                                        <h4>Invite</h4>
+                                        <p class="mb-0">Send invites by email, link, or QR.</p>
+                                    </div>
+                                </div>
+                                <div class="gradient-edge-bottom h-100"></div>
+                                <img src="images/assets/feature-invite.svg" class="w-100 hover-scale-1-1" alt="Invite visual">
+                                <div class="abs w-100 h-100 start-0 top-0 hover-op-1 radial-gradient-color"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-3 col-md-6">
+                        <div class="hover">
+                            <div class="bg-dark-2 relative rounded-1 overflow-hidden hover-bg-color hover-text-light wow scale-in-mask">
+                                <div class="abs p-40 bottom-0 z-2">
+                                    <div class="relative wow fadeInUp">
+                                        <img src="images/fw-icons/thermometer.svg" class="w-60px mb-3" alt="">
+                                        <h4>RSVP</h4>
+                                        <p class="mb-0">Collect responses and keep guests informed.</p>
+                                    </div>
+                                </div>
+                                <div class="gradient-edge-bottom h-100"></div>
+                                <img src="images/assets/feature-rsvp.svg" class="w-100 hover-scale-1-1" alt="RSVP visual">
+                                <div class="abs w-100 h-100 start-0 top-0 hover-op-1 radial-gradient-color"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <section id="section-how" class="bg-dark section-dark text-light">
+            <div class="container">
+                <div class="row  gx-5 align-items-center justify-content-between">
+                    <div class="col-lg-6">
+                          <div class="me-lg-5 pe-lg-5 py-5 my-5">
+                              <div class="subtitle wow fadeInUp" data-wow-delay=".2s">How It Works</div>
+                              <h2 class="wow fadeInUp" data-wow-delay=".4s">Three steps to launch</h2>
+                              <p class="wow fadeInUp" data-wow-delay=".6s">A simple flow that keeps you and your guests on the same page.</p>
+
+                              <div class="d-flex align-items-start mb-4 wow fadeInUp" data-wow-delay=".8s">
+                                  <img src="images/fw-icons/compass.svg" class="w-32px me-3" alt="">
+                                  <div>
+                                      <h5 class="mb-1">Set the basics</h5>
+                                      <p class="mb-0">Add the who, when, and where.</p>
+                                  </div>
+                              </div>
+
+                              <div class="d-flex align-items-start mb-4 wow fadeInUp" data-wow-delay=".9s">
+                                  <img src="images/fw-icons/windsock.svg" class="w-32px me-3" alt="">
+                                  <div>
+                                      <h5 class="mb-1">Send invitations</h5>
+                                      <p class="mb-0">Choose email, link, or QR sharing.</p>
+                                  </div>
+                              </div>
+
+                              <div class="d-flex align-items-start wow fadeInUp" data-wow-delay="1s">
+                                  <img src="images/fw-icons/barometer.svg" class="w-32px me-3" alt="">
+                                  <div>
+                                      <h5 class="mb-1">Track RSVPs</h5>
+                                      <p class="mb-0">Watch attendance and send updates.</p>
+                                  </div>
+                              </div>
+
+                          </div>
+                    </div>
+
+                    <div class="col-lg-5">
+                        <div class="wow scaleIn">
+                            <img src="images/misc/c1.webp" class="w-100 rotate-animation" alt="">
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <section id="section-cta" class="bg-dark section-dark text-light pt-80 relative jarallax" aria-label="section">
+            <img src="images/background/3.webp" class="jarallax-img" alt="">
+            <div class="gradient-edge-top"></div>
+            <div class="gradient-edge-bottom"></div>
+            <div class="sw-overlay op-8"></div>
+          <div class="container relative z-2">
+            <div class="row g-4 justify-content-center">
+                <div class="col-lg-8 text-center">
+                    <div class="subtitle wow fadeInUp" data-wow-delay=".0s">Ready to start?</div>
+                    <h2 class="wow fadeInUp" data-wow-delay=".2s">Launch your next event today</h2>
+                    <p class="wow fadeInUp" data-wow-delay=".4s">
+                      Create events, invite guests, and keep everyone in sync.
+                    </p>
+                    <div class="spacer-single"></div>
+                    <a class="btn-main mx-2 fx-slide" href="create-event.html"><span><i class="fa fa-plus me-2"></i>Create Event</span></a>
+                    <a class="btn-main btn-line mx-2 fx-slide" href="invite.html"><span><i class="fa fa-envelope me-2"></i>Invite Guests</span></a>
+                </div>
+            </div>
+          </div>
+        </section>
+
+    </div>
+
+    <!-- footer begin -->
+    <footer class="text-light section-dark">
+        <div class="container">
+            <div class="row g-4 align-items-center">
+                <div class="col-md-12">
+                    <div class="d-lg-flex align-items-center justify-content-between text-center">
+                        <div>
+                            <h3 class="fs-20">Family Weather Events</h3>
+                            Plan together with the people you care about.
+                        </div>
+                        <div>
+                            <img src="images/assets/Family%20Weather%20Logo.png%233.png" class="w-150px" alt=""><br>
+                            <div class="social-icons mb-sm-30 mt-4">
+                                <a href="#"><i class="fa-brands fa-facebook-f"></i></a>
+                                <a href="#"><i class="fa-brands fa-instagram"></i></a>
+                                <a href="#"><i class="fa-brands fa-twitter"></i></a>
+                                <a href="#"><i class="fa-brands fa-youtube"></i></a>
+                            </div>
+
+                        </div>
+                        <div>
+                            <h3 class="fs-20">Contact Us</h3>
+                            T. +1 123 456 789<br>
+                            M. contact@familyweather.com
+                        </div>
+                    </div>
+                </div>                    
+            </div>
+        </div>
+        <div class="subfooter">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-12 text-center">
+                        <a href="privacy.html">Privacy</a> | <a href="terms.html">Terms</a> | <a href="sms-consent.html">SMS Consent</a><br>
+                        Copyright 2026 - Family Weather Events
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <!-- footer end -->
+    
+    <!-- Javascript Files
+    ================================================== -->
+    <script src="js/vendors.js"></script>
+    <script src="js/fw-settings.js"></script>
+
+<script src="js/designesia.js"></script>
+    <script src="js/apiBox.js"></script>
+    <script src="js/fw-weather.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/countdown-custom.js"></script>
+    <script src="js/custom-marquee.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+    <script src="srcfirebaseconfig.public.js"></script>
+    <script src="js/firebase-config-guard.js"></script>
+    <script type="module" src="js/authNav.js"></script>
+    <script type="module" src="js/authHome.js"></script>
+    <script type="module" src="js/authGate.js"></script>
+    <script type="module" src="js/home-flow.js"></script>
+    <script>
+      (function () {
+        var video = document.getElementById("create-event-card-video");
+        if (!video) return;
+        var canPlay = video.tagName === "VIDEO" && typeof video.play === "function";
+        if (!canPlay) return;
+        function tryPlay() {
+          var p = video.play();
+          if (p && typeof p.catch === "function") p.catch(function () {});
+        }
+        video.muted = true;
+        video.defaultMuted = true;
+        tryPlay();
+        document.addEventListener("visibilitychange", function () {
+          if (!document.hidden) tryPlay();
+        });
+        document.addEventListener("pointerdown", tryPlay, { once: true });
+      })();
+    </script>
+    <script>
+      (function () {
+        var storageKey = "fw_events_video_sound";
+        var video = document.getElementById("my-events-preview-video");
+        var toggle = document.getElementById("my-events-sound-toggle");
+        if (!video || !toggle) return;
+        var canPlay = video.tagName === "VIDEO" && typeof video.play === "function";
+        if (!canPlay) {
+          toggle.style.display = "none";
+          return;
+        }
+
+        function setUi(state) {
+          var soundOn = state === "on";
+          video.muted = !soundOn;
+          toggle.setAttribute("aria-pressed", soundOn ? "true" : "false");
+          toggle.setAttribute("aria-label", soundOn ? "Mute video" : "Enable sound");
+          toggle.innerHTML = soundOn
+            ? '<i class="fa fa-volume-up" aria-hidden="true"></i>'
+            : '<i class="fa fa-volume-off" aria-hidden="true"></i>';
+        }
+
+        var savedState = localStorage.getItem(storageKey) === "on" ? "on" : "off";
+        setUi(savedState);
+        video.play().catch(function () {
+          video.muted = true;
+          setUi("off");
+          localStorage.setItem(storageKey, "off");
+        });
+
+        toggle.addEventListener("click", function (event) {
+          event.preventDefault();
+          event.stopPropagation();
+          var nextState = video.muted ? "on" : "off";
+          localStorage.setItem(storageKey, nextState);
+          setUi(nextState);
+          video.play().catch(function () {});
+        });
+      })();
+    </script>
+
+    <script src="js/fw-legal-footer.js"></script>
+    <script src="fw-polish.js"></script>
+</body>
+
+</html>
+
+
+
+
+
+
+
+
+
+
+
+<!-- deploy test Tue Feb 10 21:51:08 UTC 2026 -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- pipeline-proof 2026-02-12T14:32:18.3776044-08:00 -->
+<!-- pipeline-ok 2026-02-12T14:40:32.1889192-08:00 -->
+
+
+
+
+
+
+
+
+
