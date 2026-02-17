@@ -1,4 +1,7 @@
 (function () {
+  let weatherBackendUnavailable = false;
+  let settingsApiUnauthorized = false;
+
   function normalizeHourly(data) {
     if (!data) return [];
     if (Array.isArray(data.hourly)) {
@@ -38,15 +41,20 @@
   }
 
   async function fetchBackendHourly(lat, lon) {
+    if (weatherBackendUnavailable) throw new Error("backend_hourly_unavailable");
     const candidates = [
       "/api/weather/hourly?lat=" + encodeURIComponent(lat) + "&lon=" + encodeURIComponent(lon),
       "/weather/hourly?lat=" + encodeURIComponent(lat) + "&lon=" + encodeURIComponent(lon)
     ];
     let lastErr = null;
+    let saw404 = false;
     for (const url of candidates) {
       try {
         const res = await fetch(url);
-        if (!res.ok) throw new Error("backend_hourly_failed");
+        if (!res.ok) {
+          if (res.status === 404) saw404 = true;
+          throw new Error("backend_hourly_failed");
+        }
         const json = await res.json();
         const rows = normalizeHourly(json.hourly || json.data || json);
         if (rows && rows.length) return rows;
@@ -54,6 +62,7 @@
         lastErr = err;
       }
     }
+    if (saw404) weatherBackendUnavailable = true;
     if (lastErr) throw lastErr;
     throw new Error("backend_hourly_failed");
   }
@@ -85,10 +94,17 @@
   }
 
   async function getSettings(ownerEmail) {
+    if (settingsApiUnauthorized) return {};
     const owner = String(ownerEmail || "").trim().toLowerCase();
     if (!owner) throw new Error("owner_email_required");
     const res = await fetch("/api/settings/me?owner_email=" + encodeURIComponent(owner));
-    if (!res.ok) throw new Error("settings_fetch_failed");
+    if (!res.ok) {
+      if (res.status === 401 || res.status === 403) {
+        settingsApiUnauthorized = true;
+        return {};
+      }
+      throw new Error("settings_fetch_failed");
+    }
     const json = await res.json();
     if (json && typeof json === "object" && json.settings && typeof json.settings === "object") {
       return json.settings;
