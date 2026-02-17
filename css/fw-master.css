@@ -24,7 +24,7 @@ body {
   background: var(--fw-page-bg);
 }
 
-/* Layer stack: video(0) -> single overlay(1) -> UI(10+) */
+/* Layer stack: video(0) -> single overlay(1) -> UI(header/nav 2000+) */
 #fw-bg-video {
   position: fixed !important;
   inset: 0;
@@ -54,12 +54,17 @@ body::before {
 }
 
 #wrapper,
-header,
 main,
 section,
 footer {
   position: relative;
   z-index: 10;
+}
+
+header,
+nav {
+  position: relative;
+  z-index: 2000 !important;
 }
 
 /* Mobile nav: always-visible, clickable hamburger */
@@ -83,7 +88,7 @@ footer {
     opacity: 1 !important;
     visibility: visible !important;
     cursor: pointer !important;
-    z-index: 5000 !important;
+    z-index: 2100 !important;
   }
 
   #menu-btn::before {
@@ -93,15 +98,20 @@ footer {
     line-height: 1 !important;
   }
 
+  header.menu-open #menu-btn::before,
+  #menu-btn.menu-open::before,
   header.fw-nav-open #menu-btn::before {
     content: "\2715" !important;
     font-size: 18px !important;
   }
 
   #mainmenu {
-    display: none;
+    display: none !important;
   }
 
+  header.menu-open #mainmenu,
+  header.menu-open #mainmenu.nav-displayed,
+  header.menu-open #mainmenu[data-visible="true"],
   header.fw-nav-open #mainmenu {
     position: absolute !important;
     top: calc(100% + 10px);
@@ -111,7 +121,7 @@ footer {
     flex-direction: column;
     gap: 0;
     padding: 10px;
-    z-index: 3000;
+    z-index: 2100;
     border-radius: 14px;
     border: 1px solid var(--fw-nav-border);
     background: var(--fw-nav-bg);
@@ -144,12 +154,14 @@ footer {
 
 /* Bootstrap navbar fallback icon */
 .navbar .navbar-toggler {
-  display: inline-flex !important;
-  align-items: center;
-  justify-content: center;
-  opacity: 1 !important;
-  visibility: visible !important;
-  z-index: 5000 !important;
+  z-index: 2100 !important;
+}
+
+#fw-account-slot,
+#fw-account-slot .fw-account-icon,
+.nav-actions {
+  position: relative;
+  z-index: 2100 !important;
 }
 
 .navbar .navbar-toggler:focus {
