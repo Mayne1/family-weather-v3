@@ -345,3 +345,32 @@ body::before, #wrapper::before, .overlay, .page-overlay, .site-overlay {
   pointer-events: none !important;
   z-index: 1 !important;
 }
+
+.fw-stage {
+  position: relative;
+  background-color: transparent;
+  background-image: var(--fw-stage-bg-image, none);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  border-radius: inherit;
+  overflow: hidden;
+}
+
+.fw-stage::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: rgba(255, 255, 255, 0.10);
+  z-index: 0;
+}
+
+.fw-stage > * {
+  position: relative;
+  z-index: 1;
+}
+
+#fw-stage > section {
+  background: transparent !important;
+}

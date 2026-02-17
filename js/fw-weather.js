@@ -271,20 +271,27 @@
         return "";
     }
 
-    function setWeatherBackground(condition) {
-        const bg = document.getElementById("fw-bg");
-        if (!bg || !condition) return;
+    function setWeatherBackground(condition, code, current) {
+        const stage = document.getElementById("fw-stage");
+        if (!stage) return;
 
-        const c = String(condition).toLowerCase();
-        if (c.includes("snow")) {
-            bg.style.backgroundImage = "url('/images/background/bg_snow.webp')";
-        } else if (c.includes("storm") || c.includes("thunder")) {
-            bg.style.backgroundImage = "url('/images/background/bg_storm.webp')";
-        } else if (c.includes("rain") || c.includes("drizzle")) {
-            bg.style.backgroundImage = "url('/images/background/bg_rain.webp')";
-        } else {
-            bg.style.backgroundImage = "none";
-        }
+        const c = String(condition || "").toLowerCase();
+        const wxCode = Number(code);
+        const tempF = Number(current && current.temperature_2m);
+        const precip = Number(current && current.precipitation) + Number(current && current.rain) + Number(current && current.showers);
+
+        let image = "";
+        const heavyRain = wxCode === 65 || wxCode === 67 || wxCode === 81 || wxCode === 82;
+        const stormy = wxCode >= 95 || c.includes("storm") || c.includes("thunder");
+        const snowy = c.includes("snow") || (Number.isFinite(tempF) && tempF <= 34 && precip > 0.05) || (wxCode >= 71 && wxCode <= 77) || wxCode === 85 || wxCode === 86;
+        const rainy = c.includes("rain") || c.includes("drizzle") || (wxCode >= 51 && wxCode <= 57) || (wxCode >= 61 && wxCode <= 67) || (wxCode >= 80 && wxCode <= 82);
+
+        if (snowy) image = "url('/images/background/snow-01.png')";
+        else if (stormy) image = "url('/images/background/storm-01.png')";
+        else if (heavyRain) image = "url('/images/background/rain-02.png')";
+        else if (rainy) image = "url('/images/background/rain-01.png')";
+
+        stage.style.setProperty("--fw-stage-bg-image", image || "none");
     }
 
     function renderRightNow(target, payload) {
@@ -300,7 +307,7 @@
         const label = labelFromCode(displayCode);
         const updated = formatTime(new Date(current.time || payload.timestamp));
         const aqi = payload.aqi != null ? payload.aqi : "-";
-        setWeatherBackground(label);
+        setWeatherBackground(label, displayCode, current);
 
         target.innerHTML = `
             <div class="rn-layout">

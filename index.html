@@ -111,6 +111,7 @@
                 </div>
             </div>
         </section>
+        <div id="fw-stage" class="fw-stage bg-dark-2 rounded-1">
         <section class="bg-dark section-dark text-light pt-30 pb-30">
             <div class="container">
                 <div class="bg-dark-2 rounded-1 p-30 d-lg-flex align-items-center justify-content-between">
@@ -131,6 +132,7 @@
                 </div>
             </div>
         </section>
+        </div>
         <section id="section-weather-extras" class="bg-dark section-dark text-light">
             <div class="container">
                 <div class="row g-4">
@@ -174,7 +176,9 @@
                     <div class="col-lg-3 col-md-6">
                         <div class="hover">
                             <div class="feature-card video-card bg-dark-2 relative rounded-1 overflow-hidden hover-bg-color hover-text-light wow scale-in-mask" onclick="window.location.href='create-event.html'">
-                              <img src="/images/background/bg_rain.webp" class="card-video" id="create-event-card-video" alt="">
+                              <video autoplay muted loop playsinline webkit-playsinline preload="auto" class="card-video" id="create-event-card-video">
+                                <source src="/video/The-welcome-video2.mp4" type="video/mp4">
+                              </video>
 
                               <div class="card-overlay"></div>
 
@@ -192,7 +196,9 @@
                             <div class="my-events-card bg-dark-2 relative rounded-1 overflow-hidden wow scale-in-mask h-100">
                                 <a class="my-events-card-link" href="my-events.html" aria-label="Go to My Events"></a>
                                 <div class="my-events-media-wrap">
-                                    <img id="my-events-preview-video" class="my-events-media" src="/images/background/bg_storm.webp" alt="">
+                                    <video id="my-events-preview-video" class="my-events-media" autoplay muted loop playsinline preload="metadata">
+                                        <source src="/video/events_slow_trim_web.mp4" type="video/mp4">
+                                    </video>
                                     <div class="my-events-media-overlay"></div>
                                     <button id="my-events-sound-toggle" class="my-events-sound-toggle" type="button" aria-label="Enable sound" aria-pressed="false">
                                         <i class="fa fa-volume-off" aria-hidden="true"></i>
