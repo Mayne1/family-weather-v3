@@ -278,3 +278,60 @@ nav {
   position: relative;
   z-index: 10;
 }
+
+/* ===== FW OVERLAY KILL SWITCH ===== */
+:root {
+  --fw-overlay-opacity: 0;
+}
+
+.overlay,
+.page-overlay,
+.site-overlay,
+.sw-overlay,
+.bg-overlay,
+.bg-tint,
+.bg-layer,
+#overlay,
+#page-overlay {
+  display: none !important;
+}
+
+html::before,
+body::before,
+#wrapper::before,
+#main::before {
+  opacity: var(--fw-overlay-opacity) !important;
+  background: rgba(0, 0, 0, 1) !important;
+  pointer-events: none !important;
+}
+
+.bg-dark-0::before, .bg-dark-1::before, .bg-dark-2::before, .bg-dark-3::before,
+.bg-dark-0::after,  .bg-dark-1::after,  .bg-dark-2::after,  .bg-dark-3::after,
+.bg-dark-2.rounded-1::before, .bg-dark-2.rounded-1::after,
+#fw-rightnow::before, #fw-rightnow::after {
+  content: none !important;
+  display: none !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+#fw-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+#wrapper, header, nav, section, footer {
+  position: relative;
+  z-index: 10;
+}
+
+#menu-btn, .menu-btn, .nav-toggle, .profile-avatar, .avatar, .navbar, header * {
+  position: relative;
+  z-index: 20;
+}
+
+.overlay, .page-overlay, .site-overlay, body::before, #wrapper::before {
+  pointer-events: none !important;
+}
