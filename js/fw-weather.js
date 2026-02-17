@@ -651,6 +651,10 @@
     }
 
     function renderAll(payload) {
+        window.__FW_WEATHER_PAYLOAD = payload;
+        try {
+            window.dispatchEvent(new CustomEvent("fw:weather", { detail: { payload } }));
+        } catch (_err) {}
         const rightNow = document.getElementById("fw-rightnow");
         const forecast = document.getElementById("fw-forecast");
         renderRightNow(rightNow, payload);

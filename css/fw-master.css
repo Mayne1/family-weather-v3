@@ -35,6 +35,16 @@ body {
   pointer-events: none !important;
 }
 
+#fw-bg-image {
+  position: fixed !important;
+  inset: 0;
+  z-index: 0 !important;
+  pointer-events: none !important;
+  background-position: center center;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
 /* Disable template overlay layers; use one global controlled overlay */
 .sw-overlay,
 .overlay,
