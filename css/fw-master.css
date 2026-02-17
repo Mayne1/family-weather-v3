@@ -518,3 +518,25 @@ nav a:hover {
 .hero .subtitle {
   text-shadow: 0 2px 14px rgba(0, 0, 0, 0.55);
 }
+
+/* suppress remaining template blue tint layers */
+#section-hero::before,
+#section-hero::after,
+.gradient-edge-top,
+.gradient-edge-bottom,
+.gradient-edge-start,
+.gradient-edge-end,
+.de-gradient-edge-bottom,
+.radial-gradient-color,
+.color-overlay,
+.color-overlay-2,
+.overlay-bg,
+.overlay-gradient,
+.overlay-solid {
+  content: none !important;
+  background: transparent !important;
+  background-image: none !important;
+  opacity: 0 !important;
+  display: none !important;
+  pointer-events: none !important;
+}
