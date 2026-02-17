@@ -2,6 +2,18 @@
   let weatherBackendUnavailable = false;
   let settingsApiUnauthorized = false;
 
+  function getApiKey() {
+    try {
+      const fromStorage = String(localStorage.getItem("fw_api_key") || "").trim();
+      if (fromStorage) return fromStorage;
+    } catch (_err) {}
+    if (typeof window !== "undefined" && typeof window.FW_API_KEY === "string") {
+      const fromWindow = window.FW_API_KEY.trim();
+      if (fromWindow) return fromWindow;
+    }
+    return null;
+  }
+
   function normalizeHourly(data) {
     if (!data) return [];
     if (Array.isArray(data.hourly)) {
@@ -42,29 +54,16 @@
 
   async function fetchBackendHourly(lat, lon) {
     if (weatherBackendUnavailable) throw new Error("backend_hourly_unavailable");
-    const candidates = [
-      "/api/weather/hourly?lat=" + encodeURIComponent(lat) + "&lon=" + encodeURIComponent(lon),
-      "/weather/hourly?lat=" + encodeURIComponent(lat) + "&lon=" + encodeURIComponent(lon)
-    ];
-    let lastErr = null;
-    let saw404 = false;
-    for (const url of candidates) {
-      try {
-        const res = await fetch(url);
-        if (!res.ok) {
-          if (res.status === 404) saw404 = true;
-          throw new Error("backend_hourly_failed");
-        }
-        const json = await res.json();
-        const rows = normalizeHourly(json.hourly || json.data || json);
-        if (rows && rows.length) return rows;
-      } catch (err) {
-        lastErr = err;
-      }
+    const url = "/api/weather/hourly?lat=" + encodeURIComponent(lat) + "&lon=" + encodeURIComponent(lon);
+    const res = await fetch(url);
+    if (res.status === 404) {
+      weatherBackendUnavailable = true;
+      return [];
     }
-    if (saw404) weatherBackendUnavailable = true;
-    if (lastErr) throw lastErr;
-    throw new Error("backend_hourly_failed");
+    if (!res.ok) throw new Error("backend_hourly_failed");
+    const json = await res.json();
+    const rows = normalizeHourly(json.hourly || json.data || json);
+    return rows || [];
   }
 
   async function fetchOpenMeteoHourly(lat, lon) {
@@ -85,23 +84,24 @@
   async function getHourlyForecast(lat, lon) {
     try {
       const rows = await fetchBackendHourly(lat, lon);
-      if (rows && rows.length) return rows;
-    } catch (_err) {
-      // Fallback to Open-Meteo
+      return Array.isArray(rows) ? rows : [];
+    } catch (err) {
+      if (err && err.message === "backend_hourly_unavailable") return [];
     }
-    const fallback = await fetchOpenMeteoHourly(lat, lon);
-    return fallback || [];
+    return [];
   }
 
   async function getSettings(ownerEmail) {
     if (settingsApiUnauthorized) return {};
     const owner = String(ownerEmail || "").trim().toLowerCase();
     if (!owner) throw new Error("owner_email_required");
-    const res = await fetch("/api/settings/me?owner_email=" + encodeURIComponent(owner));
+    const apiKey = getApiKey();
+    const headers = apiKey ? { "X-API-Key": apiKey } : undefined;
+    const res = await fetch("/api/settings/me?owner_email=" + encodeURIComponent(owner), { headers: headers });
     if (!res.ok) {
       if (res.status === 401 || res.status === 403) {
         settingsApiUnauthorized = true;
-        return {};
+        return { ok: false, status: res.status };
       }
       throw new Error("settings_fetch_failed");
     }
@@ -116,13 +116,16 @@
   async function saveSettings(ownerEmail, settings) {
     const owner = String(ownerEmail || "").trim().toLowerCase();
     if (!owner) throw new Error("owner_email_required");
+    const apiKey = getApiKey();
     const payload = {
       owner_email: owner,
       settings: settings && typeof settings === "object" ? settings : {}
     };
+    const headers = { "Content-Type": "application/json" };
+    if (apiKey) headers["X-API-Key"] = apiKey;
     const res = await fetch("/api/settings/me", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: headers,
       body: JSON.stringify(payload)
     });
     if (!res.ok) throw new Error("settings_save_failed");
@@ -132,6 +135,7 @@
   window.apiBox = {
     getHourlyForecast: getHourlyForecast,
     getSettings: getSettings,
-    saveSettings: saveSettings
+    saveSettings: saveSettings,
+    getApiKey: getApiKey
   };
 })();

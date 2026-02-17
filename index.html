@@ -381,7 +381,7 @@
       (function () {
         var video = document.getElementById("create-event-card-video");
         if (!video) return;
-        var canPlay = typeof video.play === "function";
+        var canPlay = video.tagName === "VIDEO" && typeof video.play === "function";
         if (!canPlay) return;
         function tryPlay() {
           var p = video.play();
@@ -402,7 +402,7 @@
         var video = document.getElementById("my-events-preview-video");
         var toggle = document.getElementById("my-events-sound-toggle");
         if (!video || !toggle) return;
-        var canPlay = typeof video.play === "function";
+        var canPlay = video.tagName === "VIDEO" && typeof video.play === "function";
         if (!canPlay) {
           toggle.style.display = "none";
           return;

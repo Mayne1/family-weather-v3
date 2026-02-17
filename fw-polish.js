@@ -16,31 +16,7 @@
   }
 
   function ensureGlobalBackgroundVideo() {
-    if (document.getElementById("fw-bg-video")) return;
-    const video = document.createElement("video");
-    video.id = "fw-bg-video";
-    video.autoplay = true;
-    video.muted = true;
-    video.loop = true;
-    video.playsInline = true;
-    video.setAttribute("aria-hidden", "true");
-    video.style.position = "fixed";
-    video.style.inset = "0";
-    video.style.width = "100%";
-    video.style.height = "100%";
-    video.style.objectFit = "cover";
-    video.style.zIndex = "0";
-    video.style.pointerEvents = "none";
-
-    const source = document.createElement("source");
-    source.src = "video/Tranquil-forest2.mp4";
-    source.type = "video/mp4";
-    video.appendChild(source);
-    document.body.prepend(video);
-    const playPromise = video.play();
-    if (playPromise && typeof playPromise.catch === "function") {
-      playPromise.catch(function () {});
-    }
+    // Image background mode: intentionally no-op.
   }
 
   function removeDailyOverlay() {
@@ -83,7 +59,7 @@
       '<div class="col-lg-12">',
       '  <div id="fw-hourly-polish" class="bg-dark-2 rounded-1 p-30 h-100 fw-hourly-card">',
       '    <div class="subtitle">Hourly Forecast</div>',
-      '    <div id="fw-hourly-polish-row" class="fw-hourly-row" aria-live="polite">Hourly forecast not connected yet</div>',
+      '    <div id="fw-hourly-polish-row" class="fw-hourly-row" aria-live="polite">Hourly forecast unavailable (API route not enabled)</div>',
       '  </div>',
       '</div>'
     ].join("");
@@ -131,7 +107,7 @@
       if (startIdx < 0) startIdx = Math.max(0, allRows.length - 18);
       const rows = allRows.slice(startIdx, startIdx + 18);
       if (!rows.length) {
-        host.innerHTML = '<div class="small text-muted">Hourly forecast not connected yet</div>';
+        host.innerHTML = '<div class="small text-muted">Hourly forecast unavailable (API route not enabled)</div>';
         return;
       }
       host.innerHTML = rows.map(function (row, idx) {
@@ -145,7 +121,7 @@
         ].join("");
       }).join("");
     } catch (_err) {
-      host.innerHTML = '<div class="small text-muted">Hourly forecast not connected yet</div>';
+      host.innerHTML = '<div class="small text-muted">Hourly forecast unavailable (API route not enabled)</div>';
     }
   }
 

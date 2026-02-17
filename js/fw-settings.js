@@ -25,6 +25,7 @@
         "roboto-slab": '"Roboto Slab", Georgia, serif',
         "playfair-display": '"Playfair Display", Georgia, serif'
     };
+    let settingsApiBlocked = false;
 
     function normalizeHexColor(value) {
         const raw = String(value || "").trim();
@@ -83,10 +84,16 @@
     }
 
     async function syncSettingsFromServer() {
+        if (settingsApiBlocked) return null;
         const ownerEmail = getOwnerEmail();
         if (!ownerEmail || !window.apiBox || typeof window.apiBox.getSettings !== "function") return null;
+        if (typeof window.apiBox.getApiKey === "function" && !window.apiBox.getApiKey()) return null;
         try {
             const remote = await window.apiBox.getSettings(ownerEmail);
+            if (remote && remote.ok === false && remote.status === 401) {
+                settingsApiBlocked = true;
+                return null;
+            }
             if (remote && typeof remote === "object") {
                 const merged = {
                     ...defaults,
@@ -102,8 +109,10 @@
     }
 
     async function persistSettingsToServer(settings) {
+        if (settingsApiBlocked) return;
         const ownerEmail = getOwnerEmail();
         if (!ownerEmail || !window.apiBox || typeof window.apiBox.saveSettings !== "function") return;
+        if (typeof window.apiBox.getApiKey === "function" && !window.apiBox.getApiKey()) return;
         try {
             await window.apiBox.saveSettings(ownerEmail, settings);
         } catch (_err) {

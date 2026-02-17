@@ -335,3 +335,13 @@ body::before,
 .overlay, .page-overlay, .site-overlay, body::before, #wrapper::before {
   pointer-events: none !important;
 }
+
+header, nav, .de-flex, .de-flex-col, #menu-btn, .menu-btn, .nav-toggle, .profile-avatar, .avatar {
+  position: relative !important;
+  z-index: 9999 !important;
+}
+
+body::before, #wrapper::before, .overlay, .page-overlay, .site-overlay {
+  pointer-events: none !important;
+  z-index: 1 !important;
+}

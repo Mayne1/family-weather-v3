@@ -1,5 +1,6 @@
 (function () {
   var SETTINGS_KEY = "fw_settings";
+  var settingsApiBlocked = false;
   var FONT_STACKS = {
     system: 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif',
     serif: 'Georgia, "Times New Roman", serif',
@@ -90,11 +91,17 @@
   }
 
   async function syncSettingsFromApi() {
+    if (settingsApiBlocked) return true;
     if (!window.apiBox || typeof window.apiBox.getSettings !== "function") return false;
+    if (typeof window.apiBox.getApiKey === "function" && !window.apiBox.getApiKey()) return true;
     var ownerEmail = getOwnerEmail();
     if (!ownerEmail) return false;
     try {
       var remote = await window.apiBox.getSettings(ownerEmail);
+      if (remote && remote.ok === false && remote.status === 401) {
+        settingsApiBlocked = true;
+        return true;
+      }
       if (remote && typeof remote === "object") {
         applySettings(remote);
         writeSettingsCache(remote);
