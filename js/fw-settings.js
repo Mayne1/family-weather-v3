@@ -1,6 +1,7 @@
 (function () {
     const SETTINGS_KEY = "fw_settings";
     const STAGE_BG_KEY = "fw_stage_bg_v1";
+    const WEATHER_CACHE_KEY = "fw_weather_cache";
     const FAVORITES_KEY = "fw_favorites_v1";
     const FAVORITES_MAX = 5;
     const defaults = {
@@ -76,12 +77,41 @@
 
     function applyStoredStageBackground() {
         try {
-            const value = String(localStorage.getItem(STAGE_BG_KEY) || "").trim();
+            let value = String(localStorage.getItem(STAGE_BG_KEY) || "").trim();
+            if (!value || value === "none") {
+                value = deriveStageBackgroundFromWeatherCache();
+            }
             if (!value) return;
             document.documentElement.style.setProperty("--fw-site-stage-bg", value);
             document.body && document.body.setAttribute("data-fw-bg-active", value && value !== "none" ? "1" : "0");
         } catch (_err) {
             // no-op
+        }
+    }
+
+    function deriveStageBackgroundFromWeatherCache() {
+        try {
+            const raw = localStorage.getItem(WEATHER_CACHE_KEY);
+            const cached = raw ? JSON.parse(raw) : null;
+            const current = cached && cached.weather && cached.weather.current ? cached.weather.current : null;
+            if (!current) return "";
+            const code = Number(current.weather_code);
+            const tempF = Number(current.temperature_2m);
+            const precip = Number(current.precipitation) + Number(current.rain) + Number(current.showers);
+            let image = "";
+            if ((code >= 71 && code <= 77) || code === 85 || code === 86 || (Number.isFinite(tempF) && tempF <= 34 && precip > 0.05)) {
+                image = "url('/images/background/snow-01.png')";
+            } else if (code >= 95) {
+                image = "url('/images/background/storm-01.png')";
+            } else if (code === 65 || code === 67 || code === 81 || code === 82) {
+                image = "url('/images/background/rain-02.png')";
+            } else if ((code >= 51 && code <= 57) || (code >= 61 && code <= 67) || (code >= 80 && code <= 82)) {
+                image = "url('/images/background/rain-01.png')";
+            }
+            if (image) localStorage.setItem(STAGE_BG_KEY, image);
+            return image;
+        } catch (_err) {
+            return "";
         }
     }
 
