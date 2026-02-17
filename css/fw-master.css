@@ -382,6 +382,29 @@ body[data-fw-bg-active="1"] .bg-dark.section-dark {
   background: transparent !important;
 }
 
+body[data-fw-bg-active="1"] #section-hero {
+  background-image: var(--fw-site-stage-bg, none) !important;
+  background-size: cover !important;
+  background-position: center center !important;
+  background-repeat: no-repeat !important;
+  position: relative;
+  overflow: hidden;
+}
+
+body[data-fw-bg-active="1"] #section-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.25);
+  pointer-events: none;
+  z-index: 1;
+}
+
+body[data-fw-bg-active="1"] #section-hero > * {
+  position: relative;
+  z-index: 2;
+}
+
 #wrapper::after {
   content: "";
   position: fixed;

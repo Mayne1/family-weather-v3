@@ -81,9 +81,13 @@
             if (!value || value === "none") {
                 value = deriveStageBackgroundFromWeatherCache();
             }
-            if (!value) return;
-            document.documentElement.style.setProperty("--fw-site-stage-bg", value);
-            document.body && document.body.setAttribute("data-fw-bg-active", value && value !== "none" ? "1" : "0");
+            if (value && value !== "none") {
+                document.documentElement.style.setProperty("--fw-site-stage-bg", value);
+                document.body && document.body.setAttribute("data-fw-bg-active", "1");
+                return;
+            }
+            document.documentElement.style.setProperty("--fw-site-stage-bg", "none");
+            document.body && document.body.setAttribute("data-fw-bg-active", "0");
         } catch (_err) {
             // no-op
         }
