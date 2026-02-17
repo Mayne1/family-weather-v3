@@ -4,11 +4,12 @@
   --fw-page-bg: #071b33;
   --fw-page-text: #eaf3ff;
   --fw-muted-text: rgba(234, 243, 255, 0.78);
+  --fw-page-overlay: rgba(7, 27, 51, 0.12);
 
   --fw-accent: #8cd7ff;
   --fw-link: #cceaff;
 
-  --fw-card-bg: rgba(27, 41, 66, 0.9);
+  --fw-card-bg: transparent;
   --fw-card-border: rgba(185, 230, 255, 0.2);
   --fw-card-text: #eaf3ff;
   --fw-card-shadow: 0 12px 30px rgba(0, 0, 0, 0.34);
@@ -20,6 +21,45 @@
 
 body {
   color: var(--fw-page-text);
+  background: var(--fw-page-bg);
+}
+
+/* Layer stack: video(0) -> single overlay(1) -> UI(10+) */
+#fw-bg-video {
+  position: fixed !important;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0 !important;
+  pointer-events: none !important;
+}
+
+/* Disable template overlay layers; use one global controlled overlay */
+.sw-overlay,
+.overlay,
+.site-overlay,
+.bg-overlay,
+.page-overlay {
+  display: none !important;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  background: var(--fw-page-overlay);
+  pointer-events: none !important;
+}
+
+#wrapper,
+header,
+main,
+section,
+footer {
+  position: relative;
+  z-index: 10;
 }
 
 /* Mobile nav: always-visible, clickable hamburger */
@@ -83,6 +123,22 @@ body {
     padding: 10px 8px !important;
     white-space: nowrap;
     color: var(--fw-nav-text) !important;
+  }
+}
+
+/* Desktop/tablet: hide hamburger, keep normal nav visible */
+@media (min-width: 1101px) {
+  #menu-btn,
+  .menu_side_area {
+    display: none !important;
+  }
+
+  #mainmenu {
+    display: flex !important;
+    position: static !important;
+    width: auto !important;
+    height: auto !important;
+    overflow: visible !important;
   }
 }
 
@@ -168,6 +224,7 @@ body {
 .bg-dark-1 *,
 .card * {
   color: inherit !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
 }
 
 .bg-dark-2 .small,
