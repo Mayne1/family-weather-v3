@@ -409,15 +409,16 @@ body[data-fw-bg-active="1"] #section-hero::before {
 }
 
 body[data-fw-bg-active="1"] #section-hero > * {
-  position: relative;
   z-index: 2;
 }
 
 body[data-fw-bg-active="1"] #section-hero .abs.abs-centered {
+  position: absolute !important;
   top: 50% !important;
   left: 50% !important;
   transform: translate(-50%, -50%) !important;
   margin: 0 !important;
+  z-index: 3 !important;
 }
 
 body[data-fw-bg-active="1"] #section-hero .container,
