@@ -25,6 +25,18 @@
       override.href = "fw-override.css?v=1";
       head.appendChild(override);
     }
+    if (head && !document.querySelector('link[href^="css/fw-layer-fix.css"]')) {
+      var layerFix = document.createElement("link");
+      layerFix.rel = "stylesheet";
+      layerFix.href = "css/fw-layer-fix.css?v=1";
+      head.appendChild(layerFix);
+    }
+    if (head && !document.querySelector('link[href^="css/fw-master.css"]')) {
+      var master = document.createElement("link");
+      master.rel = "stylesheet";
+      master.href = "css/fw-master.css?v=1";
+      head.appendChild(master);
+    }
     if (!document.querySelector('script[src="fw-polish.js"]')) {
       var script = document.createElement("script");
       script.src = "fw-polish.js";
