@@ -263,3 +263,18 @@ nav {
 .card a {
   color: var(--fw-link) !important;
 }
+
+#fw-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  pointer-events: none;
+}
+
+#wrapper, header, nav, section, footer {
+  position: relative;
+  z-index: 10;
+}

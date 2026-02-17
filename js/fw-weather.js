@@ -271,6 +271,22 @@
         return "";
     }
 
+    function setWeatherBackground(condition) {
+        const bg = document.getElementById("fw-bg");
+        if (!bg || !condition) return;
+
+        const c = String(condition).toLowerCase();
+        if (c.includes("snow")) {
+            bg.style.backgroundImage = "url('/images/background/bg_snow.webp')";
+        } else if (c.includes("storm") || c.includes("thunder")) {
+            bg.style.backgroundImage = "url('/images/background/bg_storm.webp')";
+        } else if (c.includes("rain") || c.includes("drizzle")) {
+            bg.style.backgroundImage = "url('/images/background/bg_rain.webp')";
+        } else {
+            bg.style.backgroundImage = "none";
+        }
+    }
+
     function renderRightNow(target, payload) {
         if (!target) return;
         const current = payload.weather.current;
@@ -284,6 +300,7 @@
         const label = labelFromCode(displayCode);
         const updated = formatTime(new Date(current.time || payload.timestamp));
         const aqi = payload.aqi != null ? payload.aqi : "-";
+        setWeatherBackground(label);
 
         target.innerHTML = `
             <div class="rn-layout">

@@ -136,7 +136,6 @@
         root.style.setProperty("--fw-card-bg", heroBoxColor);
 
         const wrapper = document.getElementById("wrapper");
-        const bgVideo = document.getElementById("fw-bg-video");
         const customColor = normalizeHexColor(settings.backgroundColor);
         if (customColor) {
             const rgb = hexToRgbString(customColor);
@@ -153,9 +152,6 @@
                 wrapper.style.backgroundImage = "none";
                 wrapper.style.backgroundColor = customColor;
             }
-            if (bgVideo) {
-                bgVideo.style.display = "none";
-            }
         } else {
             if (root) {
                 root.style.removeProperty("--bg-dark-1");
@@ -167,9 +163,6 @@
             if (wrapper) {
                 wrapper.style.removeProperty("background-color");
                 wrapper.style.removeProperty("background-image");
-            }
-            if (bgVideo) {
-                bgVideo.style.removeProperty("display");
             }
         }
 

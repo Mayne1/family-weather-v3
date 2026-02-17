@@ -35,10 +35,7 @@
 </head>
 
 <body class="dark-scheme">
-
-    <video id="fw-bg-video" autoplay muted loop playsinline>
-        <source src="video/Tranquil-forest2.mp4" type="video/mp4">
-    </video>
+    <div id="fw-bg" aria-hidden="true"></div>
 
     <div id="wrapper">
 
@@ -82,7 +79,7 @@
             </div>
         </header>
 
-        <section id="section-hero" class="section-dark no-top no-bottom text-light jarallax relative mh-800" data-video-src="mp4:video/Tranquil-forest2.mp4">
+        <section id="section-hero" class="section-dark no-top no-bottom text-light jarallax relative mh-800">
             <div class="gradient-edge-top op-6 h-50 color"></div>
             <div class="gradient-edge-bottom"></div>
             <div class="sw-overlay op-8"></div>
@@ -177,9 +174,7 @@
                     <div class="col-lg-3 col-md-6">
                         <div class="hover">
                             <div class="feature-card video-card bg-dark-2 relative rounded-1 overflow-hidden hover-bg-color hover-text-light wow scale-in-mask" onclick="window.location.href='create-event.html'">
-                              <video autoplay muted loop playsinline webkit-playsinline preload="auto" class="card-video" id="create-event-card-video">
-                                <source src="/video/The-welcome-video2.mp4" type="video/mp4">
-                              </video>
+                              <img src="/images/background/bg_rain.webp" class="card-video" id="create-event-card-video" alt="">
 
                               <div class="card-overlay"></div>
 
@@ -197,9 +192,7 @@
                             <div class="my-events-card bg-dark-2 relative rounded-1 overflow-hidden wow scale-in-mask h-100">
                                 <a class="my-events-card-link" href="my-events.html" aria-label="Go to My Events"></a>
                                 <div class="my-events-media-wrap">
-                                    <video id="my-events-preview-video" class="my-events-media" autoplay muted loop playsinline preload="metadata">
-                                        <source src="/video/events_slow_trim_web.mp4" type="video/mp4">
-                                    </video>
+                                    <img id="my-events-preview-video" class="my-events-media" src="/images/background/bg_storm.webp" alt="">
                                     <div class="my-events-media-overlay"></div>
                                     <button id="my-events-sound-toggle" class="my-events-sound-toggle" type="button" aria-label="Enable sound" aria-pressed="false">
                                         <i class="fa fa-volume-off" aria-hidden="true"></i>
@@ -369,9 +362,8 @@
     ================================================== -->
     <script src="js/vendors.js"></script>
     <script src="js/fw-settings.js"></script>
-<script src="js/fw-bg-assets.js"></script>
-<script src="js/fw-bg-engine.js"></script>
-    <script src="js/designesia.js"></script>
+
+<script src="js/designesia.js"></script>
     <script src="js/apiBox.js"></script>
     <script src="js/fw-weather.js"></script>
     <script src="js/app.js"></script>
@@ -470,6 +462,8 @@
 
 <!-- pipeline-proof 2026-02-12T14:32:18.3776044-08:00 -->
 <!-- pipeline-ok 2026-02-12T14:40:32.1889192-08:00 -->
+
+
 
 
 
