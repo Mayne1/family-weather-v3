@@ -1,5 +1,6 @@
 (function () {
     const SETTINGS_KEY = "fw_settings";
+    const STAGE_BG_KEY = "fw_stage_bg_v1";
     const FAVORITES_KEY = "fw_favorites_v1";
     const FAVORITES_MAX = 5;
     const defaults = {
@@ -71,6 +72,16 @@
 
     function saveSettings(settings) {
         localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+    }
+
+    function applyStoredStageBackground() {
+        try {
+            const value = String(localStorage.getItem(STAGE_BG_KEY) || "").trim();
+            if (!value) return;
+            document.documentElement.style.setProperty("--fw-site-stage-bg", value);
+        } catch (_err) {
+            // no-op
+        }
     }
 
     function getOwnerEmail() {
@@ -547,7 +558,9 @@
 
     const settings = loadSettings();
     applySettings(settings);
+    applyStoredStageBackground();
     document.addEventListener("DOMContentLoaded", async () => {
+        applyStoredStageBackground();
         const remote = await syncSettingsFromServer();
         if (remote) {
             applySettings(remote);

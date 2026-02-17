@@ -1,5 +1,6 @@
 (function () {
     const CACHE_KEY = "fw_weather_cache";
+    const STAGE_BG_KEY = "fw_stage_bg_v1";
     const LOC_KEY = "fw_weather_loc";
     const FAVORITES_KEY = "fw_favorites_v1";
     const FAVORITES_CACHE_KEY = "fw_fav_cache_v1";
@@ -273,7 +274,6 @@
 
     function setWeatherBackground(condition, code, current) {
         const stage = document.getElementById("fw-stage");
-        if (!stage) return;
 
         const c = String(condition || "").toLowerCase();
         const wxCode = Number(code);
@@ -291,7 +291,11 @@
         else if (heavyRain) image = "url('/images/background/rain-02.png')";
         else if (rainy) image = "url('/images/background/rain-01.png')";
 
-        stage.style.setProperty("--fw-stage-bg", image || "none");
+        if (stage) stage.style.setProperty("--fw-stage-bg", image || "none");
+        document.documentElement.style.setProperty("--fw-site-stage-bg", image || "none");
+        try {
+            localStorage.setItem(STAGE_BG_KEY, image || "none");
+        } catch (_err) {}
     }
 
     function renderRightNow(target, payload) {

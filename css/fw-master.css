@@ -282,6 +282,8 @@ nav {
 /* ===== FW OVERLAY KILL SWITCH ===== */
 :root {
   --fw-overlay-opacity: 0;
+  --fw-site-stage-bg: none;
+  --fw-nav-offset: 96px;
 }
 
 .overlay,
@@ -373,4 +375,19 @@ body::before, #wrapper::before, .overlay, .page-overlay, .site-overlay {
 
 #fw-stage > section {
   background: transparent !important;
+}
+
+#wrapper::after {
+  content: "";
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: var(--fw-nav-offset);
+  bottom: 0;
+  background-image: var(--fw-site-stage-bg, none);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  pointer-events: none;
+  z-index: 0;
 }
