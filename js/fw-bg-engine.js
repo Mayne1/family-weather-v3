@@ -21,18 +21,6 @@
   const intelHintCache = new Map();
 
   function ensureBackgroundLayers() {
-    let video = document.getElementById("fw-bg-video");
-    if (!video) {
-      video = document.createElement("video");
-      video.id = "fw-bg-video";
-      video.autoplay = true;
-      video.muted = true;
-      video.loop = true;
-      video.playsInline = true;
-      video.setAttribute("aria-hidden", "true");
-      document.body.prepend(video);
-    }
-
     let image = document.getElementById("fw-bg-image");
     if (!image) {
       image = document.createElement("div");
@@ -41,7 +29,7 @@
       document.body.prepend(image);
     }
 
-    return { video, image };
+    return { image };
   }
 
   function toLower(value) {
@@ -151,7 +139,7 @@
     return v === "severe" || v === "normal" ? v : null;
   }
 
-  function decideBackgroundVariant(input) {
+  function decideVariant(input) {
     const intelHint = normalizeHint(input && input.intelHint);
     if (intelHint === "severe") return "severe";
 
@@ -176,11 +164,25 @@
     return (total - 1 + total) % total; // severe => use strongest/final variant
   }
 
-  function pickVariantForGroup(group, variant, weather) {
+  function imageAssetsForGroup(group) {
     const assets = (window.FW_BG_ASSETS && window.FW_BG_ASSETS[group]) || [];
+    return assets.filter(function (a) {
+      return a && a.type === "image" && typeof a.src === "string";
+    });
+  }
+
+  function pickVariantForGroup(group, variant, weather) {
+    const assets = imageAssetsForGroup(group);
     if (!assets.length) return null;
     const idx = variantAssetIndex(variant, assets.length);
     return assets[idx] || assets[hashString(`${locationSeed(weather)}|${group}`) % assets.length];
+  }
+
+  function pickImageFallback(group, weather) {
+    const assets = imageAssetsForGroup(group);
+    if (!assets.length) return null;
+    const idx = hashString(`${locationSeed(weather)}|${group}`) % assets.length;
+    return assets[idx];
   }
 
   async function getIntelHint(weather) {
@@ -200,7 +202,7 @@
     }
 
     const value = await window.apiBox.getIntelHint(lat, lon, dateIso);
-    const hint = value && value.background_variant_hint ? value.background_variant_hint : null;
+    const hint = normalizeHint(value);
     intelHintCache.set(key, { ts: Date.now(), value: hint });
     return hint;
   }
@@ -209,14 +211,17 @@
     const group = pickGroup(weather);
     const code = getWeatherCode(weather);
     const intelHint = await getIntelHint(weather).catch(() => null);
-    const variant = decideBackgroundVariant({
+    const variant = decideVariant({
       nowLocalHour: new Date().getHours(),
       intelHint
     });
 
-    const selected = pickVariantForGroup(group, variant, weather) || pickVariant(group, weather) || pickVariant("mixed", weather);
+    const selected =
+      pickVariantForGroup(group, variant, weather) ||
+      pickImageFallback(group, weather) ||
+      pickImageFallback("mixed", weather);
     if (!selected) return { type: "image", src: "" };
-    return { type: selected.type, src: selected.src, group, variant, code, intelHint };
+    return { type: "image", src: selected.src, group, variant, code, intelHint };
   }
 
   function readCachedWeather() {
@@ -236,33 +241,16 @@
     if (!choice || !choice.src) return;
 
     const layers = ensureBackgroundLayers();
-    const video = layers.video;
     const image = layers.image;
-
-    if (choice.type === "video") {
-      if (video.getAttribute("src") !== choice.src) {
-        video.setAttribute("src", choice.src);
-        video.load();
-      }
-      video.style.display = "block";
-      image.style.display = "none";
-      image.style.backgroundImage = "";
-      video.play().catch(() => {});
-      if (document.body) {
-        document.body.dataset.wxVariant = String(choice.variant || "night");
-        document.body.dataset.wxCode = String(choice.code || "");
-      }
-      if (window.location && /localhost|127\.0\.0\.1/.test(window.location.hostname || "")) {
-        console.debug("[bg] code", choice.code, "variant", choice.variant, "intel", choice.intelHint);
-      }
-      return;
-    }
+    const video = document.getElementById("fw-bg-video");
 
     image.style.backgroundImage = `url('${choice.src}')`;
     image.style.display = "block";
-    video.pause();
-    video.removeAttribute("src");
-    video.style.display = "none";
+    if (video) {
+      video.pause();
+      video.removeAttribute("src");
+      video.style.display = "none";
+    }
     if (document.body) {
       document.body.dataset.wxVariant = String(choice.variant || "night");
       document.body.dataset.wxCode = String(choice.code || "");
@@ -275,7 +263,7 @@
   window.FWBgEngine = {
     pickBackgroundForWeather,
     applyBackground,
-    decideBackgroundVariant
+    decideVariant
   };
 
   document.addEventListener("DOMContentLoaded", function () {

@@ -1,10 +1,11 @@
 (function () {
   let weatherBackendUnavailable = false;
   let settingsApiUnauthorized = false;
+  // Set `window.FW_INTEL_BASE_URL` in env-specific bootstrap to point at intel service.
   const INTEL_BASE_URL =
     (typeof window !== "undefined" && window.FW_INTEL_BASE_URL) || "http://127.0.0.1:5173";
   const INTEL_HINT_PATH =
-    (typeof window !== "undefined" && window.FW_INTEL_HINT_PATH) || "/api/intel/hint";
+    (typeof window !== "undefined" && window.FW_INTEL_HINT_PATH) || "/api/intel/live";
 
   function getApiKey() {
     try {
@@ -137,37 +138,35 @@
 
   async function getIntelHint(lat, lon, dateIso, scenarioOverrides) {
     try {
-      const qs = [
-        "lat=" + encodeURIComponent(lat),
-        "lon=" + encodeURIComponent(lon),
-        "date=" + encodeURIComponent(dateIso || new Date().toISOString().slice(0, 10))
-      ];
       const base = String(INTEL_BASE_URL || "").replace(/\/+$/, "");
-      const path = String(INTEL_HINT_PATH || "/api/intel/hint");
-      const url = base + path + "?" + qs.join("&");
-      const options = { method: "GET" };
-
-      if (scenarioOverrides && typeof scenarioOverrides === "object") {
-        options.headers = { "Content-Type": "application/json" };
-        options.method = "POST";
-        options.body = JSON.stringify({
-          lat: lat,
-          lon: lon,
-          date: dateIso || new Date().toISOString().slice(0, 10),
-          scenario_overrides: scenarioOverrides
-        });
-      }
-
-      const res = await fetch(url, options);
+      const path = String(INTEL_HINT_PATH || "/api/intel/live");
+      const url = base + path;
+      const controller = new AbortController();
+      const timeout = setTimeout(function () {
+        controller.abort();
+      }, 3000);
+      const body = {
+        lat: lat,
+        lon: lon,
+        dateIso: dateIso || new Date().toISOString().slice(0, 10),
+        scenarioOverrides:
+          scenarioOverrides && typeof scenarioOverrides === "object"
+            ? scenarioOverrides
+            : { preferences: { enabledModules: [] } }
+      };
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+        signal: controller.signal
+      });
+      clearTimeout(timeout);
       if (!res.ok) return null;
       const json = await res.json();
       if (!json || typeof json !== "object") return null;
       const hint = json.background_variant_hint || (json.data && json.data.background_variant_hint) || null;
       if (hint !== "severe" && hint !== "normal") return null;
-      return {
-        background_variant_hint: hint,
-        severity_tier: json.severity_tier || (json.data && json.data.severity_tier) || null
-      };
+      return hint;
     } catch (_err) {
       return null;
     }
