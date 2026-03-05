@@ -1,6 +1,7 @@
 (function () {
   let weatherBackendUnavailable = false;
   let settingsApiUnauthorized = false;
+  let weatherBasePath = null;
   // Optional local-dev override. In production, leave unset so same-origin proxy is used.
   const INTEL_BASE_URL =
     typeof window !== "undefined" && typeof window.FW_INTEL_BASE_URL === "string"
@@ -59,20 +60,42 @@
 
   async function fetchWeather(path, lat, lon) {
     if (weatherBackendUnavailable) throw new Error("backend_weather_unavailable");
-    const url =
-      "/api/weather/" +
-      path +
-      "?lat=" +
-      encodeURIComponent(lat) +
-      "&lon=" +
-      encodeURIComponent(lon);
-    const res = await fetch(url);
-    if (res.status === 404) {
+    const candidates = [];
+    if (weatherBasePath) candidates.push(weatherBasePath);
+    candidates.push("/api/weather", "/weather");
+    const seen = new Set();
+    const bases = candidates.filter(function (base) {
+      if (!base || seen.has(base)) return false;
+      seen.add(base);
+      return true;
+    });
+
+    let saw404 = false;
+    for (const base of bases) {
+      const url =
+        base +
+        "/" +
+        path +
+        "?lat=" +
+        encodeURIComponent(lat) +
+        "&lon=" +
+        encodeURIComponent(lon);
+      const res = await fetch(url);
+      if (res.ok) {
+        weatherBasePath = base;
+        return res.json();
+      }
+      if (res.status === 404) {
+        saw404 = true;
+        continue;
+      }
+      throw new Error("backend_weather_failed");
+    }
+    if (saw404) {
       weatherBackendUnavailable = true;
       throw new Error("backend_weather_unavailable");
     }
-    if (!res.ok) throw new Error("backend_weather_failed");
-    return res.json();
+    throw new Error("backend_weather_failed");
   }
 
   async function getHourlyForecast(lat, lon) {
