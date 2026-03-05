@@ -1,6 +1,10 @@
 (function () {
   let weatherBackendUnavailable = false;
   let settingsApiUnauthorized = false;
+  const INTEL_BASE_URL =
+    (typeof window !== "undefined" && window.FW_INTEL_BASE_URL) || "http://127.0.0.1:5173";
+  const INTEL_HINT_PATH =
+    (typeof window !== "undefined" && window.FW_INTEL_HINT_PATH) || "/api/intel/hint";
 
   function getApiKey() {
     try {
@@ -131,6 +135,44 @@
     return json;
   }
 
+  async function getIntelHint(lat, lon, dateIso, scenarioOverrides) {
+    try {
+      const qs = [
+        "lat=" + encodeURIComponent(lat),
+        "lon=" + encodeURIComponent(lon),
+        "date=" + encodeURIComponent(dateIso || new Date().toISOString().slice(0, 10))
+      ];
+      const base = String(INTEL_BASE_URL || "").replace(/\/+$/, "");
+      const path = String(INTEL_HINT_PATH || "/api/intel/hint");
+      const url = base + path + "?" + qs.join("&");
+      const options = { method: "GET" };
+
+      if (scenarioOverrides && typeof scenarioOverrides === "object") {
+        options.headers = { "Content-Type": "application/json" };
+        options.method = "POST";
+        options.body = JSON.stringify({
+          lat: lat,
+          lon: lon,
+          date: dateIso || new Date().toISOString().slice(0, 10),
+          scenario_overrides: scenarioOverrides
+        });
+      }
+
+      const res = await fetch(url, options);
+      if (!res.ok) return null;
+      const json = await res.json();
+      if (!json || typeof json !== "object") return null;
+      const hint = json.background_variant_hint || (json.data && json.data.background_variant_hint) || null;
+      if (hint !== "severe" && hint !== "normal") return null;
+      return {
+        background_variant_hint: hint,
+        severity_tier: json.severity_tier || (json.data && json.data.severity_tier) || null
+      };
+    } catch (_err) {
+      return null;
+    }
+  }
+
   async function getSettings(ownerEmail) {
     if (settingsApiUnauthorized) return {};
     const owner = String(ownerEmail || "").trim().toLowerCase();
@@ -180,6 +222,7 @@
     getWeatherBundle: getWeatherBundle,
     getGeocodeByZip: getGeocodeByZip,
     getAlmanacDay: getAlmanacDay,
+    getIntelHint: getIntelHint,
     getSettings: getSettings,
     saveSettings: saveSettings,
     getApiKey: getApiKey

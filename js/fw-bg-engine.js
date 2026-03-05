@@ -17,6 +17,8 @@
     "wind",
     "mixed"
   ];
+  const INTEL_HINT_CACHE_MS = 2 * 60 * 1000;
+  const intelHintCache = new Map();
 
   function ensureBackgroundLayers() {
     let video = document.getElementById("fw-bg-video");
@@ -144,11 +146,77 @@
     return assets[idx];
   }
 
-  function pickBackgroundForWeather(weather) {
+  function normalizeHint(hint) {
+    const v = String(hint || "").toLowerCase();
+    return v === "severe" || v === "normal" ? v : null;
+  }
+
+  function decideBackgroundVariant(input) {
+    const intelHint = normalizeHint(input && input.intelHint);
+    if (intelHint === "severe") return "severe";
+
+    const nowLocalHour = Number(input && input.nowLocalHour);
+    const hour = Number.isFinite(nowLocalHour) ? nowLocalHour : new Date().getHours();
+    if (hour >= 5 && hour <= 10) return "morning";
+    if (hour >= 11 && hour <= 16) return "noon";
+    return "night";
+  }
+
+  function getWeatherCode(weather) {
+    const current = weather && weather.weather && weather.weather.current ? weather.weather.current : {};
+    const code = Number(current.weather_code);
+    return Number.isFinite(code) ? code : 3;
+  }
+
+  function variantAssetIndex(variant, total) {
+    if (!total) return 0;
+    if (variant === "morning") return 0 % total;
+    if (variant === "noon") return 1 % total;
+    if (variant === "night") return 2 % total;
+    return (total - 1 + total) % total; // severe => use strongest/final variant
+  }
+
+  function pickVariantForGroup(group, variant, weather) {
+    const assets = (window.FW_BG_ASSETS && window.FW_BG_ASSETS[group]) || [];
+    if (!assets.length) return null;
+    const idx = variantAssetIndex(variant, assets.length);
+    return assets[idx] || assets[hashString(`${locationSeed(weather)}|${group}`) % assets.length];
+  }
+
+  async function getIntelHint(weather) {
+    const loc = weather && weather.location ? weather.location : null;
+    const lat = loc && Number.isFinite(Number(loc.lat)) ? Number(loc.lat) : null;
+    const lon = loc && Number.isFinite(Number(loc.lon)) ? Number(loc.lon) : null;
+    if (lat == null || lon == null) return null;
+
+    const dateIso = new Date().toISOString().slice(0, 10);
+    const key = `${lat.toFixed(3)},${lon.toFixed(3)},${dateIso}`;
+    const cached = intelHintCache.get(key);
+    if (cached && Date.now() - cached.ts < INTEL_HINT_CACHE_MS) return cached.value;
+
+    if (!window.apiBox || typeof window.apiBox.getIntelHint !== "function") {
+      intelHintCache.set(key, { ts: Date.now(), value: null });
+      return null;
+    }
+
+    const value = await window.apiBox.getIntelHint(lat, lon, dateIso);
+    const hint = value && value.background_variant_hint ? value.background_variant_hint : null;
+    intelHintCache.set(key, { ts: Date.now(), value: hint });
+    return hint;
+  }
+
+  async function pickBackgroundForWeather(weather) {
     const group = pickGroup(weather);
-    const selected = pickVariant(group, weather) || pickVariant("mixed", weather);
+    const code = getWeatherCode(weather);
+    const intelHint = await getIntelHint(weather).catch(() => null);
+    const variant = decideBackgroundVariant({
+      nowLocalHour: new Date().getHours(),
+      intelHint
+    });
+
+    const selected = pickVariantForGroup(group, variant, weather) || pickVariant(group, weather) || pickVariant("mixed", weather);
     if (!selected) return { type: "image", src: "" };
-    return { type: selected.type, src: selected.src, group };
+    return { type: selected.type, src: selected.src, group, variant, code, intelHint };
   }
 
   function readCachedWeather() {
@@ -160,11 +228,11 @@
     }
   }
 
-  function applyBackground(weatherPayload) {
+  async function applyBackground(weatherPayload) {
     const payload = weatherPayload || window.__FW_WEATHER_PAYLOAD || readCachedWeather();
     if (!payload) return;
 
-    const choice = pickBackgroundForWeather(payload);
+    const choice = await pickBackgroundForWeather(payload);
     if (!choice || !choice.src) return;
 
     const layers = ensureBackgroundLayers();
@@ -180,6 +248,13 @@
       image.style.display = "none";
       image.style.backgroundImage = "";
       video.play().catch(() => {});
+      if (document.body) {
+        document.body.dataset.wxVariant = String(choice.variant || "night");
+        document.body.dataset.wxCode = String(choice.code || "");
+      }
+      if (window.location && /localhost|127\.0\.0\.1/.test(window.location.hostname || "")) {
+        console.debug("[bg] code", choice.code, "variant", choice.variant, "intel", choice.intelHint);
+      }
       return;
     }
 
@@ -188,11 +263,19 @@
     video.pause();
     video.removeAttribute("src");
     video.style.display = "none";
+    if (document.body) {
+      document.body.dataset.wxVariant = String(choice.variant || "night");
+      document.body.dataset.wxCode = String(choice.code || "");
+    }
+    if (window.location && /localhost|127\.0\.0\.1/.test(window.location.hostname || "")) {
+      console.debug("[bg] code", choice.code, "variant", choice.variant, "intel", choice.intelHint);
+    }
   }
 
   window.FWBgEngine = {
     pickBackgroundForWeather,
-    applyBackground
+    applyBackground,
+    decideBackgroundVariant
   };
 
   document.addEventListener("DOMContentLoaded", function () {
@@ -210,4 +293,3 @@
     applyBackground();
   });
 })();
-
