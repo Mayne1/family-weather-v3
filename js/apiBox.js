@@ -102,9 +102,16 @@
     try {
       const json = await fetchWeather("hourly", lat, lon);
       const rows = normalizeHourly(json.hourly || json.weather || json.data || json);
-      return Array.isArray(rows) ? rows : [];
+      if (Array.isArray(rows) && rows.length) return rows;
+      const bundle = await getWeatherBundle(lat, lon);
+      return normalizeHourly(bundle && (bundle.hourly || (bundle.weather && bundle.weather.hourly)));
     } catch (_err) {
-      return [];
+      try {
+        const bundle = await getWeatherBundle(lat, lon);
+        return normalizeHourly(bundle && (bundle.hourly || (bundle.weather && bundle.weather.hourly)));
+      } catch (_err2) {
+        return [];
+      }
     }
   }
 
@@ -123,7 +130,64 @@
   }
 
   async function getWeatherBundle(lat, lon) {
-    return fetchWeather("bundle", lat, lon);
+    try {
+      return await fetchWeather("bundle", lat, lon);
+    } catch (_err) {
+      const [rightNow, hourly, daily, alerts] = await Promise.all([
+        getWeatherRightNow(lat, lon).catch(function () { return null; }),
+        fetchWeather("hourly", lat, lon).catch(function () { return null; }),
+        fetchWeather("daily", lat, lon).catch(function () { return null; }),
+        fetchWeather("alerts", lat, lon).catch(function () { return null; })
+      ]);
+      if (!rightNow && !hourly && !daily && !alerts) throw new Error("bundle_unavailable");
+
+      const dailyData = daily && (daily.daily7 || daily.daily || (daily.weather && daily.weather.daily)) || null;
+      const alertsList = alerts && Array.isArray(alerts.alerts) ? alerts.alerts : [];
+      const headsUp = alerts && alerts.headsUp ? alerts.headsUp : buildHeadsUpFromAlerts(alertsList);
+
+      return {
+        ok: true,
+        source: "nws",
+        location:
+          (rightNow && rightNow.location) ||
+          (hourly && hourly.location) ||
+          (daily && daily.location) ||
+          (alerts && alerts.location) ||
+          { lat: Number(lat), lon: Number(lon) },
+        rightNow: rightNow && rightNow.rightNow ? rightNow.rightNow : null,
+        hourly: hourly && hourly.hourly ? hourly.hourly : [],
+        daily7: dailyData,
+        daily: dailyData,
+        alerts: alertsList,
+        headsUp: headsUp,
+        weather: {
+          current: rightNow && rightNow.rightNow ? rightNow.rightNow : null,
+          hourly: hourly && hourly.weather && hourly.weather.hourly ? hourly.weather.hourly : null,
+          daily: dailyData
+        }
+      };
+    }
+  }
+
+  function severityRank(value) {
+    var v = String(value || "").toLowerCase();
+    if (v === "extreme") return 5;
+    if (v === "severe") return 4;
+    if (v === "moderate") return 3;
+    if (v === "minor") return 2;
+    return 1;
+  }
+
+  function buildHeadsUpFromAlerts(alerts) {
+    var list = Array.isArray(alerts) ? alerts.slice() : [];
+    list.sort(function (a, b) {
+      return severityRank(b && b.severity) - severityRank(a && a.severity);
+    });
+    return {
+      count: list.length,
+      top: list.slice(0, 3),
+      hasSevere: list.some(function (a) { return severityRank(a && a.severity) >= 4; })
+    };
   }
 
   async function getGeocodeByZip(zip) {
