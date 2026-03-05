@@ -15,6 +15,7 @@ const TTL = {
   forecastMs: 30 * 60 * 1000,
   alertsMs: 2 * 60 * 1000
 };
+const DAILY_DAYS_MAX = 7;
 
 const cache = {
   points: new Map(),
@@ -270,7 +271,7 @@ function normalizeDaily(periods) {
     if (date && !nightByDate.has(date)) nightByDate.set(date, p);
   }
 
-  const dates = Array.from(dayByDate.keys()).sort();
+  const dates = Array.from(dayByDate.keys()).sort().slice(0, DAILY_DAYS_MAX);
   const daily = {
     time: [],
     weather_code: [],
@@ -414,11 +415,13 @@ async function getForecast(lat, lon) {
       gridX: points.gridX,
       gridY: points.gridY
     },
-    daily: normalized.daily,
-    days: normalized.days,
+    daily7: normalized.daily,
+    days7: normalized.days,
+    daily: normalized.daily, // compatibility
+    days: normalized.days, // compatibility
     forecastHorizonDays: horizonDays,
     horizonNote:
-      horizonDays < 10
+      horizonDays < DAILY_DAYS_MAX
         ? `NWS daily forecast currently provides ${horizonDays} day periods for this location.`
         : null,
     weather: {
@@ -465,13 +468,14 @@ async function getBundle(lat, lon) {
     location: rightNow.location || { lat: Number(lat), lon: Number(lon) },
     rightNow: rightNow.rightNow,
     hourly: hourly.hourly,
-    daily: forecast.daily,
+    daily7: forecast.daily7,
+    daily: forecast.daily7, // compatibility
     alerts: alerts.alerts,
     headsUp: alerts.headsUp,
     weather: {
       current: rightNow.rightNow,
       hourly: hourly.weather.hourly,
-      daily: forecast.daily
+      daily: forecast.daily7
     }
   };
 }

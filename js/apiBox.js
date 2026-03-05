@@ -85,7 +85,9 @@
   }
 
   async function getWeatherForecast(lat, lon) {
-    return fetchWeather("forecast", lat, lon);
+    const json = await fetchWeather("daily", lat, lon);
+    if (json && !json.daily && json.daily7) json.daily = json.daily7;
+    return json;
   }
 
   async function getWeatherAlerts(lat, lon) {

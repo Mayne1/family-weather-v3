@@ -379,7 +379,7 @@
     function renderForecast(target, payload) {
         if (!target) return;
         const daily = payload.weather.daily;
-        const count = Math.min(10, daily.time.length);
+        const count = Math.min(7, daily.time.length);
         const tiles = Array.from({ length: count }).map((_, idx) => {
             const day = formatDay(parseYmdLocal(daily.time[idx]));
             const hi = Math.round(daily.temperature_2m_max[idx]);
@@ -398,7 +398,7 @@
         }).join("");
 
         target.innerHTML = `
-            <div class="subtitle">10-Day</div>
+            <div class="subtitle">7-Day</div>
             <div class="d-flex gap-3 overflow-auto">${tiles}</div>
             <div class="fw-favorites-wrap mt-4">
                 <div class="d-flex align-items-center justify-content-between mb-2">
@@ -755,7 +755,7 @@
             saveCache(payload);
             renderAll(payload);
         } catch (err) {
-            const fallbackDays = Array.from({ length: 10 }).map((_, idx) => {
+            const fallbackDays = Array.from({ length: 7 }).map((_, idx) => {
                 const d = new Date();
                 d.setDate(d.getDate() + idx);
                 return d.toISOString().slice(0, 10);

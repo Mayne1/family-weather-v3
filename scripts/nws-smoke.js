@@ -12,8 +12,9 @@ async function run() {
   assert(hourly.hourly.length > 0, "hourly endpoint should return at least one period");
 
   const forecast = await nws.getForecast(lat, lon);
-  assert(forecast.daily && Array.isArray(forecast.daily.time), "forecast.daily.time must exist");
-  assert(forecast.daily.time.length > 0, "forecast should include at least one daily period");
+  assert(forecast.daily7 && Array.isArray(forecast.daily7.time), "forecast.daily7.time must exist");
+  assert(forecast.daily7.time.length > 0, "forecast should include at least one daily period");
+  assert(forecast.daily7.time.length <= 7, "forecast.daily7 should cap at 7 periods");
 
   const alerts = await nws.getAlerts(lat, lon);
   assert(Array.isArray(alerts.alerts), "alerts.alerts must be an array");
@@ -26,12 +27,12 @@ async function run() {
         location: { lat, lon },
         checks: {
           hourlyPeriods: hourly.hourly.length,
-          dailyPeriods: forecast.daily.time.length,
+          dailyPeriods: forecast.daily7.time.length,
           alertCount: alerts.alerts.length
         },
         sample: {
           hourly: hourly.hourly[0] || null,
-          daily: forecast.days && forecast.days[0] ? forecast.days[0] : null,
+          daily: forecast.days7 && forecast.days7[0] ? forecast.days7[0] : null,
           alert: alerts.alerts[0] || null
         }
       },

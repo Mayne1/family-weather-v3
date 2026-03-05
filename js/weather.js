@@ -103,6 +103,27 @@ router.get("/forecast", async (req, res) => {
   }
 });
 
+router.get("/daily", async (req, res) => {
+  const loc = parseLatLon(req);
+  if (!loc) {
+    return res.status(400).json({ ok: false, error: "invalid_lat_lon" });
+  }
+  try {
+    const json = await nws.getForecast(loc.lat, loc.lon);
+    return res.json({
+      ok: true,
+      source: "nws",
+      location: json.location,
+      daily7: json.daily7,
+      days7: json.days7,
+      forecastHorizonDays: json.forecastHorizonDays,
+      horizonNote: json.horizonNote
+    });
+  } catch (_err) {
+    return res.status(502).json({ ok: false, error: "nws_daily_failed" });
+  }
+});
+
 // Compatibility alias
 router.get("/forecast10", async (req, res) => {
   const loc = parseLatLon(req);
@@ -114,7 +135,7 @@ router.get("/forecast10", async (req, res) => {
     return res.json({
       ok: true,
       location: json.location,
-      days: json.days,
+      days: json.days7,
       forecastHorizonDays: json.forecastHorizonDays,
       horizonNote: json.horizonNote,
       source: "nws"
