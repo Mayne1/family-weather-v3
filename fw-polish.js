@@ -26,14 +26,17 @@
   }
 
   function iconForCode(code) {
-    if (code === 0) return "images/mgc-weather-icons-pack-v12/01_sun_fill.svg";
-    if (code === 1 || code === 2) return "images/mgc-weather-icons-pack-v12/04_sun_cloudy_fill.svg";
-    if (code === 3) return "images/mgc-weather-icons-pack-v12/06_clouds_fill.svg";
-    if (code >= 45 && code <= 48) return "images/mgc-weather-icons-pack-v12/15_fog_fill.svg";
-    if (code >= 51 && code <= 57) return "images/mgc-weather-icons-pack-v12/09_drizzle_fill.svg";
-    if ((code >= 61 && code <= 67) || (code >= 80 && code <= 82)) return "images/mgc-weather-icons-pack-v12/10_showers_fill.svg";
-    if ((code >= 71 && code <= 77) || (code >= 85 && code <= 86)) return "images/mgc-weather-icons-pack-v12/18_moderate_snow_fill.svg";
-    if (code >= 95) return "images/mgc-weather-icons-pack-v12/14_thunderstorm_fill.svg";
+    const n = window.apiBox && typeof window.apiBox.normalizeWeatherCode === "function"
+      ? window.apiBox.normalizeWeatherCode(code)
+      : Number(code);
+    if (n === 0) return "images/mgc-weather-icons-pack-v12/01_sun_fill.svg";
+    if (n === 1 || n === 2) return "images/mgc-weather-icons-pack-v12/04_sun_cloudy_fill.svg";
+    if (n === 3) return "images/mgc-weather-icons-pack-v12/06_clouds_fill.svg";
+    if (n >= 45 && n <= 48) return "images/mgc-weather-icons-pack-v12/15_fog_fill.svg";
+    if (n >= 51 && n <= 57) return "images/mgc-weather-icons-pack-v12/09_drizzle_fill.svg";
+    if ((n >= 61 && n <= 67) || (n >= 80 && n <= 82)) return "images/mgc-weather-icons-pack-v12/10_showers_fill.svg";
+    if ((n >= 71 && n <= 77) || (n >= 85 && n <= 86)) return "images/mgc-weather-icons-pack-v12/18_moderate_snow_fill.svg";
+    if (n >= 95) return "images/mgc-weather-icons-pack-v12/14_thunderstorm_fill.svg";
     return "images/mgc-weather-icons-pack-v12/06_clouds_fill.svg";
   }
 
@@ -79,7 +82,10 @@
       return {
         time: r.time || r.ts || null,
         temp: r.temperature_2m != null ? r.temperature_2m : r.temp,
-        code: r.weather_code != null ? r.weather_code : r.code,
+        code:
+          window.apiBox && typeof window.apiBox.normalizeWeatherCode === "function"
+            ? window.apiBox.normalizeWeatherCode(r.weather_code != null ? r.weather_code : r.code)
+            : (r.weather_code != null ? r.weather_code : r.code),
         precipChance: r.precipChance != null ? r.precipChance : r.precipitation_probability
       };
     }).filter(function (r) {
@@ -150,13 +156,11 @@
   }
 
   async function fetchFavCurrent(lat, lon) {
-    const url = "https://api.open-meteo.com/v1/forecast?latitude=" + encodeURIComponent(lat) +
-      "&longitude=" + encodeURIComponent(lon) +
-      "&current=temperature_2m,weather_code&temperature_unit=fahrenheit&timezone=auto";
-    const res = await fetch(url);
-    if (!res.ok) throw new Error("fav_fetch_failed");
-    const json = await res.json();
-    const c = json && json.current;
+    if (!window.apiBox || typeof window.apiBox.getWeatherRightNow !== "function") {
+      throw new Error("fav_fetch_unavailable");
+    }
+    const json = await window.apiBox.getWeatherRightNow(lat, lon);
+    const c = json && (json.rightNow || json.current || (json.weather && json.weather.current));
     if (!c) throw new Error("fav_missing");
     return { temp: Math.round(c.temperature_2m), code: c.weather_code, ts: Date.now() };
   }

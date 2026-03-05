@@ -77,7 +77,9 @@
   }
 
   function mapWeatherCodeToBgCode(code) {
-    const n = Number(code);
+    const n = window.apiBox && typeof window.apiBox.normalizeWeatherCode === "function"
+      ? window.apiBox.normalizeWeatherCode(code)
+      : Number(code);
     if (!Number.isFinite(n)) return BG_FALLBACK_CODE;
     if (n >= 200 && n <= 299) return "200";
     if (n >= 300 && n <= 399) return "300";

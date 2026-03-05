@@ -2,6 +2,7 @@
 
 const express = require("express");
 const { Pool } = require("pg");
+const nws = require("./nws-adapter");
 
 const router = express.Router();
 if (!process.env.DATABASE_URL) {
@@ -10,6 +11,108 @@ if (!process.env.DATABASE_URL) {
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
+});
+
+function parseLatLon(req) {
+  const DEFAULT_LAT = 37.9577;
+  const DEFAULT_LON = -121.2908;
+  const lat = Number(req.query.lat ?? DEFAULT_LAT);
+  const lon = Number(req.query.lon ?? DEFAULT_LON);
+  if (!Number.isFinite(lat) || !Number.isFinite(lon)) return null;
+  return { lat, lon };
+}
+
+// NWS-backed public routes used by homepage widgets.
+router.get("/rightnow", async (req, res) => {
+  const loc = parseLatLon(req);
+  if (!loc) return res.status(400).json({ ok: false, error: "invalid_lat_lon" });
+  try {
+    const json = await nws.getRightNow(loc.lat, loc.lon);
+    return res.json(json);
+  } catch (_err) {
+    return res.status(502).json({ ok: false, error: "nws_rightnow_failed" });
+  }
+});
+
+router.get("/current", async (req, res) => {
+  const loc = parseLatLon(req);
+  if (!loc) return res.status(400).json({ ok: false, error: "invalid_lat_lon" });
+  try {
+    const json = await nws.getRightNow(loc.lat, loc.lon);
+    return res.json({
+      ok: true,
+      location: json.location,
+      current: json.rightNow || null,
+      rightNow: json.rightNow || null,
+      weather: { current: json.rightNow || null },
+      source: "nws"
+    });
+  } catch (_err) {
+    return res.status(502).json({ ok: false, error: "nws_current_failed" });
+  }
+});
+
+router.get("/hourly", async (req, res) => {
+  const loc = parseLatLon(req);
+  if (!loc) return res.status(400).json({ ok: false, error: "invalid_lat_lon" });
+  try {
+    const json = await nws.getHourly(loc.lat, loc.lon);
+    return res.json(json);
+  } catch (_err) {
+    return res.status(502).json({ ok: false, error: "nws_hourly_failed" });
+  }
+});
+
+router.get("/alerts", async (req, res) => {
+  const loc = parseLatLon(req);
+  if (!loc) return res.status(400).json({ ok: false, error: "invalid_lat_lon" });
+  try {
+    const json = await nws.getAlerts(loc.lat, loc.lon);
+    return res.json(json);
+  } catch (_err) {
+    return res.status(502).json({ ok: false, error: "nws_alerts_failed" });
+  }
+});
+
+router.get("/bundle", async (req, res) => {
+  const loc = parseLatLon(req);
+  if (!loc) return res.status(400).json({ ok: false, error: "invalid_lat_lon" });
+  try {
+    const json = await nws.getBundle(loc.lat, loc.lon);
+    return res.json(json);
+  } catch (_err) {
+    return res.status(502).json({ ok: false, error: "nws_bundle_failed" });
+  }
+});
+
+router.get("/forecast", async (req, res) => {
+  const loc = parseLatLon(req);
+  if (!loc) return res.status(400).json({ ok: false, error: "invalid_lat_lon" });
+  try {
+    const json = await nws.getForecast(loc.lat, loc.lon);
+    return res.json(json);
+  } catch (_err) {
+    return res.status(502).json({ ok: false, error: "nws_forecast_failed" });
+  }
+});
+
+router.get("/daily", async (req, res) => {
+  const loc = parseLatLon(req);
+  if (!loc) return res.status(400).json({ ok: false, error: "invalid_lat_lon" });
+  try {
+    const json = await nws.getForecast(loc.lat, loc.lon);
+    return res.json({
+      ok: true,
+      source: "nws",
+      location: json.location,
+      daily7: json.daily7,
+      days7: json.days7,
+      forecastHorizonDays: json.forecastHorizonDays,
+      horizonNote: json.horizonNote
+    });
+  } catch (_err) {
+    return res.status(502).json({ ok: false, error: "nws_daily_failed" });
+  }
 });
 
 // Cache-first 10-day forecast

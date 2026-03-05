@@ -1,7 +1,6 @@
 (function () {
-  let weatherBackendUnavailable = false;
   let settingsApiUnauthorized = false;
-  let weatherBasePath = null;
+  let weatherBasePath = "/api/weather";
   // Optional local-dev override. In production, leave unset so same-origin proxy is used.
   const INTEL_BASE_URL =
     typeof window !== "undefined" && typeof window.FW_INTEL_BASE_URL === "string"
@@ -20,6 +19,20 @@
     return null;
   }
 
+  function normalizeWeatherCode(value) {
+    const code = Number(value);
+    if (!Number.isFinite(code)) return 3;
+    if (code >= 95) return 95;
+    if ((code >= 80 && code <= 82) || (code >= 61 && code <= 67)) return 61;
+    if ((code >= 71 && code <= 77) || code === 85 || code === 86) return 71;
+    if (code >= 51 && code <= 57) return 51;
+    if (code >= 45 && code <= 48) return 45;
+    if (code === 0) return 0;
+    if (code === 1 || code === 2) return 2;
+    if (code === 3) return 3;
+    return code;
+  }
+
   function normalizeHourly(data) {
     if (!data) return [];
     if (Array.isArray(data.hours)) {
@@ -27,7 +40,7 @@
         return {
           time: row.startTime || row.time || row.ts || null,
           temperature_2m: row.tempF != null ? row.tempF : (row.temperature_2m != null ? row.temperature_2m : row.temp),
-          weather_code: row.weather_code != null ? row.weather_code : row.code,
+          weather_code: normalizeWeatherCode(row.weather_code != null ? row.weather_code : row.code),
           precipChance: row.pop != null ? row.pop : (row.precipChance != null ? row.precipChance : row.precipitation_probability)
         };
       });
@@ -37,7 +50,7 @@
         return {
           time: row.time || row.ts || null,
           temperature_2m: row.temperature_2m != null ? row.temperature_2m : row.temp,
-          weather_code: row.weather_code != null ? row.weather_code : row.code,
+          weather_code: normalizeWeatherCode(row.weather_code != null ? row.weather_code : row.code),
           precipChance: row.precipChance != null ? row.precipChance : row.precipitation_probability
         };
       });
@@ -50,7 +63,7 @@
         return {
           time: t,
           temperature_2m: temps[i],
-          weather_code: codes[i],
+          weather_code: normalizeWeatherCode(codes[i]),
           precipChance: prec[i]
         };
       });
@@ -60,7 +73,7 @@
         return {
           time: t,
           temperature_2m: data.temperature_2m[i],
-          weather_code: data.weather_code ? data.weather_code[i] : null,
+          weather_code: data.weather_code ? normalizeWeatherCode(data.weather_code[i]) : null,
           precipChance: data.precipitation_probability ? data.precipitation_probability[i] : null
         };
       });
@@ -69,10 +82,9 @@
   }
 
   async function fetchWeather(path, lat, lon) {
-    if (weatherBackendUnavailable) throw new Error("backend_weather_unavailable");
     const candidates = [];
     if (weatherBasePath) candidates.push(weatherBasePath);
-    candidates.push("/api/weather", "/weather");
+    candidates.push("/api/weather");
     const seen = new Set();
     const bases = candidates.filter(function (base) {
       if (!base || seen.has(base)) return false;
@@ -80,7 +92,6 @@
       return true;
     });
 
-    let saw404 = false;
     for (const base of bases) {
       const url =
         base +
@@ -96,16 +107,11 @@
         return res.json();
       }
       if (res.status === 404) {
-        saw404 = true;
         continue;
       }
       throw new Error("backend_weather_failed");
     }
-    if (saw404) {
-      weatherBackendUnavailable = true;
-      throw new Error("backend_weather_unavailable");
-    }
-    throw new Error("backend_weather_failed");
+    throw new Error("backend_weather_not_found");
   }
 
   async function getHourlyForecast(lat, lon) {
@@ -126,7 +132,12 @@
   }
 
   async function getWeatherRightNow(lat, lon) {
-    return fetchWeather("rightnow", lat, lon);
+    try {
+      return await fetchWeather("rightnow", lat, lon);
+    } catch (_err) {
+      // Compatibility alias for older backends.
+      return fetchWeather("current", lat, lon);
+    }
   }
 
   async function getWeatherForecast(lat, lon) {
@@ -369,6 +380,7 @@
     getWeatherForecast: getWeatherForecast,
     getWeatherAlerts: getWeatherAlerts,
     getWeatherBundle: getWeatherBundle,
+    normalizeWeatherCode: normalizeWeatherCode,
     getGeocodeByZip: getGeocodeByZip,
     getAlmanacDay: getAlmanacDay,
     getIntelHint: getIntelHint,
