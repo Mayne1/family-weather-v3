@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Redirecting...</title>
+  <script>
+    (function () {
+      var query = window.location.search || "";
+      var hash = window.location.hash || "";
+      window.location.replace("login.html" + query + hash);
+    })();
+  </script>
+    <link rel="stylesheet" href="/css/fw-polish.css">
+
+    <link href="css/fw-master.css?v=1" rel="stylesheet" type="text/css" >
+</head>
+<body><script src="js/fw-bg-assets.js"></script>
+<script src="js/fw-bg-engine.js"></script>
+</body>
+</html>
+
+
+
+

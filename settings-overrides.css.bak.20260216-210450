@@ -1,0 +1,56 @@
+/* Settings page desktop/mobile layout polish only */
+
+#section-form .fw-settings-section-title {
+  margin-top: 8px;
+  margin-bottom: -4px;
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: var(--fw-font-color, #e8f3ff);
+}
+
+#section-form #fw-settings-form .form-label {
+  font-weight: 700;
+}
+
+/* Desktop/tablet: remove the large centered panel look */
+@media (min-width: 769px) {
+  #section-form .row.justify-content-center {
+    justify-content: flex-start !important;
+  }
+
+  #section-form .col-lg-8 {
+    width: 100%;
+    max-width: 100%;
+    flex: 0 0 100%;
+  }
+
+  #section-form .col-lg-8 > .bg-dark-2 {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+  }
+
+  #section-form #fw-settings-form {
+    margin-top: 0 !important;
+    row-gap: 1.1rem !important;
+  }
+
+  #section-form #favorites {
+    margin-top: 1.6rem;
+    padding-top: 1.4rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.14);
+  }
+}
+
+/* Mobile: keep a comfortable boxed panel */
+@media (max-width: 768px) {
+  #section-form .col-lg-8 > .bg-dark-2 {
+    border-radius: 16px !important;
+    padding: 24px !important;
+    background: rgba(14, 24, 46, 0.7) !important;
+    border: 1px solid rgba(255, 255, 255, 0.16) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3) !important;
+  }
+}

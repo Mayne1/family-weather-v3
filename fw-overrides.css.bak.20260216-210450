@@ -1,0 +1,88 @@
+:root{
+  --fw-bg: #071b33;
+  --fw-text: #eaf3ff;
+  --fw-muted: rgba(234,243,255,.75);
+
+  --fw-accent: #ff8a00;
+  --fw-card-bg: rgba(9, 58, 110, .55);
+  --fw-card-border: rgba(150, 220, 255, .25);
+  --fw-card-shadow: 0 10px 30px rgba(0,0,0,.25);
+
+  --fw-header-size: 22px;
+  --fw-section-gap: 18px;
+}
+
+/* Make common cards/hero boxes obey variables */
+.hero-box, .card, .panel, .widget, .glass, .home-card, .forecast-card, .favorites-card,
+#fw-rightnow, #fw-forecast,
+#section-weather .bg-dark-2, #section-weather-extras .bg-dark-2,
+#fw-forecast .fw-forecast-tile, #fw-hourly-row .hour-chip, #fw-favorites-strip .fw-fav-pill {
+  background: var(--fw-card-bg) !important;
+  border: 1px solid var(--fw-card-border) !important;
+  box-shadow: var(--fw-card-shadow) !important;
+  color: var(--fw-text) !important;
+}
+
+/* Global text */
+body { color: var(--fw-text); }
+a, .link { color: var(--fw-text); }
+
+/* Remove bracket look from headings */
+.section-title::before,
+.section-title::after,
+h1::before, h1::after,
+h2::before, h2::after,
+h3::before, h3::after {
+  content: "" !important;
+}
+
+/* Navbar */
+.navbar, .topbar, nav, header .de-flex {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+}
+.navbar .right, .navbar .actions, .nav-actions {
+  margin-left: auto;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.navbar a, .navbar button, nav a, nav button {
+  white-space: nowrap;
+}
+
+/* Settings page: no big box on desktop */
+.settings-container, .settings-box, .preferences-box,
+#section-form .col-lg-8 > .bg-dark-2 {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  max-width: 1100px;
+}
+
+.settings-grid,
+#section-form #fw-settings-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--fw-section-gap);
+}
+
+#section-form #fw-settings-form > .col-12 {
+  grid-column: 1 / -1;
+}
+
+/* Mobile: allow box look */
+@media (max-width: 768px){
+  .settings-container, .settings-box, .preferences-box,
+  #section-form .col-lg-8 > .bg-dark-2 {
+    background: var(--fw-card-bg) !important;
+    border: 1px solid var(--fw-card-border) !important;
+    box-shadow: var(--fw-card-shadow) !important;
+    padding: 16px !important;
+    border-radius: 14px !important;
+  }
+  .settings-grid,
+  #section-form #fw-settings-form { grid-template-columns: 1fr; }
+}

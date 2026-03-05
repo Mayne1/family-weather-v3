@@ -1,0 +1,147 @@
+:root {
+  --fw-card-bg: rgba(27, 41, 66, 0.9);
+  --fw-card-border: rgba(185, 230, 255, 0.2);
+  --fw-card-text: #eaf3ff;
+}
+
+/* Mobile nav: always-visible, clickable hamburger */
+@media (max-width: 1100px) {
+  .menu_side_area {
+    display: block !important;
+    z-index: 2100 !important;
+  }
+
+  #menu-btn {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    margin: 0 !important;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    background: rgba(7, 18, 38, 0.78);
+    color: #fff !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    cursor: pointer !important;
+    z-index: 5000 !important;
+  }
+
+  #menu-btn::before {
+    content: "\2630" !important;
+    font-family: inherit !important;
+    font-size: 22px !important;
+    line-height: 1 !important;
+  }
+
+  header.fw-nav-open #menu-btn::before {
+    content: "\2715" !important;
+    font-size: 18px !important;
+  }
+
+  #mainmenu {
+    display: none;
+  }
+
+  header.fw-nav-open #mainmenu {
+    position: absolute !important;
+    top: calc(100% + 10px);
+    left: 12px;
+    right: 12px;
+    display: flex !important;
+    flex-direction: column;
+    gap: 0;
+    padding: 10px;
+    z-index: 3000;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(7, 18, 38, 0.94);
+    box-shadow: 0 18px 44px rgba(0, 0, 0, 0.42);
+  }
+
+  header.fw-nav-open #mainmenu > li > a.menu-item {
+    width: 100%;
+    padding: 10px 8px !important;
+    white-space: nowrap;
+  }
+}
+
+/* Bootstrap navbar fallback icon */
+.navbar .navbar-toggler {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  opacity: 1 !important;
+  visibility: visible !important;
+  z-index: 5000 !important;
+}
+
+.navbar .navbar-toggler:focus {
+  box-shadow: none !important;
+}
+
+.navbar .navbar-toggler-icon {
+  width: 1.5rem !important;
+  height: 1.5rem !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  background-size: 100% 100% !important;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(255,255,255,0.95)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e") !important;
+}
+
+:root[data-fw-nav-icon='dark'] .navbar .navbar-toggler-icon {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(0,0,0,0.9)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e") !important;
+}
+
+/* Global card/box color system */
+.bg-dark-2,
+.bg-dark-2.rounded-1,
+.bg-dark-1,
+.card,
+.hero-box,
+.fw-card,
+.fw-box,
+.feature-card,
+.my-events-card,
+#fw-rightnow,
+#fw-forecast,
+#fw-forecast .fw-forecast-tile,
+#fw-hourly-row .hour-chip,
+#fw-favorites-strip .fw-fav-pill {
+  background: var(--fw-card-bg) !important;
+  border-color: var(--fw-card-border) !important;
+  color: var(--fw-card-text) !important;
+}
+
+/* Remove tint overlays that block true card color */
+.bg-dark-2::before,
+.bg-dark-2::after,
+.bg-dark-2.rounded-1::before,
+.bg-dark-2.rounded-1::after,
+.bg-dark-1::before,
+.bg-dark-1::after,
+#fw-rightnow::before,
+#fw-rightnow::after,
+#fw-forecast::before,
+#fw-forecast::after {
+  content: none !important;
+  display: none !important;
+}
+
+/* Remove subtitle bracket styling */
+.subtitle::before,
+.subtitle::after,
+.section-title::before,
+.section-title::after {
+  content: none !important;
+  display: none !important;
+}
+
+/* Keep text readable inside cards; user controls color values directly */
+.bg-dark-2 *,
+.bg-dark-2.rounded-1 *,
+.bg-dark-1 *,
+.card * {
+  color: inherit !important;
+}

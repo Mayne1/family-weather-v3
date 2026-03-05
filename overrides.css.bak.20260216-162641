@@ -1,0 +1,56 @@
+:root{
+  /* Defaults (can be overwritten by Settings via JS) */
+  --fw-overlay: rgba(255,255,255,.06);
+  --fw-hero-bg: rgba(20,40,80,.35);
+  --fw-hero-border: rgba(255,255,255,.18);
+  --fw-hero-text: #eaf2ff;
+}
+
+/* 1) REMOVE BRACKETS GLOBALLY (common pattern is ::before/::after) */
+.section-title::before,
+.section-title::after,
+.card-title::before,
+.card-title::after,
+.panel-title::before,
+.panel-title::after,
+.subtitle::before,
+.subtitle::after,
+h1::before, h1::after,
+h2::before, h2::after,
+h3::before, h3::after{
+  content: "" !important;
+}
+
+/* 2) MAKE “BOXES” USE THE HERO VARS (broad but safe) */
+.hero, .hero-box, .panel, .card, .glass, .glass-panel,
+.forecast, .forecast-card, .module, .widget{
+  background: var(--fw-hero-bg, var(--fw-hero-box-color, rgba(20,40,80,.35))) !important;
+  border-color: var(--fw-hero-border, rgba(255,255,255,.18)) !important;
+  color: var(--fw-hero-text, var(--fw-font-color, #eaf2ff)) !important;
+}
+
+/* Family Weather template containers used for the hero weather modules */
+#section-weather .bg-dark-2,
+#section-weather-extras .bg-dark-2,
+#section-flows .bg-dark-2,
+#section-form .bg-dark-2,
+#fw-hourly-polish .bg-dark-2,
+#fw-rightnow,
+#fw-forecast {
+  background: var(--fw-hero-bg, var(--fw-hero-box-color, rgba(20,40,80,.35))) !important;
+  border-color: var(--fw-hero-border, rgba(255,255,255,.18)) !important;
+  color: var(--fw-hero-text, var(--fw-font-color, #eaf2ff)) !important;
+}
+
+/* If the template uses an overlay layer, lighten it */
+.overlay, .site-overlay, .bg-overlay, .page-overlay, .sw-overlay{
+  background: var(--fw-overlay) !important;
+}
+
+/* Optional polish: soften corners + subtle depth */
+.hero, .hero-box, .panel, .card, .glass, .glass-panel,
+.forecast, .forecast-card, .module, .widget{
+  border-radius: 18px !important;
+  box-shadow: 0 10px 30px rgba(0,0,0,.25) !important;
+  backdrop-filter: blur(10px);
+}

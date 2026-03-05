@@ -240,9 +240,7 @@ router.get("/bundle", async (req, res) => {
   }
 });
 
-// POST /api/weather/intel/hint?lat=..&lon=..
-// Proxies to intel engine /api/intel/live and returns only hint payload.
-router.post("/intel/hint", async (req, res) => {
+async function handleIntelHint(req, res) {
   const loc = parseLatLon(req);
   if (!loc) {
     return res.status(400).json({ ok: false, error: "invalid_lat_lon" });
@@ -254,11 +252,7 @@ router.post("/intel/hint", async (req, res) => {
     return res.json(cached);
   }
 
-  const dateIso = String((req.body && req.body.dateIso) || new Date().toISOString().slice(0, 10));
-  const scenarioOverrides =
-    req.body && typeof req.body.scenarioOverrides === "object"
-      ? req.body.scenarioOverrides
-      : { preferences: { enabledModules: [] } };
+  const dateIso = new Date().toISOString().slice(0, 10);
 
   try {
     const base = String(INTEL_ENGINE_BASE_URL || "").replace(/\/+$/, "");
@@ -266,22 +260,27 @@ router.post("/intel/hint", async (req, res) => {
     const json = await postJson(intelUrl, {
       lat: loc.lat,
       lon: loc.lon,
-      dateIso,
-      scenarioOverrides
+      dateIso
     });
 
     const hint = json.background_variant_hint || (json.data && json.data.background_variant_hint) || null;
-    const normalizedHint = hint === "severe" ? "severe" : "normal";
     const payload = {
       ok: true,
-      background_variant_hint: normalizedHint,
+      background_variant_hint: hint,
       severity_tier: json.severity_tier || (json.data && json.data.severity_tier) || null
     };
     return res.json(setCachedIntelHint(key, payload));
   } catch (_err) {
-    return res.status(502).json({ ok: false, error: "intel_hint_unavailable" });
+    return res.json({ ok: false });
   }
-});
+}
+
+// GET /api/intel/hint?lat=..&lon=..
+// Proxies to intel engine /api/intel/live and returns only hint payload.
+router.get("/intel/hint", handleIntelHint);
+
+// Backward-compatible alias.
+router.post("/intel/hint", handleIntelHint);
 
 
 

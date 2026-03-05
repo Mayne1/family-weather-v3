@@ -1,0 +1,178 @@
+:root {
+  --fw-overlay: rgba(255, 255, 255, 0.06);
+  --fw-hero-bg: rgba(20, 40, 80, 0.35);
+  --fw-hero-border: rgba(255, 255, 255, 0.18);
+  --fw-hero-text: #eaf2ff;
+}
+
+/* Remove bracket injectors on headings */
+.section-title::before,
+.section-title::after,
+.card-title::before,
+.card-title::after,
+.panel-title::before,
+.panel-title::after,
+.subtitle::before,
+.subtitle::after,
+h1::before,
+h1::after,
+h2::before,
+h2::after,
+h3::before,
+h3::after {
+  content: none !important;
+}
+
+/* Hero/box color is now CSS-variable driven */
+.hero,
+.hero-box,
+.panel,
+.card,
+.glass,
+.glass-panel,
+.forecast,
+.forecast-card,
+.module,
+.widget,
+#section-weather .bg-dark-2,
+#section-weather-extras .bg-dark-2,
+#section-flows .bg-dark-2,
+#section-form .bg-dark-2,
+#fw-hourly-polish .bg-dark-2,
+#fw-rightnow,
+#fw-forecast {
+  background: var(--fw-hero-bg, var(--fw-hero-box-color, rgba(20, 40, 80, 0.35))) !important;
+  border-color: var(--fw-hero-border, rgba(255, 255, 255, 0.18)) !important;
+  color: var(--fw-hero-text, var(--fw-font-color, #eaf2ff)) !important;
+}
+
+.overlay,
+.site-overlay,
+.bg-overlay,
+.page-overlay,
+.sw-overlay {
+  background: var(--fw-overlay) !important;
+}
+
+/* Deterministic navbar layout */
+header .de-flex {
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: nowrap;
+  gap: 12px;
+}
+
+header .header-col-mid {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+#mainmenu {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  white-space: nowrap;
+  gap: 4px;
+  overflow: hidden;
+  margin: 0;
+}
+
+#mainmenu > li > a.menu-item {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+#fw-account-slot {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+#fw-account-slot .fw-account-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (max-width: 1100px) {
+  #mainmenu > li > a.menu-item {
+    font-size: 14px;
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
+}
+
+@media (max-width: 800px) {
+  header .header-col-mid {
+    position: static;
+  }
+
+  #mainmenu {
+    display: none;
+  }
+
+  header.fw-nav-open #mainmenu {
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 12px;
+    right: 12px;
+    z-index: 1100;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    padding: 10px;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    background: rgba(10, 18, 36, 0.92);
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.35);
+    overflow: visible;
+  }
+
+  header.fw-nav-open #mainmenu > li > a.menu-item {
+    width: 100%;
+    padding: 10px 8px !important;
+    justify-content: flex-start;
+  }
+}
+
+/* Signed-in bar: clearer layout */
+#fw-auth-state-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+#fw-auth-state-label .fw-auth-prefix {
+  opacity: 0.78;
+}
+
+#fw-auth-state-label .fw-auth-email {
+  font-weight: 700;
+}
+
+#fw-auth-state-label .fw-auth-short {
+  display: none;
+}
+
+@media (max-width: 800px) {
+  #fw-auth-state-label .fw-auth-prefix,
+  #fw-auth-state-label .fw-auth-email {
+    display: none;
+  }
+
+  #fw-auth-state-label .fw-auth-short {
+    display: inline;
+  }
+}

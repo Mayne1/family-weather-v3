@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Family Weather Events - RSVP</title>
+    <link rel="icon" href="images/icon.webp" type="image/gif" sizes="16x16">
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" >
+    <meta content="FamilyWeather" name="description" >
+    <meta content="" name="keywords" >
+    <meta content="" name="author" >
+    <link href="css/bootstrap.min.css" rel="stylesheet" type="text/css" id="bootstrap">
+    
+    <link href="css/vendors.css" rel="stylesheet" type="text/css" >
+    
+    <link href="fonts/fontawesome4/css/font-awesome.min.css" rel="stylesheet" type="text/css" >
+    <link href="css/style.css" rel="stylesheet" type="text/css" >
+    <link rel="stylesheet" href="overrides.css?v=2">
+    <link id="colors" href="css/colors/scheme-01.css" rel="stylesheet" type="text/css" >
+    <link rel="stylesheet" href="/css/fw-polish.css">
+
+    <link href="css/fw-master.css?v=1" rel="stylesheet" type="text/css" >
+</head>
+
+<body class="dark-scheme">
+
+    <div id="wrapper">
+        <div class="float-text show-on-scroll">
+            <span><a href="#">Scroll to top</a></span>
+        </div>
+        <div class="scrollbar-v show-on-scroll"></div>
+
+        <div id="de-loader"></div>
+
+<header class="transparent">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="de-flex">
+                            <div class="de-flex-col">
+                                <div class="de-flex-col header-col-mid">
+                                    <ul id="mainmenu">
+                                        <li><a class="menu-item" href="index.html"><i class="fa fa-home me-2"></i>Home</a></li>
+                                        <li data-private-nav="true"><a class="menu-item" href="create-event.html"><i class="fa fa-plus me-2"></i>Create Event</a></li>
+                                        <li data-private-nav="true"><a class="menu-item" href="my-events.html"><i class="fa fa-calendar me-2"></i>My Events</a></li>
+                                        <li><a class="menu-item" href="/feeds.html"><i class="fa fa-comments me-2"></i>Feeds</a></li>
+                                        <li><a class="menu-item" href="/profile.html"><i class="fa fa-user me-2"></i>Profile</a></li>
+                                        <li data-private-nav="true"><a class="menu-item" href="invite.html"><i class="fa fa-envelope me-2"></i>Invite</a></li>
+                                        <li><a class="menu-item active" href="rsvp-public.html"><i class="fa fa-check me-2"></i>RSVP</a></li>
+                                        <li><a class="menu-item" href="settings.html"><i class="fa fa-cog me-2"></i>Settings</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div class="de-flex-col nav-actions">
+                                <div id="fw-account-slot"></div>
+                                <div class="menu_side_area">
+                                    <span id="menu-btn"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <section id="section-hero" class="section-dark no-top no-bottom text-light jarallax relative mh-800" data-video-src="mp4:video/1.mp4">
+            <div class="gradient-edge-top op-6 h-50 color"></div>
+            <div class="gradient-edge-bottom"></div>
+            <div class="sw-overlay op-8"></div>
+            <div class="abs abs-centered z-2 w-80">
+                <div class="container wow scaleIn" data-wow-duration="3s">
+                    <div class="row">
+                        <div class="col-lg-12 text-center">
+                            <img src="images/fw-icons/thermometer.svg" class="w-80px mb-3" alt="">
+                            <div class="subtitle">Family Weather Events</div>
+                            <h1 class="fs-120 text-uppercase fs-sm-12vw mb-4 lh-1">Public RSVP</h1>
+                            <p class="lead">Confirm your attendance in one step.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="public-rsvp-card" class="bg-dark section-dark text-light">
+            <div class="container">
+                <div class="row g-4 justify-content-center">
+                    <div class="col-lg-8">
+                        <div class="bg-dark-2 rounded-1 p-60 relative text-center">
+                            <div class="subtitle wow fadeInUp">RSVP Link</div>
+                            <h2 class="wow fadeInUp" data-wow-delay=".2s">Event Response</h2>
+                            <p id="rsvp-public-message" class="wow fadeInUp mt-3 mb-4">Checking invite token...</p>
+                            <a id="rsvp-public-cta" class="btn-main fx-slide disabled" href="rsvp.html"><span>RSVP Now</span></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <footer class="text-light section-dark">
+        <div class="container">
+            <div class="row g-4 align-items-center">
+                <div class="col-md-12">
+                    <div class="d-lg-flex align-items-center justify-content-between text-center">
+                        <div>
+                            <h3 class="fs-20">Family Weather Events</h3>
+                            Plan together with the people you care about.
+                        </div>
+                        <div>
+                            <img src="images/assets/Family%20Weather%20Logo.png%233.png" class="w-150px" alt=""><br>
+                            <div class="social-icons mb-sm-30 mt-4">
+                                <a href="#"><i class="fa-brands fa-facebook-f"></i></a>
+                                <a href="#"><i class="fa-brands fa-instagram"></i></a>
+                                <a href="#"><i class="fa-brands fa-twitter"></i></a>
+                                <a href="#"><i class="fa-brands fa-youtube"></i></a>
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="fs-20">Contact Us</h3>
+                            T. +1 123 456 789<br>
+                            M. contact@familyweather.com
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="subfooter">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-12 text-center">
+                        <a href="privacy.html">Privacy</a> | <a href="terms.html">Terms</a> | <a href="sms-consent.html">SMS Consent</a><br>
+Copyright 2026 - Family Weather Events
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/vendors.js"></script>
+    <script src="js/fw-settings.js"></script>
+    <script src="js/designesia.js"></script>
+    <script src="js/countdown-custom.js"></script>
+    <script src="js/custom-marquee.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+    <script src="srcfirebaseconfig.public.js"></script>
+    <script src="js/firebase-config-guard.js"></script>
+    <script type="module" src="js/authPublicNav.js"></script>
+    <script type="module" src="js/authGate.js"></script>
+    <script>
+        (function () {
+            const params = new URLSearchParams(window.location.search);
+            const token = params.get("token");
+            const message = document.getElementById("rsvp-public-message");
+            const cta = document.getElementById("rsvp-public-cta");
+
+            if (!token) {
+                message.textContent = "Invalid RSVP link. Please check your invite and try again.";
+                cta.classList.add("disabled");
+                cta.setAttribute("aria-disabled", "true");
+                cta.removeAttribute("href");
+                return;
+            }
+
+            message.textContent = "Invite link detected. Continue to submit your RSVP.";
+            cta.href = `rsvp.html?token=${encodeURIComponent(token)}`;
+            cta.classList.remove("disabled");
+            cta.removeAttribute("aria-disabled");
+        })();
+    </script>
+    <script src="js/fw-legal-footer.js"></script>
+</body>
+
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
