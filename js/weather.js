@@ -2,9 +2,13 @@
 
 const express = require("express");
 const https = require("https");
+const http = require("http");
 const nws = require("./nws-adapter");
 
 const router = express.Router();
+const INTEL_HINT_TTL_MS = 5 * 60 * 1000;
+const intelHintCache = new Map();
+const INTEL_ENGINE_BASE_URL = process.env.INTEL_ENGINE_BASE_URL || "http://127.0.0.1:5173";
 
 // ---------- helper: https GET -> JSON ----------
 function httpsGetJson(url, timeoutMs = 10000) {
@@ -38,6 +42,71 @@ function parseLatLon(req) {
   const lon = Number(req.query.lon ?? DEFAULT_LON);
   if (!Number.isFinite(lat) || !Number.isFinite(lon)) return null;
   return { lat, lon };
+}
+
+function roundedKey(lat, lon, decimals = 3) {
+  return `${Number(lat).toFixed(decimals)},${Number(lon).toFixed(decimals)}`;
+}
+
+function getCachedIntelHint(key) {
+  const hit = intelHintCache.get(key);
+  if (!hit) return null;
+  if (Date.now() >= hit.expiresAt) {
+    intelHintCache.delete(key);
+    return null;
+  }
+  return hit.value;
+}
+
+function setCachedIntelHint(key, value) {
+  intelHintCache.set(key, { value, expiresAt: Date.now() + INTEL_HINT_TTL_MS });
+  return value;
+}
+
+function postJson(urlString, payload, timeoutMs = 5000) {
+  return new Promise((resolve, reject) => {
+    let urlObj;
+    try {
+      urlObj = new URL(urlString);
+    } catch (_err) {
+      reject(new Error("bad_url"));
+      return;
+    }
+    const body = JSON.stringify(payload || {});
+    const client = urlObj.protocol === "https:" ? https : http;
+    const req = client.request(
+      urlObj,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Content-Length": Buffer.byteLength(body)
+        }
+      },
+      (res) => {
+        let raw = "";
+        res.on("data", (chunk) => {
+          raw += chunk;
+        });
+        res.on("end", () => {
+          if (!res.statusCode || res.statusCode < 200 || res.statusCode >= 300) {
+            reject(new Error(`intel_http_${res.statusCode || 0}`));
+            return;
+          }
+          try {
+            const json = raw ? JSON.parse(raw) : {};
+            resolve(json);
+          } catch (_err) {
+            reject(new Error("intel_parse_failed"));
+          }
+        });
+      }
+    );
+    req.on("error", () => reject(new Error("intel_request_failed")));
+    req.setTimeout(timeoutMs, () => req.destroy(new Error("intel_timeout")));
+    req.write(body);
+    req.end();
+  });
 }
 
 // ---------- WEATHER (public, NWS-backed) ----------
@@ -168,6 +237,49 @@ router.get("/bundle", async (req, res) => {
     return res.json(json);
   } catch (_err) {
     return res.status(502).json({ ok: false, error: "nws_bundle_failed" });
+  }
+});
+
+// POST /api/weather/intel/hint?lat=..&lon=..
+// Proxies to intel engine /api/intel/live and returns only hint payload.
+router.post("/intel/hint", async (req, res) => {
+  const loc = parseLatLon(req);
+  if (!loc) {
+    return res.status(400).json({ ok: false, error: "invalid_lat_lon" });
+  }
+
+  const key = roundedKey(loc.lat, loc.lon, 3);
+  const cached = getCachedIntelHint(key);
+  if (cached) {
+    return res.json(cached);
+  }
+
+  const dateIso = String((req.body && req.body.dateIso) || new Date().toISOString().slice(0, 10));
+  const scenarioOverrides =
+    req.body && typeof req.body.scenarioOverrides === "object"
+      ? req.body.scenarioOverrides
+      : { preferences: { enabledModules: [] } };
+
+  try {
+    const base = String(INTEL_ENGINE_BASE_URL || "").replace(/\/+$/, "");
+    const intelUrl = `${base}/api/intel/live`;
+    const json = await postJson(intelUrl, {
+      lat: loc.lat,
+      lon: loc.lon,
+      dateIso,
+      scenarioOverrides
+    });
+
+    const hint = json.background_variant_hint || (json.data && json.data.background_variant_hint) || null;
+    const normalizedHint = hint === "severe" ? "severe" : "normal";
+    const payload = {
+      ok: true,
+      background_variant_hint: normalizedHint,
+      severity_tier: json.severity_tier || (json.data && json.data.severity_tier) || null
+    };
+    return res.json(setCachedIntelHint(key, payload));
+  } catch (_err) {
+    return res.status(502).json({ ok: false, error: "intel_hint_unavailable" });
   }
 });
 
