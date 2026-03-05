@@ -52,53 +52,81 @@
     return [];
   }
 
-  async function fetchBackendHourly(lat, lon) {
-    if (weatherBackendUnavailable) throw new Error("backend_hourly_unavailable");
-    const url = "/api/weather/hourly?lat=" + encodeURIComponent(lat) + "&lon=" + encodeURIComponent(lon);
+  async function fetchWeather(path, lat, lon) {
+    if (weatherBackendUnavailable) throw new Error("backend_weather_unavailable");
+    const url =
+      "/api/weather/" +
+      path +
+      "?lat=" +
+      encodeURIComponent(lat) +
+      "&lon=" +
+      encodeURIComponent(lon);
     const res = await fetch(url);
     if (res.status === 404) {
       weatherBackendUnavailable = true;
-      return [];
+      throw new Error("backend_weather_unavailable");
     }
-    if (!res.ok) throw new Error("backend_hourly_failed");
-    const json = await res.json();
-    const rows = normalizeHourly(json.hourly || json.data || json);
-    return rows || [];
-  }
-
-  async function fetchOpenMeteoHourly(lat, lon) {
-    const url =
-      "https://api.open-meteo.com/v1/forecast" +
-      "?latitude=" + encodeURIComponent(lat) +
-      "&longitude=" + encodeURIComponent(lon) +
-      "&hourly=temperature_2m,weather_code" +
-      ",precipitation_probability" +
-      "&temperature_unit=fahrenheit" +
-      "&timezone=auto";
-    const res = await fetch(url);
-    if (!res.ok) throw new Error("fallback_hourly_failed");
-    const json = await res.json();
-    return normalizeHourly(json.hourly || json);
+    if (!res.ok) throw new Error("backend_weather_failed");
+    return res.json();
   }
 
   async function getHourlyForecast(lat, lon) {
-    let backendRows = [];
     try {
-      backendRows = await fetchBackendHourly(lat, lon);
-      if (Array.isArray(backendRows) && backendRows.length) {
-        return backendRows;
-      }
-    } catch (err) {
-      if (!err || err.message !== "backend_hourly_unavailable") {
-        // continue to fallback below
-      }
-    }
-    try {
-      const fallbackRows = await fetchOpenMeteoHourly(lat, lon);
-      return Array.isArray(fallbackRows) ? fallbackRows : [];
+      const json = await fetchWeather("hourly", lat, lon);
+      const rows = normalizeHourly(json.hourly || json.weather || json.data || json);
+      return Array.isArray(rows) ? rows : [];
     } catch (_err) {
-      return Array.isArray(backendRows) ? backendRows : [];
+      return [];
     }
+  }
+
+  async function getWeatherRightNow(lat, lon) {
+    return fetchWeather("rightnow", lat, lon);
+  }
+
+  async function getWeatherForecast(lat, lon) {
+    return fetchWeather("forecast", lat, lon);
+  }
+
+  async function getWeatherAlerts(lat, lon) {
+    return fetchWeather("alerts", lat, lon);
+  }
+
+  async function getWeatherBundle(lat, lon) {
+    return fetchWeather("bundle", lat, lon);
+  }
+
+  async function getGeocodeByZip(zip) {
+    const cleanZip = String(zip || "").replace(/[^0-9]/g, "").slice(0, 5);
+    if (!cleanZip) return null;
+    const res = await fetch("/api/weather/geocode?zip=" + encodeURIComponent(cleanZip));
+    if (!res.ok) return null;
+    const json = await res.json();
+    if (!json || !json.ok) return null;
+    return {
+      lat: json.lat,
+      lon: json.lon,
+      label: json.label || ("ZIP " + cleanZip)
+    };
+  }
+
+  async function getAlmanacDay(lat, lon, month, day, years) {
+    const query =
+      "/api/weather/almanac?lat=" +
+      encodeURIComponent(lat) +
+      "&lon=" +
+      encodeURIComponent(lon) +
+      "&month=" +
+      encodeURIComponent(month) +
+      "&day=" +
+      encodeURIComponent(day) +
+      "&years=" +
+      encodeURIComponent(years);
+    const res = await fetch(query);
+    if (!res.ok) return null;
+    const json = await res.json();
+    if (!json || !json.ok || !Array.isArray(json.samples)) return null;
+    return json;
   }
 
   async function getSettings(ownerEmail) {
@@ -144,6 +172,12 @@
 
   window.apiBox = {
     getHourlyForecast: getHourlyForecast,
+    getWeatherRightNow: getWeatherRightNow,
+    getWeatherForecast: getWeatherForecast,
+    getWeatherAlerts: getWeatherAlerts,
+    getWeatherBundle: getWeatherBundle,
+    getGeocodeByZip: getGeocodeByZip,
+    getAlmanacDay: getAlmanacDay,
     getSettings: getSettings,
     saveSettings: saveSettings,
     getApiKey: getApiKey

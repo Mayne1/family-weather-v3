@@ -452,14 +452,14 @@
     }
 
     async function fetchFavoriteCurrent(favorite) {
-        const url = `https://api.open-meteo.com/v1/forecast?latitude=${favorite.lat}&longitude=${favorite.lon}&current=temperature_2m,weather_code&temperature_unit=fahrenheit&timezone=auto`;
-        const res = await fetch(url);
-        if (!res.ok) throw new Error("favorite_weather_failed");
-        const json = await res.json();
-        if (!json || !json.current) throw new Error("favorite_weather_missing");
+        if (!window.apiBox || typeof window.apiBox.getWeatherRightNow !== "function") {
+            throw new Error("favorite_weather_unavailable");
+        }
+        const json = await window.apiBox.getWeatherRightNow(favorite.lat, favorite.lon);
+        if (!json || !json.rightNow) throw new Error("favorite_weather_missing");
         return {
-            temp: Math.round(json.current.temperature_2m),
-            code: json.current.weather_code,
+            temp: Math.round(json.rightNow.temperature_2m),
+            code: json.rightNow.weather_code,
             ts: Date.now()
         };
     }
@@ -537,11 +537,7 @@
                 localStorage.setItem(LOC_KEY, JSON.stringify(nextLoc));
                 localStorage.removeItem(CACHE_KEY);
                 try {
-                    const [weather, aqi] = await Promise.all([
-                        fetchWeather(nextLoc),
-                        fetchAqi(nextLoc).catch(() => null)
-                    ]);
-                    const payload = { timestamp: Date.now(), location: nextLoc, weather, aqi };
+                    const payload = await fetchBundlePayload(nextLoc);
                     saveCache(payload);
                     renderAll(payload);
                     renderFavoritesStrip(nextLoc).catch(() => {});
@@ -555,6 +551,17 @@
     function renderHeadsUp(payload) {
         const list = document.getElementById("headsUpList");
         if (!list) return;
+        const heads = payload && payload.headsUp ? payload.headsUp : null;
+        if (heads && Array.isArray(heads.top) && heads.top.length) {
+            list.classList.toggle("fw-has-severe", !!heads.hasSevere);
+            list.innerHTML = heads.top.map((item) => {
+                const event = item.event || item.headline || "Weather Alert";
+                const sev = item.severity ? ` (${item.severity})` : "";
+                return `<div class="small fw-headsup-item"><i class="fa fa-exclamation-circle me-2" aria-hidden="true"></i>${event}${sev}</div>`;
+            }).join("") + `<div class="small text-muted mt-1">${heads.count || heads.top.length} active alert(s)</div>`;
+            return;
+        }
+
         const daily = payload.weather.daily;
         const items = [];
         let hasSevere = false;
@@ -579,29 +586,27 @@
     }
 
     async function geocodeZip(zip) {
-        const z = String(zip || "").replace(/[^0-9]/g, "").slice(0, 10);
-        if (!z) return null;
-        const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(z)}&count=1&language=en&format=json`;
-        const res = await fetch(url);
-        if (!res.ok) return null;
-        const json = await res.json();
-        const first = json && json.results && json.results[0];
-        if (!first) return null;
-        return { lat: first.latitude, lon: first.longitude, label: first.name || `ZIP ${z}` };
+        if (!window.apiBox || typeof window.apiBox.getGeocodeByZip !== "function") return null;
+        return window.apiBox.getGeocodeByZip(zip);
     }
 
     async function fetchArchiveDay(lat, lon, ymd) {
-        const url = `https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lon}&start_date=${ymd}&end_date=${ymd}&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,weather_code&temperature_unit=fahrenheit&timezone=auto`;
-        const res = await fetch(url);
-        if (!res.ok) return null;
-        const json = await res.json();
-        if (!json.daily || !json.daily.time || !json.daily.time.length) return null;
+        if (!window.apiBox || typeof window.apiBox.getAlmanacDay !== "function") return null;
+        const date = String(ymd || "");
+        const parts = date.split("-");
+        if (parts.length !== 3) return null;
+        const month = Number(parts[1]);
+        const day = Number(parts[2]);
+        if (!Number.isFinite(month) || !Number.isFinite(day)) return null;
+        const json = await window.apiBox.getAlmanacDay(lat, lon, month, day, 1);
+        if (!json || !Array.isArray(json.samples) || !json.samples.length) return null;
+        const row = json.samples[0];
         return {
-            date: json.daily.time[0],
-            hi: json.daily.temperature_2m_max ? json.daily.temperature_2m_max[0] : null,
-            lo: json.daily.temperature_2m_min ? json.daily.temperature_2m_min[0] : null,
-            precip: json.daily.precipitation_sum ? json.daily.precipitation_sum[0] : null,
-            code: json.daily.weather_code ? json.daily.weather_code[0] : null
+            date: row.date,
+            hi: row.temp_max_f,
+            lo: row.temp_min_f,
+            precip: row.precip_sum_mm,
+            code: row.weather_code
         };
     }
 
@@ -693,19 +698,26 @@
         initAlmanac(payload);
     }
 
-    async function fetchWeather(location) {
-        const url = `https://api.open-meteo.com/v1/forecast?latitude=${location.lat}&longitude=${location.lon}&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m,wind_direction_10m,precipitation,rain,showers,snowfall&hourly=precipitation_probability,weather_code,precipitation,rain,showers,snowfall&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_speed_10m_max&forecast_days=10&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=auto`;
-        const res = await fetch(url);
-        if (!res.ok) throw new Error("weather fetch failed");
-        return res.json();
-    }
-
-    async function fetchAqi(location) {
-        const url = `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${location.lat}&longitude=${location.lon}&current=us_aqi&timezone=auto`;
-        const res = await fetch(url);
-        if (!res.ok) throw new Error("aqi fetch failed");
-        const json = await res.json();
-        return json.current && typeof json.current.us_aqi === "number" ? json.current.us_aqi : null;
+    async function fetchBundlePayload(location) {
+        if (!window.apiBox || typeof window.apiBox.getWeatherBundle !== "function") {
+            throw new Error("weather_bundle_unavailable");
+        }
+        const bundle = await window.apiBox.getWeatherBundle(location.lat, location.lon);
+        if (!bundle || !bundle.weather || !bundle.weather.current || !bundle.weather.daily || !bundle.weather.hourly) {
+            throw new Error("weather_bundle_bad_shape");
+        }
+        return {
+            timestamp: Date.now(),
+            location: bundle && bundle.location ? {
+                lat: bundle.location.lat,
+                lon: bundle.location.lon,
+                label: location.label || "Current Location"
+            } : location,
+            weather: bundle && bundle.weather ? bundle.weather : null,
+            aqi: null,
+            alerts: bundle && Array.isArray(bundle.alerts) ? bundle.alerts : [],
+            headsUp: bundle && bundle.headsUp ? bundle.headsUp : { count: 0, top: [] }
+        };
     }
 
     function getLocation() {
@@ -739,16 +751,7 @@
         }
         try {
             const location = await getLocation();
-            const [weather, aqi] = await Promise.all([
-                fetchWeather(location),
-                fetchAqi(location).catch(() => null)
-            ]);
-            const payload = {
-                timestamp: Date.now(),
-                location,
-                weather,
-                aqi
-            };
+            const payload = await fetchBundlePayload(location);
             saveCache(payload);
             renderAll(payload);
         } catch (err) {
