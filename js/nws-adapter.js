@@ -1,8 +1,9 @@
 "use strict";
 
+const https = require("https");
 const NWS_BASE = "https://api.weather.gov";
 const DEFAULT_USER_AGENT =
-  process.env.NWS_USER_AGENT || "family-weather-v3 weather adapter (contact: support@thefamilyweather.com)";
+  process.env.NWS_USER_AGENT || "family-weather-v3 (support@thefamilyweather.com)";
 
 const HEADERS = {
   "User-Agent": DEFAULT_USER_AGENT,
@@ -316,19 +317,37 @@ function normalizeDaily(periods) {
 }
 
 async function fetchJson(url, timeoutMs = 12000) {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), timeoutMs);
-  try {
-    const res = await fetch(url, {
-      method: "GET",
-      headers: HEADERS,
-      signal: controller.signal
+  return new Promise((resolve, reject) => {
+    const req = https.get(
+      url,
+      {
+        headers: HEADERS
+      },
+      (res) => {
+        let body = "";
+        res.on("data", (chunk) => {
+          body += chunk;
+        });
+        res.on("end", () => {
+          if (!res.statusCode || res.statusCode < 200 || res.statusCode >= 300) {
+            reject(new Error(`nws_http_${res.statusCode || 0}`));
+            return;
+          }
+          try {
+            resolve(JSON.parse(body));
+          } catch (_err) {
+            reject(new Error("nws_json_parse_failed"));
+          }
+        });
+      }
+    );
+    req.on("error", (err) => {
+      reject(err || new Error("nws_request_failed"));
     });
-    if (!res.ok) throw new Error(`nws_http_${res.status}`);
-    return await res.json();
-  } finally {
-    clearTimeout(timeout);
-  }
+    req.setTimeout(timeoutMs, () => {
+      req.destroy(new Error("nws_timeout"));
+    });
+  });
 }
 
 async function getPoints(lat, lon) {
