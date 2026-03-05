@@ -252,7 +252,7 @@ async function handleIntelHint(req, res) {
     return res.json(cached);
   }
 
-  const dateIso = new Date().toISOString().slice(0, 10);
+  const dateIso = String(req.query.dateIso || new Date().toISOString().slice(0, 10));
 
   try {
     const base = String(INTEL_ENGINE_BASE_URL || "").replace(/\/+$/, "");
@@ -264,8 +264,10 @@ async function handleIntelHint(req, res) {
     });
 
     const hint = json.background_variant_hint || (json.data && json.data.background_variant_hint) || null;
+    const severeHint = hint === "severe";
     const payload = {
       ok: true,
+      severeHint,
       background_variant_hint: hint,
       severity_tier: json.severity_tier || (json.data && json.data.severity_tier) || null
     };

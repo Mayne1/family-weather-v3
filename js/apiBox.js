@@ -22,6 +22,16 @@
 
   function normalizeHourly(data) {
     if (!data) return [];
+    if (Array.isArray(data.hours)) {
+      return data.hours.map(function (row) {
+        return {
+          time: row.startTime || row.time || row.ts || null,
+          temperature_2m: row.tempF != null ? row.tempF : (row.temperature_2m != null ? row.temperature_2m : row.temp),
+          weather_code: row.weather_code != null ? row.weather_code : row.code,
+          precipChance: row.pop != null ? row.pop : (row.precipChance != null ? row.precipChance : row.precipitation_probability)
+        };
+      });
+    }
     if (Array.isArray(data.hourly)) {
       return data.hourly.map(function (row) {
         return {
@@ -223,14 +233,30 @@
     return json;
   }
 
+  function parseIntelHintResponse(json) {
+    if (!json || typeof json !== "object") return null;
+    const hint = json.background_variant_hint || (json.data && json.data.background_variant_hint) || null;
+    const severeHint =
+      typeof json.severeHint === "boolean"
+        ? json.severeHint
+        : hint === "severe";
+    return {
+      ok: json.ok !== false,
+      severeHint: !!severeHint,
+      background_variant_hint: severeHint ? "severe" : "normal",
+      severity_tier: json.severity_tier || (json.data && json.data.severity_tier) || null
+    };
+  }
+
   async function getIntelHint(lat, lon, dateIso, scenarioOverrides) {
     try {
       const target = INTEL_BASE_URL
         ? String(INTEL_BASE_URL).replace(/\/+$/, "") + "/api/intel/live"
         : null;
+      const date = dateIso || new Date().toISOString().slice(0, 10);
       const sameOriginTargets = [
-        "/api/intel/hint?lat=" + encodeURIComponent(lat) + "&lon=" + encodeURIComponent(lon),
-        "/api/weather/intel/hint?lat=" + encodeURIComponent(lat) + "&lon=" + encodeURIComponent(lon)
+        "/api/intel/hint?lat=" + encodeURIComponent(lat) + "&lon=" + encodeURIComponent(lon) + "&dateIso=" + encodeURIComponent(date),
+        "/api/weather/intel/hint?lat=" + encodeURIComponent(lat) + "&lon=" + encodeURIComponent(lon) + "&dateIso=" + encodeURIComponent(date)
       ];
       const controller = new AbortController();
       const timeout = setTimeout(function () {
@@ -255,15 +281,30 @@
         });
       } else {
         for (const url of sameOriginTargets) {
+          // Prefer simple GET proxy endpoints in production.
           const candidate = await fetch(url, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(body),
             signal: controller.signal
           });
           if (candidate.ok) {
             res = candidate;
             break;
+          }
+          if (candidate.status === 404) {
+            // Backward compatibility path: old POST endpoint.
+            const legacy = await fetch(url, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(body),
+              signal: controller.signal
+            });
+            if (legacy.ok) {
+              res = legacy;
+              break;
+            }
+            if (legacy.status !== 404) {
+              res = legacy;
+              break;
+            }
           }
           if (candidate.status !== 404) {
             res = candidate;
@@ -274,10 +315,8 @@
       clearTimeout(timeout);
       if (!res || !res.ok) return null;
       const json = await res.json();
-      if (!json || typeof json !== "object") return null;
-      const hint = json.background_variant_hint || (json.data && json.data.background_variant_hint) || null;
-      if (hint !== "severe" && hint !== "normal") return null;
-      return hint;
+      const normalized = parseIntelHintResponse(json);
+      return normalized && normalized.ok ? normalized : null;
     } catch (_err) {
       return null;
     }

@@ -95,6 +95,11 @@ body .lead {
   font-weight: 700;
 }
 
+.fw-hourly-precip {
+  font-size: 11px;
+  opacity: 0.9;
+}
+
 /* Use only new hourly card: hide old inline hourly in Right Now */
 #fw-rightnow .rn-hourly-block {
   display: none;
@@ -185,6 +190,7 @@ body .lead {
 #fw-hourly-polish .subtitle,
 #fw-hourly-polish .fw-hourly-time,
 #fw-hourly-polish .fw-hourly-temp,
+#fw-hourly-polish .fw-hourly-precip,
 #section-weather-extras .subtitle,
 #section-weather-extras .small,
 #section-flows .bg-dark-2 h3,

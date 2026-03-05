@@ -59,7 +59,7 @@
       '<div class="col-lg-12">',
       '  <div id="fw-hourly-polish" class="bg-dark-2 rounded-1 p-30 h-100 fw-hourly-card">',
       '    <div class="subtitle">Hourly Forecast</div>',
-      '    <div id="fw-hourly-polish-row" class="fw-hourly-row" aria-live="polite">Hourly forecast unavailable (API route not enabled)</div>',
+      '    <div id="fw-hourly-polish-row" class="fw-hourly-row" aria-live="polite">Loading hourly forecast...</div>',
       '  </div>',
       '</div>'
     ].join("");
@@ -79,7 +79,8 @@
       return {
         time: r.time || r.ts || null,
         temp: r.temperature_2m != null ? r.temperature_2m : r.temp,
-        code: r.weather_code != null ? r.weather_code : r.code
+        code: r.weather_code != null ? r.weather_code : r.code,
+        precipChance: r.precipChance != null ? r.precipChance : r.precipitation_probability
       };
     }).filter(function (r) {
       return r && r.time;
@@ -107,21 +108,23 @@
       if (startIdx < 0) startIdx = Math.max(0, allRows.length - 18);
       const rows = allRows.slice(startIdx, startIdx + 18);
       if (!rows.length) {
-        host.innerHTML = '<div class="small text-muted">Hourly forecast unavailable (API route not enabled)</div>';
+        host.innerHTML = '<div class="small text-muted">Hourly forecast unavailable right now.</div>';
         return;
       }
       host.innerHTML = rows.map(function (row, idx) {
         const temp = row.temp != null ? Math.round(row.temp) + "&deg;F" : "--";
+        const pop = row.precipChance != null ? Math.round(row.precipChance) + "%" : "--";
         return [
           '<div class="fw-hourly-tile">',
           '  <div class="fw-hourly-time">' + formatHour(row.time, idx, nowMs) + '</div>',
           '  <div class="fw-hourly-icon"><img src="' + iconForCode(row.code) + '" alt=""></div>',
           '  <div class="fw-hourly-temp">' + temp + '</div>',
+          '  <div class="fw-hourly-precip">' + pop + '</div>',
           '</div>'
         ].join("");
       }).join("");
     } catch (_err) {
-      host.innerHTML = '<div class="small text-muted">Hourly forecast unavailable (API route not enabled)</div>';
+      host.innerHTML = '<div class="small text-muted">Hourly forecast unavailable right now.</div>';
     }
   }
 

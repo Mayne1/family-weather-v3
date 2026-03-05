@@ -2,23 +2,14 @@
   "use strict";
 
   const WEATHER_CACHE_KEY = "fw_weather_cache";
-  const LOC_KEY = "fw_weather_loc";
-  const GROUPS = [
-    "clear",
-    "partly_cloudy",
-    "cloudy",
-    "fog",
-    "rain",
-    "drizzle",
-    "thunder",
-    "snow",
-    "sleet",
-    "hail",
-    "wind",
-    "mixed"
-  ];
+  const BG_MANIFEST_URL = "/images/out-bg-nature/manifest.json";
+  const BG_BASE = "/images/out-bg-nature";
+  const BG_FALLBACK_CODE = "800";
+  const BG_FALLBACK_STATIC = "/images/background/Cloudy weather websi.png";
   const INTEL_HINT_CACHE_MS = 2 * 60 * 1000;
   const intelHintCache = new Map();
+  let manifestPromise = null;
+  let debugOverride = null;
 
   function ensureBackgroundLayers() {
     let image = document.getElementById("fw-bg-image");
@@ -32,157 +23,129 @@
     return { image };
   }
 
-  function toLower(value) {
-    return String(value || "").toLowerCase();
-  }
-
-  function hashString(value) {
-    let hash = 0;
-    const text = String(value || "");
-    for (let i = 0; i < text.length; i += 1) {
-      hash = (hash * 31 + text.charCodeAt(i)) >>> 0;
-    }
-    return hash >>> 0;
-  }
-
-  function dayKey() {
-    const d = new Date();
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, "0");
-    const day = String(d.getDate()).padStart(2, "0");
-    return `${y}-${m}-${day}`;
-  }
-
-  function locationSeed(weather) {
-    const payloadLoc = weather && weather.location ? weather.location : null;
-    const locRaw = localStorage.getItem(LOC_KEY);
-    let parsedLoc = null;
-    try {
-      parsedLoc = locRaw ? JSON.parse(locRaw) : null;
-    } catch (_err) {
-      parsedLoc = null;
-    }
-
-    const label = payloadLoc && payloadLoc.label ? payloadLoc.label : parsedLoc && parsedLoc.label ? parsedLoc.label : "";
-    const lat = payloadLoc && payloadLoc.lat != null ? payloadLoc.lat : parsedLoc && parsedLoc.lat != null ? parsedLoc.lat : "";
-    const lon = payloadLoc && payloadLoc.lon != null ? payloadLoc.lon : parsedLoc && parsedLoc.lon != null ? parsedLoc.lon : "";
-    return `${label}|${lat}|${lon}|${dayKey()}`;
-  }
-
-  function mixedFromCode(code) {
-    return code === 66 || code === 67;
-  }
-
-  function snowFromCode(code) {
-    return (code >= 71 && code <= 77) || code === 85 || code === 86;
-  }
-
-  function rainFromCode(code) {
-    return (code >= 61 && code <= 65) || (code >= 80 && code <= 82);
-  }
-
-  function drizzleFromCode(code) {
-    return code >= 51 && code <= 57;
-  }
-
-  function thunderFromCode(code) {
-    return code >= 95 && code <= 99;
-  }
-
-  function fogFromCode(code) {
-    return code >= 45 && code <= 48;
-  }
-
-  function cloudyFromCode(code) {
-    return code === 3;
-  }
-
-  function partlyFromCode(code) {
-    return code === 1 || code === 2;
-  }
-
-  function pickGroup(weather) {
-    const current = weather && weather.weather && weather.weather.current ? weather.weather.current : {};
-    const code = Number(current.weather_code);
-    const rain = Number(current.rain || 0) + Number(current.showers || 0) + Number(current.precipitation || 0);
-    const snow = Number(current.snowfall || 0);
-    const text = toLower(current.weather_text || current.description || current.summary || "");
-
-    if (
-      text.includes("wintry mix") ||
-      text.includes("rain and snow") ||
-      text.includes("mixed precipitation") ||
-      text.includes("sleet") ||
-      mixedFromCode(code) ||
-      (rain > 0 && snow > 0)
-    ) return "mixed";
-
-    if (snowFromCode(code) || text.includes("snow")) return "snow";
-    if (thunderFromCode(code) || text.includes("thunder")) return "thunder";
-    if (rainFromCode(code) || text.includes("rain")) return "rain";
-    if (drizzleFromCode(code) || text.includes("drizzle")) return "drizzle";
-    if (fogFromCode(code) || text.includes("fog") || text.includes("mist") || text.includes("haze")) return "fog";
-    if (cloudyFromCode(code) || text.includes("overcast") || text.includes("cloudy")) return "cloudy";
-    if (partlyFromCode(code) || text.includes("partly")) return "partly_cloudy";
-    return "clear";
-  }
-
-  function pickVariant(group, weather) {
-    const assets = (window.FW_BG_ASSETS && window.FW_BG_ASSETS[group]) || [];
-    if (!assets.length) return null;
-    const idx = hashString(`${locationSeed(weather)}|${group}`) % assets.length;
-    return assets[idx];
-  }
-
   function normalizeHint(hint) {
     const v = String(hint || "").toLowerCase();
     return v === "severe" || v === "normal" ? v : null;
   }
 
-  function decideVariant(input) {
-    const intelHint = normalizeHint(input && input.intelHint);
-    if (intelHint === "severe") return "severe";
+  function normalizeManifest(raw) {
+    const fallback = {
+      200: ["morning", "noon", "night", "severe"],
+      300: ["morning", "noon", "night", "severe"],
+      500: ["morning", "noon", "night", "severe"],
+      600: ["morning", "noon", "night", "severe"],
+      700: ["morning", "noon", "night", "severe"],
+      800: ["morning", "noon", "night", "severe"],
+      801: ["morning", "noon", "night", "severe"],
+      802: ["morning", "noon", "night", "severe"],
+      803: ["morning", "noon", "night", "severe"],
+      804: ["morning", "noon", "night", "severe"]
+    };
+    if (!raw || typeof raw !== "object") return fallback;
+    const output = {};
+    Object.keys(raw).forEach(function (key) {
+      const value = raw[key];
+      if (Array.isArray(value)) {
+        output[String(key)] = value.map(String);
+      } else if (value && Array.isArray(value.variants)) {
+        output[String(key)] = value.variants.map(String);
+      }
+    });
+    if (!Object.keys(output).length) return fallback;
+    return output;
+  }
 
-    const nowLocalHour = Number(input && input.nowLocalHour);
-    const hour = Number.isFinite(nowLocalHour) ? nowLocalHour : new Date().getHours();
+  function loadManifest() {
+    if (manifestPromise) return manifestPromise;
+    manifestPromise = fetch(BG_MANIFEST_URL, { cache: "no-cache" })
+      .then(function (res) {
+        if (!res.ok) throw new Error("manifest_fetch_failed");
+        return res.json();
+      })
+      .then(normalizeManifest)
+      .catch(function () {
+        return normalizeManifest(null);
+      });
+    return manifestPromise;
+  }
+
+  function deriveTimeVariant(date) {
+    const hour = date.getHours();
     if (hour >= 5 && hour <= 10) return "morning";
     if (hour >= 11 && hour <= 16) return "noon";
     return "night";
   }
 
-  function getWeatherCode(weather) {
+  function mapWeatherCodeToBgCode(code) {
+    const n = Number(code);
+    if (!Number.isFinite(n)) return BG_FALLBACK_CODE;
+    if (n >= 200 && n <= 299) return "200";
+    if (n >= 300 && n <= 399) return "300";
+    if (n >= 500 && n <= 599) return "500";
+    if (n >= 600 && n <= 699) return "600";
+    if (n >= 700 && n <= 799) return "700";
+    if (n >= 800 && n <= 899) return String(n);
+    // Open-Meteo/NWS mappings.
+    if (n >= 95) return "200";
+    if ((n >= 51 && n <= 67) || (n >= 80 && n <= 82)) return "500";
+    if ((n >= 71 && n <= 77) || n === 85 || n === 86) return "600";
+    if (n >= 45 && n <= 48) return "700";
+    if (n === 1) return "801";
+    if (n === 2) return "802";
+    if (n === 3) return "804";
+    return "800";
+  }
+
+  function getPayloadWeatherCode(weather) {
     const current = weather && weather.weather && weather.weather.current ? weather.weather.current : {};
-    const code = Number(current.weather_code);
-    return Number.isFinite(code) ? code : 3;
+    if (debugOverride && debugOverride.bgCode) return String(debugOverride.bgCode);
+    return mapWeatherCodeToBgCode(current.weather_code);
   }
 
-  function variantAssetIndex(variant, total) {
-    if (!total) return 0;
-    if (variant === "morning") return 0 % total;
-    if (variant === "noon") return 1 % total;
-    if (variant === "night") return 2 % total;
-    return (total - 1 + total) % total; // severe => use strongest/final variant
+  function buildVariantCandidates(requestedVariant, severeHint) {
+    const list = [requestedVariant, "noon", "morning", "night"];
+    if (severeHint === true) list.push("severe");
+    return Array.from(new Set(list.filter(Boolean)));
   }
 
-  function imageAssetsForGroup(group) {
-    const assets = (window.FW_BG_ASSETS && window.FW_BG_ASSETS[group]) || [];
-    return assets.filter(function (a) {
-      return a && a.type === "image" && typeof a.src === "string";
+  function preloadImage(url, timeoutMs) {
+    return new Promise(function (resolve, reject) {
+      const img = new Image();
+      const timer = setTimeout(function () {
+        reject(new Error("img_timeout"));
+      }, timeoutMs || 5000);
+      img.onload = function () {
+        clearTimeout(timer);
+        resolve(url);
+      };
+      img.onerror = function () {
+        clearTimeout(timer);
+        reject(new Error("img_error"));
+      };
+      img.src = url;
     });
   }
 
-  function pickVariantForGroup(group, variant, weather) {
-    const assets = imageAssetsForGroup(group);
-    if (!assets.length) return null;
-    const idx = variantAssetIndex(variant, assets.length);
-    return assets[idx] || assets[hashString(`${locationSeed(weather)}|${group}`) % assets.length];
-  }
-
-  function pickImageFallback(group, weather) {
-    const assets = imageAssetsForGroup(group);
-    if (!assets.length) return null;
-    const idx = hashString(`${locationSeed(weather)}|${group}`) % assets.length;
-    return assets[idx];
+  async function resolveBackgroundUrl(bgCode, requestedVariant, severeHint) {
+    const manifest = await loadManifest();
+    const resolvedCode = manifest[bgCode] ? bgCode : BG_FALLBACK_CODE;
+    const variants = Array.isArray(manifest[resolvedCode]) ? manifest[resolvedCode] : ["noon", "morning", "night"];
+    const fallbacks = buildVariantCandidates(requestedVariant, severeHint);
+    for (const variant of fallbacks) {
+      if (!variants.includes(variant)) continue;
+      const candidate = `${BG_BASE}/${resolvedCode}/${variant}.png`;
+      try {
+        await preloadImage(candidate, 4000);
+        return { url: candidate, code: resolvedCode, variant };
+      } catch (_err) {}
+    }
+    // Last resort static local fallback to avoid blank backgrounds.
+    try {
+      await preloadImage(BG_FALLBACK_STATIC, 4000);
+      return { url: BG_FALLBACK_STATIC, code: resolvedCode, variant: "fallback" };
+    } catch (_err) {
+      return null;
+    }
   }
 
   async function getIntelHint(weather) {
@@ -202,26 +165,37 @@
     }
 
     const value = await window.apiBox.getIntelHint(lat, lon, dateIso);
-    const hint = normalizeHint(value);
+    let hint = null;
+    if (typeof value === "string") {
+      hint = normalizeHint(value);
+    } else if (value && typeof value === "object") {
+      if (value.severeHint === true) hint = "severe";
+      else if (value.severeHint === false) hint = "normal";
+      else hint = normalizeHint(value.background_variant_hint);
+    }
     intelHintCache.set(key, { ts: Date.now(), value: hint });
     return hint;
   }
 
   async function pickBackgroundForWeather(weather) {
-    const group = pickGroup(weather);
-    const code = getWeatherCode(weather);
+    const code = getPayloadWeatherCode(weather);
     const intelHint = await getIntelHint(weather).catch(() => null);
-    const variant = decideVariant({
-      nowLocalHour: new Date().getHours(),
-      intelHint
-    });
-
-    const selected =
-      pickVariantForGroup(group, variant, weather) ||
-      pickImageFallback(group, weather) ||
-      pickImageFallback("mixed", weather);
-    if (!selected) return { type: "image", src: "" };
-    return { type: "image", src: selected.src, group, variant, code, intelHint };
+    const severeHint = debugOverride && typeof debugOverride.severeHint === "boolean"
+      ? debugOverride.severeHint
+      : intelHint === "severe";
+    const timeVariant = debugOverride && debugOverride.variant
+      ? String(debugOverride.variant)
+      : deriveTimeVariant(new Date());
+    const requestedVariant = severeHint ? "severe" : timeVariant;
+    const resolved = await resolveBackgroundUrl(code, requestedVariant, severeHint);
+    if (!resolved) return null;
+    return {
+      type: "image",
+      src: resolved.url,
+      code: resolved.code,
+      variant: resolved.variant,
+      severeHint: severeHint
+    };
   }
 
   function readCachedWeather() {
@@ -244,7 +218,8 @@
     const image = layers.image;
     const video = document.getElementById("fw-bg-video");
 
-    image.style.backgroundImage = `url('${choice.src}')`;
+    document.documentElement.style.setProperty("--fw-bg-image-url", `url('${choice.src}')`);
+    image.style.backgroundImage = "var(--fw-bg-image-url)";
     image.style.display = "block";
     if (video) {
       video.pause();
@@ -254,16 +229,20 @@
     if (document.body) {
       document.body.dataset.wxVariant = String(choice.variant || "night");
       document.body.dataset.wxCode = String(choice.code || "");
+      document.body.dataset.wxSevere = choice.severeHint ? "1" : "0";
     }
     if (window.location && /localhost|127\.0\.0\.1/.test(window.location.hostname || "")) {
-      console.debug("[bg] code", choice.code, "variant", choice.variant, "intel", choice.intelHint);
+      console.debug("[bg] code", choice.code, "variant", choice.variant, "severe", choice.severeHint);
     }
   }
 
   window.FWBgEngine = {
     pickBackgroundForWeather,
     applyBackground,
-    decideVariant
+    setDebugOverride: function (next) {
+      debugOverride = next && typeof next === "object" ? next : null;
+      applyBackground();
+    }
   };
 
   document.addEventListener("DOMContentLoaded", function () {

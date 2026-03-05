@@ -1,0 +1,12 @@
+﻿{
+  "200": ["morning", "noon", "night", "severe"],
+  "300": ["morning", "noon", "night", "severe"],
+  "500": ["morning", "noon", "night", "severe"],
+  "600": ["morning", "noon", "night", "severe"],
+  "700": ["morning", "noon", "night", "severe"],
+  "800": ["morning", "noon", "night", "severe"],
+  "801": ["morning", "noon", "night", "severe"],
+  "802": ["morning", "noon", "night", "severe"],
+  "803": ["morning", "noon", "night", "severe"],
+  "804": ["morning", "noon", "night", "severe"]
+}
