@@ -310,31 +310,58 @@
         return "";
     }
 
-    function setWeatherBackground(condition, code, current) {
+    function getTimeVariant(isoTime) {
+        const d = isoTime ? new Date(isoTime) : new Date();
+        const h = Number.isFinite(d.getTime()) ? d.getHours() : new Date().getHours();
+        if (h < 11) return "morning";
+        if (h < 18) return "noon";
+        return "night";
+    }
+
+    function getBackgroundCode(code) {
+        const n = Number(code);
+        if (!Number.isFinite(n)) return "800";
+        if (n >= 95) return "200";
+        if ((n >= 71 && n <= 77) || n === 85 || n === 86) return "600";
+        if ((n >= 51 && n <= 57) || (n >= 61 && n <= 67) || (n >= 80 && n <= 82)) return "500";
+        if (n >= 45 && n <= 48) return "700";
+        return "800";
+    }
+
+    function applyBackgroundImage(imageUrl) {
         const stage = document.getElementById("fw-stage");
-
-        const c = String(condition || "").toLowerCase();
-        const wxCode = Number(code);
-        const tempF = Number(current && current.temperature_2m);
-        const precip = Number(current && current.precipitation) + Number(current && current.rain) + Number(current && current.showers);
-
-        let image = "";
-        const heavyRain = wxCode === 65 || wxCode === 67 || wxCode === 81 || wxCode === 82;
-        const stormy = wxCode >= 95 || c.includes("storm") || c.includes("thunder");
-        const snowy = c.includes("snow") || (Number.isFinite(tempF) && tempF <= 34 && precip > 0.05) || (wxCode >= 71 && wxCode <= 77) || wxCode === 85 || wxCode === 86;
-        const rainy = c.includes("rain") || c.includes("drizzle") || (wxCode >= 51 && wxCode <= 57) || (wxCode >= 61 && wxCode <= 67) || (wxCode >= 80 && wxCode <= 82);
-
-        if (snowy) image = "url('/images/background/snow-01.png')";
-        else if (stormy) image = "url('/images/background/storm-01.png')";
-        else if (heavyRain) image = "url('/images/background/rain-02.png')";
-        else if (rainy) image = "url('/images/background/rain-01.png')";
-
-        if (stage) stage.style.setProperty("--fw-stage-bg", image || "none");
-        document.documentElement.style.setProperty("--fw-site-stage-bg", image || "none");
-        document.body && document.body.setAttribute("data-fw-bg-active", image ? "1" : "0");
+        const image = imageUrl ? `url('${imageUrl}')` : "none";
+        if (stage) stage.style.setProperty("--fw-stage-bg", image);
+        document.documentElement.style.setProperty("--fw-site-stage-bg", image);
+        document.body && document.body.setAttribute("data-fw-bg-active", imageUrl ? "1" : "0");
         try {
-            localStorage.setItem(STAGE_BG_KEY, image || "none");
+            localStorage.setItem(STAGE_BG_KEY, image);
         } catch (_err) {}
+    }
+
+    function setWeatherBackground(payload, code, current) {
+        const bgCode = getBackgroundCode(code);
+        const baseVariant = getTimeVariant(current && current.time);
+        const location = payload && payload.location ? payload.location : null;
+        const lat = Number(location && location.lat);
+        const lon = Number(location && location.lon);
+        const dateIso = new Date().toISOString().slice(0, 10);
+        const baseUrl = `/images/out-bg-nature/${bgCode}/${baseVariant}.png`;
+
+        applyBackgroundImage(baseUrl);
+
+        if (!window.apiBox || typeof window.apiBox.getIntelHint !== "function") return;
+        if (!Number.isFinite(lat) || !Number.isFinite(lon)) return;
+
+        window.apiBox.getIntelHint(lat, lon, dateIso).then((intel) => {
+            const severe =
+                !!intel &&
+                typeof intel === "object" &&
+                (intel.background_variant_hint === "severe" || intel.severeHint === true);
+            const variant = severe ? "severe" : baseVariant;
+            const imageUrl = `/images/out-bg-nature/${bgCode}/${variant}.png`;
+            applyBackgroundImage(imageUrl);
+        }).catch(() => {});
     }
 
     function renderRightNow(target, payload) {
@@ -353,7 +380,7 @@
         const label = labelFromCode(displayCode);
         const updated = formatTime(new Date(current.time || payload.timestamp));
         const aqi = payload.aqi != null ? payload.aqi : "-";
-        setWeatherBackground(label, displayCode, current);
+        setWeatherBackground(payload, displayCode, current);
 
         target.innerHTML = `
             <div class="rn-layout">
@@ -745,19 +772,100 @@
             throw new Error("weather_bundle_missing");
         }
 
+        function asNumber(value, fallback) {
+            const n = Number(value);
+            return Number.isFinite(n) ? n : fallback;
+        }
+
+        function normalizeCurrentShape(rawCurrent, fallbackTime) {
+            const nowIso = new Date().toISOString();
+            const c = rawCurrent && typeof rawCurrent === "object" ? rawCurrent : {};
+            return {
+                temperature_2m: c.temperature_2m ?? c.temp ?? c.tempF ?? 0,
+                apparent_temperature: c.apparent_temperature ?? c.feels_like ?? c.feelsLike ?? c.feelsLikeF ?? c.temperature_2m ?? c.temp ?? c.tempF ?? 0,
+                relative_humidity_2m: c.relative_humidity_2m ?? c.humidity ?? c.humidityPct ?? 0,
+                weather_code: c.weather_code ?? c.weatherCode ?? c.code ?? 3,
+                wind_speed_10m: c.wind_speed_10m ?? c.wind ?? c.windMph ?? 0,
+                wind_direction_10m: c.wind_direction_10m ?? c.windDir ?? 0,
+                precipitation: c.precipitation ?? 0,
+                rain: c.rain ?? 0,
+                showers: c.showers ?? 0,
+                snowfall: c.snowfall ?? 0,
+                time: c.time ?? c.timeIso ?? fallbackTime ?? nowIso
+            };
+        }
+
+        function normalizeHourlyShape(rawHourly) {
+            const rows = Array.isArray(rawHourly)
+                ? rawHourly
+                : (rawHourly && Array.isArray(rawHourly.hours) ? rawHourly.hours : null);
+            if (rows) {
+                return {
+                    time: rows.map((row) => row.time || row.timeIso || row.startTime || new Date().toISOString()),
+                    precipitation_probability: rows.map((row) =>
+                        row.precipitation_probability ??
+                        row.precipChance ??
+                        row.precipChancePct ??
+                        row.precip_probability ??
+                        row.pop ??
+                        0
+                    ),
+                    weather_code: rows.map((row) => row.weather_code ?? row.weatherCode ?? row.code ?? 3),
+                    precipitation: rows.map((row) => row.precipitation ?? 0),
+                    rain: rows.map((row) => row.rain ?? 0),
+                    showers: rows.map((row) => row.showers ?? 0),
+                    snowfall: rows.map((row) => row.snowfall ?? 0)
+                };
+            }
+            const h = rawHourly && typeof rawHourly === "object" ? rawHourly : {};
+            const times = Array.isArray(h.time) ? h.time : [];
+            return {
+                time: times.map((v) => v || new Date().toISOString()),
+                precipitation_probability: (Array.isArray(h.precipitation_probability) ? h.precipitation_probability : times.map(() => 0)).map((v) => asNumber(v, 0)),
+                weather_code: (Array.isArray(h.weather_code) ? h.weather_code : times.map(() => 3)).map((v) => asNumber(v, 3)),
+                precipitation: (Array.isArray(h.precipitation) ? h.precipitation : times.map(() => 0)).map((v) => asNumber(v, 0)),
+                rain: (Array.isArray(h.rain) ? h.rain : times.map(() => 0)).map((v) => asNumber(v, 0)),
+                showers: (Array.isArray(h.showers) ? h.showers : times.map(() => 0)).map((v) => asNumber(v, 0)),
+                snowfall: (Array.isArray(h.snowfall) ? h.snowfall : times.map(() => 0)).map((v) => asNumber(v, 0))
+            };
+        }
+
+        function normalizeDailyShape(rawDaily) {
+            if (rawDaily && Array.isArray(rawDaily.time)) {
+                return rawDaily;
+            }
+            const rows = Array.isArray(rawDaily) ? rawDaily : [];
+            return {
+                time: rows.map((row) => row.time || row.startIso || row.date || new Date().toISOString().slice(0, 10)),
+                weather_code: rows.map((row) => row.weather_code ?? row.weatherCode ?? row.code ?? 3),
+                temperature_2m_max: rows.map((row) => row.temperature_2m_max ?? row.temp_max ?? row.temperatureMax ?? row.tempMaxF ?? 0),
+                temperature_2m_min: rows.map((row) => row.temperature_2m_min ?? row.temp_min ?? row.temperatureMin ?? row.tempMinF ?? 0),
+                precipitation_probability_max: rows.map((row) => row.precipitation_probability_max ?? row.precipChance ?? row.precipChancePct ?? 0),
+                wind_speed_10m_max: rows.map((row) => row.wind_speed_10m_max ?? row.wind ?? row.windMph ?? row.windMaxMph ?? 0)
+            };
+        }
+
         // OLD SHAPE SUPPORT
         if (bundle.weather && bundle.weather.current && bundle.weather.daily && bundle.weather.hourly) {
+            const hourly = normalizeHourlyShape(bundle.weather.hourly);
+            const current = normalizeCurrentShape(bundle.weather.current, hourly.time[0]);
+            const daily = normalizeDailyShape(bundle.weather.daily);
             return {
                 timestamp: Date.now(),
                 location: bundle.location ? {
                     lat: bundle.location.lat,
                     lon: bundle.location.lon,
-                    label: location.label || "Current Location"
+                    label: bundle.location.label || location.label || "Current Location"
                 } : location,
-                weather: bundle.weather,
+                weather: {
+                    current,
+                    hourly,
+                    daily
+                },
                 aqi: bundle.aqi != null ? bundle.aqi : null,
                 alerts: Array.isArray(bundle.alerts) ? bundle.alerts : [],
-                headsUp: bundle.headsUp ? bundle.headsUp : { count: 0, top: [], hasSevere: false }
+                headsUp: bundle.headsUp ? bundle.headsUp : { count: 0, top: [], hasSevere: false },
+                favorites: Array.isArray(bundle.favorites) ? bundle.favorites : []
             };
         }
 
@@ -771,63 +879,11 @@
             throw new Error("weather_bundle_bad_shape");
         }
 
-        // normalize hourly array-of-objects -> old array-of-columns shape
-        const hourly = Array.isArray(hourlyRaw)
-            ? {
-                time: hourlyRaw.map((row) => row.time || row.timeIso || new Date().toISOString()),
-                precipitation_probability: hourlyRaw.map((row) =>
-                    row.precipitation_probability ??
-                    row.precipChance ??
-                    row.precipChancePct ??
-                    row.precip_probability ??
-                    0
-                ),
-                weather_code: hourlyRaw.map((row) => row.weather_code ?? 3),
-                precipitation: hourlyRaw.map((row) => row.precipitation ?? 0),
-                rain: hourlyRaw.map((row) => row.rain ?? 0),
-                showers: hourlyRaw.map((row) => row.showers ?? 0),
-                snowfall: hourlyRaw.map((row) => row.snowfall ?? 0)
-            }
-            : hourlyRaw;
-
-        // normalize daily
-        const daily = dailyRaw.time
-            ? dailyRaw
-            : {
-                time: Array.isArray(dailyRaw)
-                    ? dailyRaw.map((row) => row.time || row.startIso || row.date || new Date().toISOString().slice(0, 10))
-                    : [],
-                weather_code: Array.isArray(dailyRaw)
-                    ? dailyRaw.map((row) => row.weather_code ?? 3)
-                    : [],
-                temperature_2m_max: Array.isArray(dailyRaw)
-                    ? dailyRaw.map((row) => row.temperature_2m_max ?? row.temp_max ?? row.temperatureMax ?? 0)
-                    : [],
-                temperature_2m_min: Array.isArray(dailyRaw)
-                    ? dailyRaw.map((row) => row.temperature_2m_min ?? row.temp_min ?? row.temperatureMin ?? 0)
-                    : [],
-                precipitation_probability_max: Array.isArray(dailyRaw)
-                    ? dailyRaw.map((row) => row.precipitation_probability_max ?? row.precipChance ?? row.precipChancePct ?? 0)
-                    : [],
-                wind_speed_10m_max: Array.isArray(dailyRaw)
-                    ? dailyRaw.map((row) => row.wind_speed_10m_max ?? row.wind ?? row.windMph ?? 0)
-                    : []
-            };
+        const hourly = normalizeHourlyShape(hourlyRaw);
+        const daily = normalizeDailyShape(dailyRaw);
 
         const normalized = {
-            current: {
-                temperature_2m: rightNow.temperature_2m ?? rightNow.temp ?? rightNow.tempF ?? 0,
-                apparent_temperature: rightNow.apparent_temperature ?? rightNow.feels_like ?? rightNow.feelsLike ?? rightNow.temperature_2m ?? rightNow.temp ?? 0,
-                relative_humidity_2m: rightNow.relative_humidity_2m ?? rightNow.humidity ?? rightNow.humidityPct ?? 0,
-                weather_code: rightNow.weather_code ?? 3,
-                wind_speed_10m: rightNow.wind_speed_10m ?? rightNow.wind ?? rightNow.windMph ?? 0,
-                wind_direction_10m: rightNow.wind_direction_10m ?? rightNow.windDir ?? 0,
-                precipitation: rightNow.precipitation ?? 0,
-                rain: rightNow.rain ?? 0,
-                showers: rightNow.showers ?? 0,
-                snowfall: rightNow.snowfall ?? 0,
-                time: rightNow.time ?? rightNow.timeIso ?? new Date().toISOString()
-            },
+            current: normalizeCurrentShape(rightNow, hourly.time[0]),
             hourly,
             daily
         };
@@ -837,12 +893,13 @@
             location: bundle.location ? {
                 lat: bundle.location.lat,
                 lon: bundle.location.lon,
-                label: location.label || "Current Location"
+                label: bundle.location.label || location.label || "Current Location"
             } : location,
             weather: normalized,
             aqi: bundle.aqi != null ? bundle.aqi : null,
             alerts: Array.isArray(bundle.alerts) ? bundle.alerts : [],
-            headsUp: bundle.headsUp ? bundle.headsUp : { count: 0, top: [], hasSevere: false }
+            headsUp: bundle.headsUp ? bundle.headsUp : { count: 0, top: [], hasSevere: false },
+            favorites: Array.isArray(bundle.favorites) ? bundle.favorites : []
         };
     }
 

@@ -58,7 +58,11 @@
       time: [],
       temperature_2m: [],
       weather_code: [],
-      precipitation_probability: []
+      precipitation_probability: [],
+      precipitation: [],
+      rain: [],
+      showers: [],
+      snowfall: []
     };
     if (!raw) return out;
 
@@ -95,6 +99,30 @@
             0
           )
         );
+        out.precipitation.push(
+          toFiniteNumber(
+            Array.isArray(raw.precipitation) ? raw.precipitation[i] : undefined,
+            0
+          )
+        );
+        out.rain.push(
+          toFiniteNumber(
+            Array.isArray(raw.rain) ? raw.rain[i] : undefined,
+            0
+          )
+        );
+        out.showers.push(
+          toFiniteNumber(
+            Array.isArray(raw.showers) ? raw.showers[i] : undefined,
+            0
+          )
+        );
+        out.snowfall.push(
+          toFiniteNumber(
+            Array.isArray(raw.snowfall) ? raw.snowfall[i] : undefined,
+            0
+          )
+        );
       }
       return out;
     }
@@ -126,6 +154,10 @@
           0
         )
       );
+      out.precipitation.push(toFiniteNumber(r.precipitation, 0));
+      out.rain.push(toFiniteNumber(r.rain, 0));
+      out.showers.push(toFiniteNumber(r.showers, 0));
+      out.snowfall.push(toFiniteNumber(r.snowfall, 0));
     }
     return out;
   }
