@@ -125,35 +125,112 @@
         const parsed = safeParse(raw, null);
         if (!parsed || parsed.schemaVersion !== CACHE_SCHEMA_VERSION) return null;
         if (!parsed || !parsed.timestamp || !parsed.weather) return null;
+        if (!isValidWeatherPayload(parsed)) return null;
         if (Date.now() - parsed.timestamp > CACHE_TTL_MS) return null;
         return parsed;
     }
 
-    function renderWeatherError(message) {
-        const rightNow = document.getElementById("fw-rightnow");
-        const forecast = document.getElementById("fw-forecast");
-        const heads = document.getElementById("headsUpList");
-        if (rightNow) {
-            rightNow.innerHTML = `
-                <div class="subtitle fw-widget-kicker">Right Now</div>
-                <div class="small text-muted">${message}</div>
-                <div class="rn-hourly-block mt-3">
-                    <div class="subtitle">Hourly Forecast</div>
-                    <div id="fw-hourly-row" class="hourly-row" aria-live="polite">
-                        <div class="small text-muted">Hourly data unavailable.</div>
-                    </div>
-                </div>
-            `;
+    function normalizeHourlyShape(raw) {
+        if (!raw) return null;
+        if (raw.hourly && Array.isArray(raw.hourly.time)) return raw.hourly;
+        if (Array.isArray(raw.time)) {
+            return {
+                time: raw.time,
+                temperature_2m: Array.isArray(raw.temperature_2m) ? raw.temperature_2m : [],
+                weather_code: Array.isArray(raw.weather_code) ? raw.weather_code : [],
+                precipitation_probability: Array.isArray(raw.precipitation_probability) ? raw.precipitation_probability : []
+            };
         }
-        if (forecast) {
-            forecast.innerHTML = `
-                <div class="subtitle">7-Day</div>
-                <div class="small text-muted">Forecast data unavailable.</div>
-            `;
+        const rows = Array.isArray(raw) ? raw : (Array.isArray(raw.hours) ? raw.hours : (Array.isArray(raw.hourly) ? raw.hourly : null));
+        if (!rows || !rows.length) return null;
+        return {
+            time: rows.map((row) => row && (row.time || row.startTime || row.ts) || null),
+            temperature_2m: rows.map((row) => row && (row.temperature_2m != null ? row.temperature_2m : row.tempF != null ? row.tempF : row.temp) || null),
+            weather_code: rows.map((row) => row && (row.weather_code != null ? row.weather_code : row.code) || null),
+            precipitation_probability: rows.map((row) => row && (row.precipitation_probability != null ? row.precipitation_probability : row.precipChance != null ? row.precipChance : row.pop) || null)
+        };
+    }
+
+    function normalizeDailyShape(raw) {
+        if (!raw) return null;
+        if (raw.daily && Array.isArray(raw.daily.time)) return raw.daily;
+        if (Array.isArray(raw.time)) {
+            return {
+                time: raw.time,
+                weather_code: Array.isArray(raw.weather_code) ? raw.weather_code : [],
+                temperature_2m_max: Array.isArray(raw.temperature_2m_max) ? raw.temperature_2m_max : [],
+                temperature_2m_min: Array.isArray(raw.temperature_2m_min) ? raw.temperature_2m_min : [],
+                precipitation_probability_max: Array.isArray(raw.precipitation_probability_max) ? raw.precipitation_probability_max : [],
+                wind_speed_10m_max: Array.isArray(raw.wind_speed_10m_max) ? raw.wind_speed_10m_max : []
+            };
         }
-        if (heads) {
-            heads.innerHTML = '<div class="small text-muted">No alerts available.</div>';
+        const rows = Array.isArray(raw) ? raw : (Array.isArray(raw.days) ? raw.days : null);
+        if (!rows || !rows.length) return null;
+        return {
+            time: rows.map((row) => row && (row.date || row.time) || null),
+            weather_code: rows.map((row) => row && (row.weather_code != null ? row.weather_code : row.code) || null),
+            temperature_2m_max: rows.map((row) => row && (row.temperature_2m_max != null ? row.temperature_2m_max : row.temp_max_f != null ? row.temp_max_f : row.high) || null),
+            temperature_2m_min: rows.map((row) => row && (row.temperature_2m_min != null ? row.temperature_2m_min : row.temp_min_f != null ? row.temp_min_f : row.low) || null),
+            precipitation_probability_max: rows.map((row) => row && (row.precipitation_probability_max != null ? row.precipitation_probability_max : row.pop) || null),
+            wind_speed_10m_max: rows.map((row) => row && (row.wind_speed_10m_max != null ? row.wind_speed_10m_max : row.wind_mph) || null)
+        };
+    }
+
+    function normalizeCurrentShape(raw, hourly) {
+        if (raw && typeof raw === "object") {
+            return {
+                temperature_2m: raw.temperature_2m != null ? raw.temperature_2m : (raw.tempF != null ? raw.tempF : raw.temp),
+                apparent_temperature: raw.apparent_temperature != null ? raw.apparent_temperature : (raw.feelsLikeF != null ? raw.feelsLikeF : raw.temperature_2m),
+                relative_humidity_2m: raw.relative_humidity_2m != null ? raw.relative_humidity_2m : (raw.humidity != null ? raw.humidity : null),
+                weather_code: raw.weather_code != null ? raw.weather_code : raw.code,
+                wind_speed_10m: raw.wind_speed_10m != null ? raw.wind_speed_10m : raw.windMph,
+                wind_direction_10m: raw.wind_direction_10m != null ? raw.wind_direction_10m : raw.windDeg,
+                precipitation: raw.precipitation != null ? raw.precipitation : 0,
+                rain: raw.rain != null ? raw.rain : 0,
+                showers: raw.showers != null ? raw.showers : 0,
+                snowfall: raw.snowfall != null ? raw.snowfall : 0,
+                time: raw.time || raw.ts || raw.startTime || new Date().toISOString()
+            };
         }
+        if (hourly && Array.isArray(hourly.time) && hourly.time.length) {
+            return {
+                temperature_2m: hourly.temperature_2m ? hourly.temperature_2m[0] : null,
+                apparent_temperature: hourly.temperature_2m ? hourly.temperature_2m[0] : null,
+                relative_humidity_2m: null,
+                weather_code: hourly.weather_code ? hourly.weather_code[0] : null,
+                wind_speed_10m: null,
+                wind_direction_10m: null,
+                precipitation: 0,
+                rain: 0,
+                showers: 0,
+                snowfall: 0,
+                time: hourly.time[0]
+            };
+        }
+        return null;
+    }
+
+    function normalizeBundleWeather(bundle) {
+        if (!bundle || typeof bundle !== "object") return null;
+        const weather = bundle.weather && typeof bundle.weather === "object" ? bundle.weather : {};
+        const hourly = normalizeHourlyShape(weather.hourly || bundle.hourly);
+        const daily = normalizeDailyShape(weather.daily || weather.daily7 || bundle.daily || bundle.daily7 || bundle.forecast);
+        const current = normalizeCurrentShape(weather.current || bundle.rightNow || bundle.current, hourly);
+        if (!current || !hourly || !daily || !Array.isArray(daily.time) || !daily.time.length) return null;
+        return { current, hourly, daily };
+    }
+
+    function isValidWeatherPayload(payload) {
+        const weather = payload && payload.weather;
+        return !!(
+            weather &&
+            weather.current &&
+            weather.hourly &&
+            Array.isArray(weather.hourly.time) &&
+            weather.daily &&
+            Array.isArray(weather.daily.time) &&
+            weather.daily.time.length
+        );
     }
 
     function canonicalFromCode(code) {
@@ -735,56 +812,74 @@
         initAlmanac(payload);
     }
 
+    function renderWeatherError(location) {
+        const rightNow = document.getElementById("fw-rightnow");
+        const forecast = document.getElementById("fw-forecast");
+        const headsUp = document.getElementById("headsUpList");
+        const locLabel = location && location.label ? location.label : "Current Location";
+
+        if (rightNow) {
+            rightNow.innerHTML = `
+                <div class="rn-layout">
+                    <div class="rn-content">
+                        <div class="subtitle fw-widget-kicker">Right Now</div>
+                        <div class="fw-rn-location">${locLabel}</div>
+                        <div class="small text-muted">Live weather is currently unavailable.</div>
+                    </div>
+                </div>
+                <div class="rn-hourly-block mt-3">
+                    <div class="subtitle">Hourly Forecast</div>
+                    <div id="fw-hourly-row" class="hourly-row" aria-live="polite">
+                        <div class="small text-muted">Hourly forecast unavailable.</div>
+                    </div>
+                </div>
+            `;
+        }
+        if (forecast) {
+            forecast.innerHTML = `
+                <div class="subtitle">7-Day</div>
+                <div class="small text-muted">Forecast unavailable right now.</div>
+                <div class="fw-favorites-wrap mt-4">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <div class="subtitle mb-0">Favorites (Top 5)</div>
+                        <a href="settings.html#favorites" class="small">Manage</a>
+                    </div>
+                    <div id="fw-favorites-strip" class="fw-favorites-strip">
+                        <div class="small text-muted">Loading favorites...</div>
+                    </div>
+                </div>
+            `;
+        }
+        if (headsUp) {
+            headsUp.classList.remove("fw-has-severe");
+            headsUp.innerHTML = '<div class="small text-muted">Heads up unavailable right now.</div>';
+        }
+        setWeatherBackground("", 0, null);
+        renderFavoritesStrip({ location: location || FALLBACK_LOC }).catch(() => {});
+    }
+
     async function fetchBundlePayload(location) {
-        if (!window.apiBox || typeof window.apiBox.getPublicWeather !== "function") {
+        if (!window.apiBox || typeof window.apiBox.getWeatherBundle !== "function") {
             throw new Error("weather_bundle_unavailable");
         }
-        const site = await window.apiBox.getPublicWeather(location.lat, location.lon);
-        if (!site || !site.current || !Array.isArray(site.daily) || !Array.isArray(site.hourly)) {
+        const bundle = await window.apiBox.getWeatherBundle(location.lat, location.lon);
+        const normalizedWeather = normalizeBundleWeather(bundle);
+        if (!normalizedWeather) {
             throw new Error("weather_bundle_bad_shape");
         }
         return {
             timestamp: Date.now(),
-            location: {
-                lat: site.location && Number.isFinite(Number(site.location.lat)) ? Number(site.location.lat) : location.lat,
-                lon: site.location && Number.isFinite(Number(site.location.lon)) ? Number(site.location.lon) : location.lon,
-                label: (site.location && site.location.label) || location.label || "Current Location"
-            },
-            weather: {
-                current: {
-                    time: site.current.time || null,
-                    temperature_2m: site.current.tempF != null ? site.current.tempF : null,
-                    apparent_temperature: site.current.feelsLikeF != null ? site.current.feelsLikeF : null,
-                    relative_humidity_2m: site.current.humidityPct != null ? site.current.humidityPct : null,
-                    wind_speed_10m: site.current.windMph != null ? site.current.windMph : null,
-                    wind_direction_10m: site.current.windDir != null ? site.current.windDir : null,
-                    weather_code: site.current.weatherCode != null ? site.current.weatherCode : 3,
-                    precipitation: 0,
-                    rain: 0,
-                    showers: 0,
-                    snowfall: 0
-                },
-                hourly: site.hourly.map((h) => ({
-                    startTime: h.startTime || null,
-                    tempF: h.tempF != null ? h.tempF : null,
-                    weatherCode: h.weatherCode != null ? h.weatherCode : 3,
-                    pop: h.pop != null ? h.pop : null
-                })),
-                daily: site.daily.map((d) => ({
-                    date: d.date || null,
-                    weatherCode: d.weatherCode != null ? d.weatherCode : 3,
-                    tempMaxF: d.tempMaxF != null ? d.tempMaxF : null,
-                    tempMinF: d.tempMinF != null ? d.tempMinF : null,
-                    precipChance: d.precipChance != null ? d.precipChance : null,
-                    windMaxMph: d.windMaxMph != null ? d.windMaxMph : null
-                }))
-            },
+            source: "nws",
+            location: bundle && bundle.location ? {
+                lat: bundle.location.lat,
+                lon: bundle.location.lon,
+                label: location.label || "Current Location"
+            } : location,
+            weather: normalizedWeather,
             aqi: null,
-            alerts: [],
-            headsUp: site.headsUp && typeof site.headsUp === "object"
-                ? site.headsUp
-                : { count: 0, hasSevere: false, top: [] },
-            favorites: Array.isArray(site.favorites) ? site.favorites : []
+            alerts: bundle && Array.isArray(bundle.alerts) ? bundle.alerts : [],
+            headsUp: bundle && bundle.headsUp ? bundle.headsUp : { count: 0, hasSevere: false, top: [] },
+            favorites: bundle && Array.isArray(bundle.favorites) ? bundle.favorites : []
         };
     }
 
@@ -817,13 +912,14 @@
             renderAll(cached);
             return;
         }
+        let location = FALLBACK_LOC;
         try {
-            const location = await getLocation();
+            location = await getLocation();
             const payload = await fetchBundlePayload(location);
             saveCache(payload);
             renderAll(payload);
-        } catch (err) {
-            renderWeatherError("Live weather data is unavailable right now.");
+        } catch (_err) {
+            renderWeatherError(location);
         }
     }
 
