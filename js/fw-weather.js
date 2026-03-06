@@ -3,6 +3,7 @@
     const STAGE_BG_KEY = "fw_stage_bg_v1";
     const LOC_KEY = "fw_weather_loc";
     const FAVORITES_KEY = "fw_favorites_v1";
+    const CACHE_SCHEMA_VERSION = 2;
     const CACHE_TTL_MS = 3 * 60 * 1000;
     const FALLBACK_LOC = { lat: 37.9577, lon: -121.2908, label: "Stockton, CA" };
     const ICON_FALLBACK = "images/fw-icons/cloudy.svg";
@@ -112,16 +113,47 @@
     }
 
     function saveCache(payload) {
-        localStorage.setItem(CACHE_KEY, JSON.stringify(payload));
+        localStorage.setItem(CACHE_KEY, JSON.stringify({
+            ...payload,
+            schemaVersion: CACHE_SCHEMA_VERSION
+        }));
     }
 
     function loadCache() {
         const raw = localStorage.getItem(CACHE_KEY);
         if (!raw) return null;
         const parsed = safeParse(raw, null);
+        if (!parsed || parsed.schemaVersion !== CACHE_SCHEMA_VERSION) return null;
         if (!parsed || !parsed.timestamp || !parsed.weather) return null;
         if (Date.now() - parsed.timestamp > CACHE_TTL_MS) return null;
         return parsed;
+    }
+
+    function renderWeatherError(message) {
+        const rightNow = document.getElementById("fw-rightnow");
+        const forecast = document.getElementById("fw-forecast");
+        const heads = document.getElementById("headsUpList");
+        if (rightNow) {
+            rightNow.innerHTML = `
+                <div class="subtitle fw-widget-kicker">Right Now</div>
+                <div class="small text-muted">${message}</div>
+                <div class="rn-hourly-block mt-3">
+                    <div class="subtitle">Hourly Forecast</div>
+                    <div id="fw-hourly-row" class="hourly-row" aria-live="polite">
+                        <div class="small text-muted">Hourly data unavailable.</div>
+                    </div>
+                </div>
+            `;
+        }
+        if (forecast) {
+            forecast.innerHTML = `
+                <div class="subtitle">7-Day</div>
+                <div class="small text-muted">Forecast data unavailable.</div>
+            `;
+        }
+        if (heads) {
+            heads.innerHTML = '<div class="small text-muted">No alerts available.</div>';
+        }
     }
 
     function canonicalFromCode(code) {
@@ -791,34 +823,7 @@
             saveCache(payload);
             renderAll(payload);
         } catch (err) {
-            const stale = safeParse(localStorage.getItem(CACHE_KEY), null);
-            if (stale && stale.weather && stale.weather.current) {
-                renderAll(stale);
-                return;
-            }
-            const payload = {
-                timestamp: Date.now(),
-                location: FALLBACK_LOC,
-                weather: {
-                    current: {
-                        temperature_2m: null,
-                        apparent_temperature: null,
-                        relative_humidity_2m: null,
-                        weather_code: 3,
-                        wind_speed_10m: null,
-                        wind_direction_10m: null,
-                        precipitation: null,
-                        rain: null,
-                        showers: null,
-                        snowfall: null,
-                        time: new Date().toISOString()
-                    },
-                    hourly: [],
-                    daily: []
-                },
-                aqi: null
-            };
-            renderAll(payload);
+            renderWeatherError("Live weather data is unavailable right now.");
         }
     }
 
