@@ -3,8 +3,9 @@
     const STAGE_BG_KEY = "fw_stage_bg_v1";
     const LOC_KEY = "fw_weather_loc";
     const FAVORITES_KEY = "fw_favorites_v1";
-    const CACHE_SCHEMA_VERSION = 2;
+    const FAVORITES_CACHE_KEY = "fw_fav_cache_v1";
     const CACHE_TTL_MS = 3 * 60 * 1000;
+    const FAVORITES_CACHE_TTL_MS = 10 * 60 * 1000;
     const FALLBACK_LOC = { lat: 37.9577, lon: -121.2908, label: "Stockton, CA" };
     const ICON_FALLBACK = "images/fw-icons/cloudy.svg";
 
@@ -113,124 +114,16 @@
     }
 
     function saveCache(payload) {
-        localStorage.setItem(CACHE_KEY, JSON.stringify({
-            ...payload,
-            schemaVersion: CACHE_SCHEMA_VERSION
-        }));
+        localStorage.setItem(CACHE_KEY, JSON.stringify(payload));
     }
 
     function loadCache() {
         const raw = localStorage.getItem(CACHE_KEY);
         if (!raw) return null;
         const parsed = safeParse(raw, null);
-        if (!parsed || parsed.schemaVersion !== CACHE_SCHEMA_VERSION) return null;
         if (!parsed || !parsed.timestamp || !parsed.weather) return null;
-        if (!isValidWeatherPayload(parsed)) return null;
         if (Date.now() - parsed.timestamp > CACHE_TTL_MS) return null;
         return parsed;
-    }
-
-    function normalizeHourlyShape(raw) {
-        if (!raw) return null;
-        if (raw.hourly && Array.isArray(raw.hourly.time)) return raw.hourly;
-        if (Array.isArray(raw.time)) {
-            return {
-                time: raw.time,
-                temperature_2m: Array.isArray(raw.temperature_2m) ? raw.temperature_2m : [],
-                weather_code: Array.isArray(raw.weather_code) ? raw.weather_code : [],
-                precipitation_probability: Array.isArray(raw.precipitation_probability) ? raw.precipitation_probability : []
-            };
-        }
-        const rows = Array.isArray(raw) ? raw : (Array.isArray(raw.hours) ? raw.hours : (Array.isArray(raw.hourly) ? raw.hourly : null));
-        if (!rows || !rows.length) return null;
-        return {
-            time: rows.map((row) => row && (row.time || row.startTime || row.ts) || null),
-            temperature_2m: rows.map((row) => row && (row.temperature_2m != null ? row.temperature_2m : row.tempF != null ? row.tempF : row.temp) || null),
-            weather_code: rows.map((row) => row && (row.weather_code != null ? row.weather_code : row.code) || null),
-            precipitation_probability: rows.map((row) => row && (row.precipitation_probability != null ? row.precipitation_probability : row.precipChance != null ? row.precipChance : row.pop) || null)
-        };
-    }
-
-    function normalizeDailyShape(raw) {
-        if (!raw) return null;
-        if (raw.daily && Array.isArray(raw.daily.time)) return raw.daily;
-        if (Array.isArray(raw.time)) {
-            return {
-                time: raw.time,
-                weather_code: Array.isArray(raw.weather_code) ? raw.weather_code : [],
-                temperature_2m_max: Array.isArray(raw.temperature_2m_max) ? raw.temperature_2m_max : [],
-                temperature_2m_min: Array.isArray(raw.temperature_2m_min) ? raw.temperature_2m_min : [],
-                precipitation_probability_max: Array.isArray(raw.precipitation_probability_max) ? raw.precipitation_probability_max : [],
-                wind_speed_10m_max: Array.isArray(raw.wind_speed_10m_max) ? raw.wind_speed_10m_max : []
-            };
-        }
-        const rows = Array.isArray(raw) ? raw : (Array.isArray(raw.days) ? raw.days : null);
-        if (!rows || !rows.length) return null;
-        return {
-            time: rows.map((row) => row && (row.date || row.time) || null),
-            weather_code: rows.map((row) => row && (row.weather_code != null ? row.weather_code : row.code) || null),
-            temperature_2m_max: rows.map((row) => row && (row.temperature_2m_max != null ? row.temperature_2m_max : row.temp_max_f != null ? row.temp_max_f : row.high) || null),
-            temperature_2m_min: rows.map((row) => row && (row.temperature_2m_min != null ? row.temperature_2m_min : row.temp_min_f != null ? row.temp_min_f : row.low) || null),
-            precipitation_probability_max: rows.map((row) => row && (row.precipitation_probability_max != null ? row.precipitation_probability_max : row.pop) || null),
-            wind_speed_10m_max: rows.map((row) => row && (row.wind_speed_10m_max != null ? row.wind_speed_10m_max : row.wind_mph) || null)
-        };
-    }
-
-    function normalizeCurrentShape(raw, hourly) {
-        if (raw && typeof raw === "object") {
-            return {
-                temperature_2m: raw.temperature_2m != null ? raw.temperature_2m : (raw.tempF != null ? raw.tempF : raw.temp),
-                apparent_temperature: raw.apparent_temperature != null ? raw.apparent_temperature : (raw.feelsLikeF != null ? raw.feelsLikeF : raw.temperature_2m),
-                relative_humidity_2m: raw.relative_humidity_2m != null ? raw.relative_humidity_2m : (raw.humidity != null ? raw.humidity : null),
-                weather_code: raw.weather_code != null ? raw.weather_code : raw.code,
-                wind_speed_10m: raw.wind_speed_10m != null ? raw.wind_speed_10m : raw.windMph,
-                wind_direction_10m: raw.wind_direction_10m != null ? raw.wind_direction_10m : raw.windDeg,
-                precipitation: raw.precipitation != null ? raw.precipitation : 0,
-                rain: raw.rain != null ? raw.rain : 0,
-                showers: raw.showers != null ? raw.showers : 0,
-                snowfall: raw.snowfall != null ? raw.snowfall : 0,
-                time: raw.time || raw.ts || raw.startTime || new Date().toISOString()
-            };
-        }
-        if (hourly && Array.isArray(hourly.time) && hourly.time.length) {
-            return {
-                temperature_2m: hourly.temperature_2m ? hourly.temperature_2m[0] : null,
-                apparent_temperature: hourly.temperature_2m ? hourly.temperature_2m[0] : null,
-                relative_humidity_2m: null,
-                weather_code: hourly.weather_code ? hourly.weather_code[0] : null,
-                wind_speed_10m: null,
-                wind_direction_10m: null,
-                precipitation: 0,
-                rain: 0,
-                showers: 0,
-                snowfall: 0,
-                time: hourly.time[0]
-            };
-        }
-        return null;
-    }
-
-    function normalizeBundleWeather(bundle) {
-        if (!bundle || typeof bundle !== "object") return null;
-        const weather = bundle.weather && typeof bundle.weather === "object" ? bundle.weather : {};
-        const hourly = normalizeHourlyShape(weather.hourly || bundle.hourly);
-        const daily = normalizeDailyShape(weather.daily || weather.daily7 || bundle.daily || bundle.daily7 || bundle.forecast);
-        const current = normalizeCurrentShape(weather.current || bundle.rightNow || bundle.current, hourly);
-        if (!current || !hourly || !daily || !Array.isArray(daily.time) || !daily.time.length) return null;
-        return { current, hourly, daily };
-    }
-
-    function isValidWeatherPayload(payload) {
-        const weather = payload && payload.weather;
-        return !!(
-            weather &&
-            weather.current &&
-            weather.hourly &&
-            Array.isArray(weather.hourly.time) &&
-            weather.daily &&
-            Array.isArray(weather.daily.time) &&
-            weather.daily.time.length
-        );
     }
 
     function canonicalFromCode(code) {
@@ -362,15 +255,7 @@
     }
 
     function getPrecipChance(weather) {
-        if (!weather || !weather.hourly || !weather.current) return null;
-        if (Array.isArray(weather.hourly)) {
-            if (!weather.hourly.length) return null;
-            const key = weather.current.time || null;
-            const idx = key ? weather.hourly.findIndex((h) => h.startTime === key) : 0;
-            const row = weather.hourly[idx >= 0 ? idx : 0];
-            return row && row.pop != null ? row.pop : null;
-        }
-        if (!weather.hourly.time || !weather.current.time) return null;
+        if (!weather.hourly || !weather.hourly.time || !weather.current || !weather.current.time) return null;
         const idx = weather.hourly.time.indexOf(weather.current.time);
         if (idx === -1) return null;
         if (!weather.hourly.precipitation_probability) return null;
@@ -417,16 +302,13 @@
     function renderRightNow(target, payload) {
         if (!target) return;
         const current = payload.weather.current;
-        const temp = Math.round(current.temperature_2m != null ? current.temperature_2m : current.tempF);
-        const feels = Math.round(current.apparent_temperature != null ? current.apparent_temperature : current.feelsLikeF);
-        const humidity = Math.round(current.relative_humidity_2m != null ? current.relative_humidity_2m : current.humidityPct);
-        const wind = Math.round(current.wind_speed_10m != null ? current.wind_speed_10m : current.windMph);
-        const windDir = toCardinal(current.wind_direction_10m != null ? current.wind_direction_10m : current.windDir);
+        const temp = Math.round(current.temperature_2m);
+        const feels = Math.round(current.apparent_temperature);
+        const humidity = Math.round(current.relative_humidity_2m);
+        const wind = Math.round(current.wind_speed_10m);
+        const windDir = toCardinal(current.wind_direction_10m);
         const precipChance = getPrecipChance(payload.weather);
-        const displayCode = getCurrentDisplayCode({
-            ...current,
-            weather_code: current.weather_code != null ? current.weather_code : current.weatherCode
-        }, payload.weather);
+        const displayCode = getCurrentDisplayCode(current, payload.weather);
         const label = labelFromCode(displayCode);
         const updated = formatTime(new Date(current.time || payload.timestamp));
         const aqi = payload.aqi != null ? payload.aqi : "-";
@@ -496,33 +378,14 @@
 
     function renderForecast(target, payload) {
         if (!target) return;
-        const dailyRows = Array.isArray(payload.weather.daily)
-            ? payload.weather.daily.map((d) => ({
-                date: d.date,
-                weather_code: d.weatherCode,
-                temperature_2m_max: d.tempMaxF,
-                temperature_2m_min: d.tempMinF,
-                precipitation_probability_max: d.precipChance,
-                wind_speed_10m_max: d.windMaxMph
-            }))
-            : (payload.weather.daily && Array.isArray(payload.weather.daily.time)
-                ? payload.weather.daily.time.map((date, idx) => ({
-                    date: date,
-                    weather_code: payload.weather.daily.weather_code[idx],
-                    temperature_2m_max: payload.weather.daily.temperature_2m_max[idx],
-                    temperature_2m_min: payload.weather.daily.temperature_2m_min[idx],
-                    precipitation_probability_max: payload.weather.daily.precipitation_probability_max[idx],
-                    wind_speed_10m_max: payload.weather.daily.wind_speed_10m_max ? payload.weather.daily.wind_speed_10m_max[idx] : null
-                }))
-                : []);
-        const count = Math.min(7, dailyRows.length);
+        const daily = payload.weather.daily;
+        const count = Math.min(7, daily.time.length);
         const tiles = Array.from({ length: count }).map((_, idx) => {
-            const row = dailyRows[idx];
-            const day = formatDay(parseYmdLocal(row.date));
-            const hi = Math.round(row.temperature_2m_max);
-            const lo = Math.round(row.temperature_2m_min);
-            const code = row.weather_code;
-            const wind = row.wind_speed_10m_max;
+            const day = formatDay(parseYmdLocal(daily.time[idx]));
+            const hi = Math.round(daily.temperature_2m_max[idx]);
+            const lo = Math.round(daily.temperature_2m_min[idx]);
+            const code = daily.weather_code[idx];
+            const wind = daily.wind_speed_10m_max ? daily.wind_speed_10m_max[idx] : null;
             const badge = riskBadge(code, wind, hi);
             return `
                 <div class="text-center bg-dark-2 rounded-1 p-20 fw-forecast-tile" style="min-width:110px;">
@@ -574,6 +437,48 @@
         }
     }
 
+    function loadFavoritesCache() {
+        try {
+            const raw = localStorage.getItem(FAVORITES_CACHE_KEY);
+            const parsed = raw ? JSON.parse(raw) : {};
+            return parsed && typeof parsed === "object" ? parsed : {};
+        } catch (_err) {
+            return {};
+        }
+    }
+
+    function saveFavoritesCache(cache) {
+        localStorage.setItem(FAVORITES_CACHE_KEY, JSON.stringify(cache || {}));
+    }
+
+    async function fetchFavoriteCurrent(favorite) {
+        if (!window.apiBox || typeof window.apiBox.getWeatherRightNow !== "function") {
+            throw new Error("favorite_weather_unavailable");
+        }
+        const json = await window.apiBox.getWeatherRightNow(favorite.lat, favorite.lon);
+        if (!json || !json.rightNow) throw new Error("favorite_weather_missing");
+        return {
+            temp: Math.round(json.rightNow.temperature_2m),
+            code: json.rightNow.weather_code,
+            ts: Date.now()
+        };
+    }
+
+    async function mapLimit(items, limit, iterator) {
+        const results = new Array(items.length);
+        let index = 0;
+        async function worker() {
+            while (index < items.length) {
+                const current = index;
+                index += 1;
+                results[current] = await iterator(items[current], current);
+            }
+        }
+        const workers = Array.from({ length: Math.max(1, Math.min(limit, items.length)) }).map(() => worker());
+        await Promise.all(workers);
+        return results;
+    }
+
     function isRecentFavorite(favorite, activeLocation) {
         if (favorite && favorite.updatedAt && Date.now() - favorite.updatedAt < 24 * 60 * 60 * 1000) return true;
         if (!activeLocation || !Number.isFinite(activeLocation.lat) || !Number.isFinite(activeLocation.lon)) return false;
@@ -582,34 +487,34 @@
         return latDiff < 0.05 && lonDiff < 0.05;
     }
 
-    async function renderFavoritesStrip(payload) {
+    async function renderFavoritesStrip(activeLocation) {
         const host = document.getElementById("fw-favorites-strip");
         if (!host) return;
-        const activeLocation = payload && payload.location ? payload.location : null;
-        const payloadFavorites = Array.isArray(payload && payload.favorites) ? payload.favorites : [];
-        const fallbackFavorites = loadFavorites();
-        const favorites = payloadFavorites.length
-            ? payloadFavorites.map((row) => ({
-                id: String(row.id || `${row.lat},${row.lon}`),
-                label: String(row.label || "").trim(),
-                lat: Number(row.lat),
-                lon: Number(row.lon),
-                updatedAt: Date.now(),
-                weather: {
-                    code: row.weatherCode != null ? row.weatherCode : 3,
-                    temp: row.tempF != null ? Math.round(row.tempF) : null
-                }
-            })).filter((row) => row.label && Number.isFinite(row.lat) && Number.isFinite(row.lon))
-            : fallbackFavorites.map((row) => ({
-                ...row,
-                weather: null
-            }));
-
+        const favorites = loadFavorites();
         if (!favorites.length) {
             host.innerHTML = '<div class="small text-muted">No favorites saved. Use Manage to add up to 5.</div>';
             return;
         }
-        host.innerHTML = favorites.map((row) => {
+
+        const cache = loadFavoritesCache();
+        const now = Date.now();
+        const weatherRows = await mapLimit(favorites, 2, async (favorite) => {
+            const key = favorite.id || `${favorite.lat},${favorite.lon}`;
+            const cached = cache[key];
+            if (cached && cached.ts && now - cached.ts < FAVORITES_CACHE_TTL_MS) {
+                return { ...favorite, weather: cached };
+            }
+            try {
+                const weather = await fetchFavoriteCurrent(favorite);
+                cache[key] = weather;
+                return { ...favorite, weather };
+            } catch (_err) {
+                return { ...favorite, weather: null };
+            }
+        });
+        saveFavoritesCache(cache);
+
+        host.innerHTML = weatherRows.map((row) => {
             const code = row.weather && row.weather.code != null ? row.weather.code : 3;
             const temp = row.weather && row.weather.temp != null ? `${row.weather.temp}&deg;F` : "--";
             const recent = isRecentFavorite(row, activeLocation);
@@ -635,7 +540,7 @@
                     const payload = await fetchBundlePayload(nextLoc);
                     saveCache(payload);
                     renderAll(payload);
-                    renderFavoritesStrip(payload).catch(() => {});
+                    renderFavoritesStrip(nextLoc).catch(() => {});
                 } catch (_err) {
                     location.reload();
                 }
@@ -646,44 +551,25 @@
     function renderHeadsUp(payload) {
         const list = document.getElementById("headsUpList");
         if (!list) return;
-        const heads = payload && payload.headsUp && Array.isArray(payload.headsUp.top) ? payload.headsUp.top : (Array.isArray(payload && payload.headsUp) ? payload.headsUp : null);
-        if (Array.isArray(heads) && heads.length) {
-            const hasSevere = heads.some((h) => {
-                const s = String(h && h.severity || "").toLowerCase();
-                return s === "severe" || s === "extreme";
-            });
-            list.classList.toggle("fw-has-severe", hasSevere);
-            list.innerHTML = heads.map((item) => {
-                const event = item.title || item.event || item.headline || "Weather Alert";
+        const heads = payload && payload.headsUp ? payload.headsUp : null;
+        if (heads && Array.isArray(heads.top) && heads.top.length) {
+            list.classList.toggle("fw-has-severe", !!heads.hasSevere);
+            list.innerHTML = heads.top.map((item) => {
+                const event = item.event || item.headline || "Weather Alert";
                 const sev = item.severity ? ` (${item.severity})` : "";
                 return `<div class="small fw-headsup-item"><i class="fa fa-exclamation-circle me-2" aria-hidden="true"></i>${event}${sev}</div>`;
-            }).join("") + `<div class="small text-muted mt-1">${heads.length} active alert(s)</div>`;
+            }).join("") + `<div class="small text-muted mt-1">${heads.count || heads.top.length} active alert(s)</div>`;
             return;
         }
 
-        const dailyRows = Array.isArray(payload.weather.daily)
-            ? payload.weather.daily.map((d) => ({
-                time: d.date,
-                weather_code: d.weatherCode,
-                temperature_2m_max: d.tempMaxF,
-                wind_speed_10m_max: d.windMaxMph
-            }))
-            : (payload.weather.daily && Array.isArray(payload.weather.daily.time)
-                ? payload.weather.daily.time.map((date, idx) => ({
-                    time: date,
-                    weather_code: payload.weather.daily.weather_code[idx],
-                    temperature_2m_max: payload.weather.daily.temperature_2m_max[idx],
-                    wind_speed_10m_max: payload.weather.daily.wind_speed_10m_max ? payload.weather.daily.wind_speed_10m_max[idx] : null
-                }))
-                : []);
+        const daily = payload.weather.daily;
         const items = [];
         let hasSevere = false;
-        for (let idx = 0; idx < Math.min(5, dailyRows.length); idx += 1) {
-            const row = dailyRows[idx];
-            const day = formatDay(parseYmdLocal(row.time));
-            const code = row.weather_code;
-            const hi = row.temperature_2m_max;
-            const wind = row.wind_speed_10m_max;
+        for (let idx = 0; idx < Math.min(5, daily.time.length); idx += 1) {
+            const day = formatDay(parseYmdLocal(daily.time[idx]));
+            const code = daily.weather_code[idx];
+            const hi = daily.temperature_2m_max[idx];
+            const wind = daily.wind_speed_10m_max ? daily.wind_speed_10m_max[idx] : null;
             const badge = riskBadge(code, wind, hi);
             if (!badge) continue;
             if (badge === "Storm Risk") hasSevere = true;
@@ -807,55 +693,9 @@
         const forecast = document.getElementById("fw-forecast");
         renderRightNow(rightNow, payload);
         renderForecast(forecast, payload);
-        renderFavoritesStrip(payload).catch(() => {});
+        renderFavoritesStrip(payload.location).catch(() => {});
         renderHeadsUp(payload);
         initAlmanac(payload);
-    }
-
-    function renderWeatherError(location) {
-        const rightNow = document.getElementById("fw-rightnow");
-        const forecast = document.getElementById("fw-forecast");
-        const headsUp = document.getElementById("headsUpList");
-        const locLabel = location && location.label ? location.label : "Current Location";
-
-        if (rightNow) {
-            rightNow.innerHTML = `
-                <div class="rn-layout">
-                    <div class="rn-content">
-                        <div class="subtitle fw-widget-kicker">Right Now</div>
-                        <div class="fw-rn-location">${locLabel}</div>
-                        <div class="small text-muted">Live weather is currently unavailable.</div>
-                    </div>
-                </div>
-                <div class="rn-hourly-block mt-3">
-                    <div class="subtitle">Hourly Forecast</div>
-                    <div id="fw-hourly-row" class="hourly-row" aria-live="polite">
-                        <div class="small text-muted">Hourly forecast unavailable.</div>
-                    </div>
-                </div>
-            `;
-        }
-        if (forecast) {
-            forecast.innerHTML = `
-                <div class="subtitle">7-Day</div>
-                <div class="small text-muted">Forecast unavailable right now.</div>
-                <div class="fw-favorites-wrap mt-4">
-                    <div class="d-flex align-items-center justify-content-between mb-2">
-                        <div class="subtitle mb-0">Favorites (Top 5)</div>
-                        <a href="settings.html#favorites" class="small">Manage</a>
-                    </div>
-                    <div id="fw-favorites-strip" class="fw-favorites-strip">
-                        <div class="small text-muted">Loading favorites...</div>
-                    </div>
-                </div>
-            `;
-        }
-        if (headsUp) {
-            headsUp.classList.remove("fw-has-severe");
-            headsUp.innerHTML = '<div class="small text-muted">Heads up unavailable right now.</div>';
-        }
-        setWeatherBackground("", 0, null);
-        renderFavoritesStrip({ location: location || FALLBACK_LOC }).catch(() => {});
     }
 
     async function fetchBundlePayload(location) {
@@ -863,23 +703,20 @@
             throw new Error("weather_bundle_unavailable");
         }
         const bundle = await window.apiBox.getWeatherBundle(location.lat, location.lon);
-        const normalizedWeather = normalizeBundleWeather(bundle);
-        if (!normalizedWeather) {
+        if (!bundle || !bundle.weather || !bundle.weather.current || !bundle.weather.daily || !bundle.weather.hourly) {
             throw new Error("weather_bundle_bad_shape");
         }
         return {
             timestamp: Date.now(),
-            source: "nws",
             location: bundle && bundle.location ? {
                 lat: bundle.location.lat,
                 lon: bundle.location.lon,
                 label: location.label || "Current Location"
             } : location,
-            weather: normalizedWeather,
+            weather: bundle && bundle.weather ? bundle.weather : null,
             aqi: null,
             alerts: bundle && Array.isArray(bundle.alerts) ? bundle.alerts : [],
-            headsUp: bundle && bundle.headsUp ? bundle.headsUp : { count: 0, hasSevere: false, top: [] },
-            favorites: bundle && Array.isArray(bundle.favorites) ? bundle.favorites : []
+            headsUp: bundle && bundle.headsUp ? bundle.headsUp : { count: 0, top: [] }
         };
     }
 
@@ -912,14 +749,55 @@
             renderAll(cached);
             return;
         }
-        let location = FALLBACK_LOC;
         try {
-            location = await getLocation();
+            const location = await getLocation();
             const payload = await fetchBundlePayload(location);
             saveCache(payload);
             renderAll(payload);
-        } catch (_err) {
-            renderWeatherError(location);
+        } catch (err) {
+            const fallbackDays = Array.from({ length: 7 }).map((_, idx) => {
+                const d = new Date();
+                d.setDate(d.getDate() + idx);
+                return d.toISOString().slice(0, 10);
+            });
+            const payload = {
+                timestamp: Date.now(),
+                location: FALLBACK_LOC,
+                weather: {
+                    current: {
+                        temperature_2m: 72,
+                        apparent_temperature: 72,
+                        relative_humidity_2m: 40,
+                        weather_code: 3,
+                        wind_speed_10m: 5,
+                        wind_direction_10m: 180,
+                        precipitation: 0,
+                        rain: 0,
+                        showers: 0,
+                        snowfall: 0,
+                        time: new Date().toISOString()
+                    },
+                    hourly: {
+                        time: fallbackDays,
+                        precipitation_probability: fallbackDays.map(() => 10),
+                        weather_code: fallbackDays.map(() => 3),
+                        precipitation: fallbackDays.map(() => 0),
+                        rain: fallbackDays.map(() => 0),
+                        showers: fallbackDays.map(() => 0),
+                        snowfall: fallbackDays.map(() => 0)
+                    },
+                    daily: {
+                        time: fallbackDays,
+                        weather_code: fallbackDays.map(() => 3),
+                        temperature_2m_max: fallbackDays.map(() => 75),
+                        temperature_2m_min: fallbackDays.map(() => 60),
+                        precipitation_probability_max: fallbackDays.map(() => 10),
+                        wind_speed_10m_max: fallbackDays.map(() => 8)
+                    }
+                },
+                aqi: null
+            };
+            renderAll(payload);
         }
     }
 
@@ -927,11 +805,13 @@
         window.addEventListener("storage", (evt) => {
             if (!evt || evt.key !== FAVORITES_KEY) return;
             const cached = loadCache();
-            renderFavoritesStrip(cached || null).catch(() => {});
+            const active = cached && cached.location ? cached.location : null;
+            renderFavoritesStrip(active).catch(() => {});
         });
         window.addEventListener("fw:favorites", () => {
             const cached = loadCache();
-            renderFavoritesStrip(cached || null).catch(() => {});
+            const active = cached && cached.location ? cached.location : null;
+            renderFavoritesStrip(active).catch(() => {});
         });
         init();
     }
