@@ -91,8 +91,7 @@
       seen.add(base);
       return true;
     });
-
-    for (const base of bases) {
+  for (const base of bases) {
       const url =
         base +
         "/" +
@@ -113,21 +112,25 @@
     }
     throw new Error("backend_weather_not_found");
   }
-
   async function getHourlyForecast(lat, lon) {
     try {
-      const json = await fetchWeather("hourly", lat, lon);
-      const rows = normalizeHourly(json.hourly || json.weather || json.data || json);
+      const json = await fetchWeather("site-weather", lat, lon);
+      const rows = normalizeHourly(
+        (json && json.weather && json.weather.hourly) ||
+        (json && json.data && json.data.weather && json.data.weather.hourly) ||
+        (json && json.hourly) ||
+        (json && json.data) ||
+        json
+      );
       if (Array.isArray(rows) && rows.length) return rows;
+    } catch (_err) {
+      // Try bundle/hourly fallbacks below.
+    }
+    try {
       const bundle = await getWeatherBundle(lat, lon);
       return normalizeHourly(bundle && (bundle.hourly || (bundle.weather && bundle.weather.hourly)));
-    } catch (_err) {
-      try {
-        const bundle = await getWeatherBundle(lat, lon);
-        return normalizeHourly(bundle && (bundle.hourly || (bundle.weather && bundle.weather.hourly)));
-      } catch (_err2) {
-        return [];
-      }
+    } catch (_err2) {
+      return [];
     }
   }
 
