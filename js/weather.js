@@ -4,11 +4,24 @@ const express = require("express");
 const https = require("https");
 const http = require("http");
 const nws = require("./nws-adapter");
+const { createAdapter } = require("./site-weather-adapter");
+const { createAdapter: createPublicAdapter } = require("./public-weather-adapter");
 
 const router = express.Router();
 const INTEL_HINT_TTL_MS = 5 * 60 * 1000;
 const intelHintCache = new Map();
 const INTEL_ENGINE_BASE_URL = process.env.INTEL_ENGINE_BASE_URL || "http://127.0.0.1:5173";
+const siteAdapter = createAdapter({
+  getBundle: nws.getBundle,
+  intelBaseUrl: INTEL_ENGINE_BASE_URL,
+  ttlMs: 5 * 60 * 1000
+});
+const publicAdapter = createPublicAdapter({
+  getBundle: nws.getBundle,
+  getRightNow: nws.getRightNow,
+  ttlMs: 5 * 60 * 1000,
+  getFavorites: async () => []
+});
 
 // ---------- helper: https GET -> JSON ----------
 function httpsGetJson(url, timeoutMs = 10000) {
@@ -237,6 +250,34 @@ router.get("/bundle", async (req, res) => {
     return res.json(json);
   } catch (_err) {
     return res.status(502).json({ ok: false, error: "nws_bundle_failed" });
+  }
+});
+
+// Website-specific homepage contract.
+router.get("/site-weather", async (req, res) => {
+  const loc = parseLatLon(req);
+  if (!loc) {
+    return res.status(400).json({ ok: false, error: "invalid_lat_lon" });
+  }
+  try {
+    const json = await siteAdapter.getSiteWeather(loc.lat, loc.lon);
+    return res.json(json);
+  } catch (_err) {
+    return res.status(502).json({ ok: false, error: "site_weather_failed" });
+  }
+});
+
+// Public homepage adapter contract (NWS-only, no intel dependency).
+router.get("/public-weather", async (req, res) => {
+  const loc = parseLatLon(req);
+  if (!loc) {
+    return res.status(400).json({ ok: false, error: "invalid_lat_lon" });
+  }
+  try {
+    const json = await publicAdapter.getPublicWeather(loc.lat, loc.lon);
+    return res.json(json);
+  } catch (_err) {
+    return res.status(502).json({ ok: false, error: "public_weather_failed" });
   }
 });
 

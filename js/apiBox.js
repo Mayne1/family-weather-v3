@@ -1,6 +1,7 @@
 (function () {
   let settingsApiUnauthorized = false;
-  let weatherBasePath = "/api/weather";
+  const PUBLIC_WEATHER_CACHE_MS = 2 * 60 * 1000;
+  const publicWeatherCache = new Map();
   // Optional local-dev override. In production, leave unset so same-origin proxy is used.
   const INTEL_BASE_URL =
     typeof window !== "undefined" && typeof window.FW_INTEL_BASE_URL === "string"
@@ -81,116 +82,201 @@
     return [];
   }
 
-  async function fetchWeather(path, lat, lon) {
-    const candidates = [];
-    if (weatherBasePath) candidates.push(weatherBasePath);
-    candidates.push("/api/weather");
-    const seen = new Set();
-    const bases = candidates.filter(function (base) {
-      if (!base || seen.has(base)) return false;
-      seen.add(base);
-      return true;
+  function siteKey(lat, lon) {
+    return `${Number(lat).toFixed(3)},${Number(lon).toFixed(3)}`;
+  }
+
+  function getCachedPublicWeather(lat, lon) {
+    const key = siteKey(lat, lon);
+    const hit = publicWeatherCache.get(key);
+    if (!hit) return null;
+    if (Date.now() >= hit.expiresAt) {
+      publicWeatherCache.delete(key);
+      return null;
+    }
+    return hit.value;
+  }
+
+  function setCachedPublicWeather(lat, lon, value) {
+    publicWeatherCache.set(siteKey(lat, lon), {
+      value: value,
+      expiresAt: Date.now() + PUBLIC_WEATHER_CACHE_MS
     });
-  for (const base of bases) {
-      const url =
-        base +
-        "/" +
-        path +
-        "?lat=" +
-        encodeURIComponent(lat) +
-        "&lon=" +
-        encodeURIComponent(lon);
+    return value;
+  }
+
+  async function fetchPublicWeather(lat, lon) {
+    const cached = getCachedPublicWeather(lat, lon);
+    if (cached) return cached;
+
+    const targets = [
+      "/api/public-weather?lat=" + encodeURIComponent(lat) + "&lon=" + encodeURIComponent(lon),
+      "/api/weather/public-weather?lat=" + encodeURIComponent(lat) + "&lon=" + encodeURIComponent(lon),
+      "/api/site-weather?lat=" + encodeURIComponent(lat) + "&lon=" + encodeURIComponent(lon),
+      "/api/weather/site-weather?lat=" + encodeURIComponent(lat) + "&lon=" + encodeURIComponent(lon)
+    ];
+    for (const url of targets) {
       const res = await fetch(url);
       if (res.ok) {
-        weatherBasePath = base;
-        return res.json();
+        const json = await res.json();
+        if (json && json.ok !== false && json.current && Array.isArray(json.hourly) && Array.isArray(json.daily)) {
+          return setCachedPublicWeather(lat, lon, json);
+        }
+        if (json && json.weather && json.weather.current) {
+          const adapted = {
+            ok: true,
+            location: json.location || { lat: Number(lat), lon: Number(lon) },
+            current: json.weather.current || null,
+            hourly: Array.isArray(json.weather.hourly) ? json.weather.hourly : [],
+            daily: Array.isArray(json.weather.daily) ? json.weather.daily : [],
+            headsUp: Array.isArray(json.headsUp) ? { count: json.headsUp.length, hasSevere: false, top: json.headsUp } : (json.headsUp || { count: 0, hasSevere: false, top: [] }),
+            favorites: Array.isArray(json.favorites) ? json.favorites : []
+          };
+          return setCachedPublicWeather(lat, lon, adapted);
+        }
       }
-      if (res.status === 404) {
-        continue;
-      }
-      throw new Error("backend_weather_failed");
+      if (res.status !== 404) break;
     }
-    throw new Error("backend_weather_not_found");
+    throw new Error("public_weather_unavailable");
   }
+
+  function toLegacyWeatherMatrix(hourly, daily) {
+    const rowsHourly = Array.isArray(hourly) ? hourly : [];
+    const rowsDaily = Array.isArray(daily) ? daily : [];
+    return {
+      hourly: {
+        time: rowsHourly.map(function (h) { return h.startTime || h.time || null; }),
+        precipitation_probability: rowsHourly.map(function (h) { return h.pop != null ? h.pop : null; }),
+        weather_code: rowsHourly.map(function (h) { return normalizeWeatherCode(h.weatherCode != null ? h.weatherCode : h.weather_code); }),
+        precipitation: rowsHourly.map(function () { return 0; }),
+        rain: rowsHourly.map(function () { return 0; }),
+        showers: rowsHourly.map(function () { return 0; }),
+        snowfall: rowsHourly.map(function () { return 0; })
+      },
+      daily: {
+        time: rowsDaily.map(function (d) { return d.date || null; }),
+        weather_code: rowsDaily.map(function (d) { return normalizeWeatherCode(d.weatherCode != null ? d.weatherCode : d.weather_code); }),
+        temperature_2m_max: rowsDaily.map(function (d) { return d.tempMaxF != null ? d.tempMaxF : null; }),
+        temperature_2m_min: rowsDaily.map(function (d) { return d.tempMinF != null ? d.tempMinF : null; }),
+        precipitation_probability_max: rowsDaily.map(function (d) { return d.precipChance != null ? d.precipChance : null; }),
+        wind_speed_10m_max: rowsDaily.map(function (d) { return d.windMaxMph != null ? d.windMaxMph : null; })
+      }
+    };
+  }
+
+  function toLegacyBundle(site, lat, lon) {
+    const current = site && site.current ? site.current : {};
+    const hourly = site && Array.isArray(site.hourly) ? site.hourly : [];
+    const daily = site && Array.isArray(site.daily) ? site.daily : [];
+    const headsUp = site && site.headsUp ? site.headsUp : { count: 0, hasSevere: false, top: [] };
+    const heads = Array.isArray(headsUp.top) ? headsUp.top : (Array.isArray(headsUp) ? headsUp : []);
+    const matrix = toLegacyWeatherMatrix(hourly, daily);
+
+    return {
+      ok: true,
+      source: "public-weather",
+      location: { lat: Number(lat), lon: Number(lon) },
+      rightNow: {
+        time: current.time || null,
+        temperature_2m: current.tempF != null ? current.tempF : (current.temperature_2m != null ? current.temperature_2m : null),
+        apparent_temperature: current.feelsLikeF != null ? current.feelsLikeF : (current.apparent_temperature != null ? current.apparent_temperature : null),
+        relative_humidity_2m: current.humidityPct != null ? current.humidityPct : (current.relative_humidity_2m != null ? current.relative_humidity_2m : null),
+        wind_speed_10m: current.windMph != null ? current.windMph : (current.wind_speed_10m != null ? current.wind_speed_10m : null),
+        wind_direction_10m: current.windDir != null ? current.windDir : (current.wind_direction_10m != null ? current.wind_direction_10m : null),
+        weather_code: normalizeWeatherCode(current.weatherCode != null ? current.weatherCode : current.weather_code),
+        precipitation: 0,
+        rain: 0,
+        showers: 0,
+        snowfall: 0
+      },
+      hourly: hourly.map(function (h) {
+        return {
+          time: h.startTime || h.time || null,
+          temperature_2m: h.tempF != null ? h.tempF : (h.temperature_2m != null ? h.temperature_2m : null),
+          weather_code: normalizeWeatherCode(h.weatherCode != null ? h.weatherCode : h.weather_code),
+          precipChance: h.pop != null ? h.pop : (h.precipChance != null ? h.precipChance : null)
+        };
+      }),
+      daily7: matrix.daily,
+      daily: matrix.daily,
+      weather: {
+        current: {
+          time: current.time || null,
+          temperature_2m: current.tempF != null ? current.tempF : (current.temperature_2m != null ? current.temperature_2m : null),
+          apparent_temperature: current.feelsLikeF != null ? current.feelsLikeF : (current.apparent_temperature != null ? current.apparent_temperature : null),
+          relative_humidity_2m: current.humidityPct != null ? current.humidityPct : (current.relative_humidity_2m != null ? current.relative_humidity_2m : null),
+          wind_speed_10m: current.windMph != null ? current.windMph : (current.wind_speed_10m != null ? current.wind_speed_10m : null),
+          wind_direction_10m: current.windDir != null ? current.windDir : (current.wind_direction_10m != null ? current.wind_direction_10m : null),
+          weather_code: normalizeWeatherCode(current.weatherCode != null ? current.weatherCode : current.weather_code),
+          precipitation: 0,
+          rain: 0,
+          showers: 0,
+          snowfall: 0
+        },
+        hourly: matrix.hourly,
+        daily: matrix.daily
+      },
+      headsUp: {
+        count: headsUp.count != null ? headsUp.count : heads.length,
+        top: heads.map(function (h) {
+          return {
+            event: h.title || h.event || "Weather Alert",
+            severity: h.severity || null,
+            effective: h.effective || null,
+            ends: h.ends || null
+          };
+        }),
+        hasSevere: !!headsUp.hasSevere
+      },
+      favorites: Array.isArray(site && site.favorites) ? site.favorites : []
+    };
+  }
+
   async function getHourlyForecast(lat, lon) {
     try {
-      const json = await fetchWeather("site-weather", lat, lon);
-      const rows = normalizeHourly(
-        (json && json.weather && json.weather.hourly) ||
-        (json && json.data && json.data.weather && json.data.weather.hourly) ||
-        (json && json.hourly) ||
-        (json && json.data) ||
-        json
-      );
+      const site = await fetchPublicWeather(lat, lon);
+      const rows = normalizeHourly(site && site.hourly ? site.hourly : []);
       if (Array.isArray(rows) && rows.length) return rows;
+      return [];
     } catch (_err) {
-      // Try bundle/hourly fallbacks below.
-    }
-    try {
-      const bundle = await getWeatherBundle(lat, lon);
-      return normalizeHourly(bundle && (bundle.hourly || (bundle.weather && bundle.weather.hourly)));
-    } catch (_err2) {
       return [];
     }
   }
 
   async function getWeatherRightNow(lat, lon) {
-    try {
-      return await fetchWeather("rightnow", lat, lon);
-    } catch (_err) {
-      // Compatibility alias for older backends.
-      return fetchWeather("current", lat, lon);
-    }
+    const site = await fetchPublicWeather(lat, lon);
+    const bundle = toLegacyBundle(site, lat, lon);
+    return {
+      ok: true,
+      source: bundle.source,
+      location: bundle.location,
+      rightNow: bundle.rightNow,
+      weather: { current: bundle.weather.current }
+    };
   }
 
   async function getWeatherForecast(lat, lon) {
-    const json = await fetchWeather("daily", lat, lon);
+    const site = await fetchPublicWeather(lat, lon);
+    const json = toLegacyBundle(site, lat, lon);
     if (json && !json.daily && json.daily7) json.daily = json.daily7;
     return json;
   }
 
   async function getWeatherAlerts(lat, lon) {
-    return fetchWeather("alerts", lat, lon);
+    const site = await fetchPublicWeather(lat, lon);
+    const bundle = toLegacyBundle(site, lat, lon);
+    return {
+      ok: true,
+      source: bundle.source,
+      location: bundle.location,
+      alerts: bundle.headsUp.top,
+      headsUp: bundle.headsUp
+    };
   }
 
   async function getWeatherBundle(lat, lon) {
-    try {
-      return await fetchWeather("bundle", lat, lon);
-    } catch (_err) {
-      const [rightNow, hourly, daily, alerts] = await Promise.all([
-        getWeatherRightNow(lat, lon).catch(function () { return null; }),
-        fetchWeather("hourly", lat, lon).catch(function () { return null; }),
-        fetchWeather("daily", lat, lon).catch(function () { return null; }),
-        fetchWeather("alerts", lat, lon).catch(function () { return null; })
-      ]);
-      if (!rightNow && !hourly && !daily && !alerts) throw new Error("bundle_unavailable");
-
-      const dailyData = daily && (daily.daily7 || daily.daily || (daily.weather && daily.weather.daily)) || null;
-      const alertsList = alerts && Array.isArray(alerts.alerts) ? alerts.alerts : [];
-      const headsUp = alerts && alerts.headsUp ? alerts.headsUp : buildHeadsUpFromAlerts(alertsList);
-
-      return {
-        ok: true,
-        source: "nws",
-        location:
-          (rightNow && rightNow.location) ||
-          (hourly && hourly.location) ||
-          (daily && daily.location) ||
-          (alerts && alerts.location) ||
-          { lat: Number(lat), lon: Number(lon) },
-        rightNow: rightNow && rightNow.rightNow ? rightNow.rightNow : null,
-        hourly: hourly && hourly.hourly ? hourly.hourly : [],
-        daily7: dailyData,
-        daily: dailyData,
-        alerts: alertsList,
-        headsUp: headsUp,
-        weather: {
-          current: rightNow && rightNow.rightNow ? rightNow.rightNow : null,
-          hourly: hourly && hourly.weather && hourly.weather.hourly ? hourly.weather.hourly : null,
-          daily: dailyData
-        }
-      };
-    }
+    const site = await fetchPublicWeather(lat, lon);
+    return toLegacyBundle(site, lat, lon);
   }
 
   function severityRank(value) {
@@ -378,6 +464,8 @@
   }
 
   window.apiBox = {
+    getPublicWeather: fetchPublicWeather,
+    getSiteWeather: fetchPublicWeather,
     getHourlyForecast: getHourlyForecast,
     getWeatherRightNow: getWeatherRightNow,
     getWeatherForecast: getWeatherForecast,

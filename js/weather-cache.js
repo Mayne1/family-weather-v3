@@ -3,6 +3,8 @@
 const express = require("express");
 const { Pool } = require("pg");
 const nws = require("./nws-adapter");
+const { createAdapter } = require("./site-weather-adapter");
+const { createAdapter: createPublicAdapter } = require("./public-weather-adapter");
 
 const router = express.Router();
 if (!process.env.DATABASE_URL) {
@@ -11,6 +13,38 @@ if (!process.env.DATABASE_URL) {
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
+});
+const siteAdapter = createAdapter({
+  getBundle: nws.getBundle,
+  intelBaseUrl: process.env.INTEL_ENGINE_BASE_URL || "http://127.0.0.1:5173",
+  ttlMs: 5 * 60 * 1000
+});
+const publicAdapter = createPublicAdapter({
+  getBundle: nws.getBundle,
+  getRightNow: nws.getRightNow,
+  ttlMs: 5 * 60 * 1000,
+  getFavorites: async () => {
+    if (!process.env.DATABASE_URL) return [];
+    try {
+      const r = await pool.query(
+        `SELECT id, label, lat, lon
+         FROM locations
+         WHERE COALESCE(is_active,true)=true
+           AND lat IS NOT NULL
+           AND lon IS NOT NULL
+         ORDER BY id ASC
+         LIMIT 5`
+      );
+      return r.rows.map((row) => ({
+        id: row.id,
+        label: row.label || "Favorite",
+        lat: Number(row.lat),
+        lon: Number(row.lon)
+      })).filter((row) => Number.isFinite(row.lat) && Number.isFinite(row.lon));
+    } catch (_err) {
+      return [];
+    }
+  }
 });
 
 function parseLatLon(req) {
@@ -82,6 +116,30 @@ router.get("/bundle", async (req, res) => {
     return res.json(json);
   } catch (_err) {
     return res.status(502).json({ ok: false, error: "nws_bundle_failed" });
+  }
+});
+
+// Website-specific homepage contract.
+router.get("/site-weather", async (req, res) => {
+  const loc = parseLatLon(req);
+  if (!loc) return res.status(400).json({ ok: false, error: "invalid_lat_lon" });
+  try {
+    const json = await siteAdapter.getSiteWeather(loc.lat, loc.lon);
+    return res.json(json);
+  } catch (_err) {
+    return res.status(502).json({ ok: false, error: "site_weather_failed" });
+  }
+});
+
+// Public homepage adapter contract (NWS-only, no intel dependency).
+router.get("/public-weather", async (req, res) => {
+  const loc = parseLatLon(req);
+  if (!loc) return res.status(400).json({ ok: false, error: "invalid_lat_lon" });
+  try {
+    const json = await publicAdapter.getPublicWeather(loc.lat, loc.lon);
+    return res.json(json);
+  } catch (_err) {
+    return res.status(502).json({ ok: false, error: "public_weather_failed" });
   }
 });
 
