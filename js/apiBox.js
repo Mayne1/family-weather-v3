@@ -382,6 +382,7 @@
     const daily = normalizeDailyShape(
       (json.weather && json.weather.daily) ||
       json.daily ||
+      json.forecast ||
       json.daily7 ||
       json.days7
     );
@@ -462,7 +463,7 @@
 
   async function getHourlyForecast(lat, lon) {
     try {
-      const json = await fetchWeather("hourly", lat, lon);
+      const json = await fetchWeather("forecast10", lat, lon);
       const shape = normalizeHourly(
         (json && json.hourly) ||
         (json && json.weather && json.weather.hourly) ||
@@ -477,9 +478,7 @@
   }
 
   async function getWeatherRightNow(lat, lon) {
-    const json = await fetchWeather("rightnow", lat, lon).catch(function () {
-      return fetchWeather("current", lat, lon);
-    });
+    const json = await fetchWeather("current", lat, lon);
     const current = normalizeCurrentShape(
       (json && json.rightNow) ||
       (json && json.current) ||
@@ -496,9 +495,10 @@
   }
 
   async function getWeatherForecast(lat, lon) {
-    const json = await fetchWeather("daily", lat, lon);
+    const json = await fetchWeather("forecast10", lat, lon);
     const daily = normalizeDailyShape(
       (json && json.daily) ||
+      (json && json.forecast) ||
       (json && json.daily7) ||
       (json && json.days7) ||
       (json && json.weather && json.weather.daily) ||
@@ -527,45 +527,29 @@
   }
 
   async function getWeatherBundle(lat, lon) {
-    try {
-      const bundleJson = await fetchWeather("bundle", lat, lon);
-      return normalizeBundleContract(bundleJson, lat, lon, "nws");
-    } catch (_bundleErr) {
-      const [rightNow, hourly, daily, alerts] = await Promise.all([
-        fetchWeather("rightnow", lat, lon).catch(function () {
-          return fetchWeather("current", lat, lon).catch(function () { return null; });
-        }),
-        fetchWeather("hourly", lat, lon).catch(function () { return null; }),
-        fetchWeather("daily", lat, lon).catch(function () { return null; }),
-        fetchWeather("alerts", lat, lon).catch(function () { return null; })
-      ]);
-      if (!rightNow && !hourly && !daily && !alerts) {
-        throw new Error("bundle_unavailable_all_endpoints_failed");
-      }
-      const mixed = {
-        location:
-          (rightNow && rightNow.location) ||
-          (hourly && hourly.location) ||
-          (daily && daily.location) ||
-          (alerts && alerts.location) ||
-          { lat: lat, lon: lon },
-        current:
-          (rightNow && (rightNow.rightNow || rightNow.current)) ||
-          (rightNow && rightNow.weather && rightNow.weather.current) ||
-          null,
-        hourly:
-          (hourly && (hourly.hourly || hourly.hours)) ||
-          (hourly && hourly.weather && hourly.weather.hourly) ||
-          null,
-        daily:
-          (daily && (daily.daily || daily.daily7 || daily.days7)) ||
-          (daily && daily.weather && daily.weather.daily) ||
-          null,
-        alerts: alerts && alerts.alerts ? alerts.alerts : [],
-        headsUp: alerts && alerts.headsUp ? alerts.headsUp : null
-      };
-      return normalizeBundleContract(mixed, lat, lon, "nws-fallback");
-    }
+    const [currentJson, forecastJson] = await Promise.all([
+      fetchWeather("current", lat, lon),
+      fetchWeather("forecast10", lat, lon)
+    ]);
+
+    const location =
+      (currentJson && currentJson.location) ||
+      (forecastJson && forecastJson.location) ||
+      { lat: lat, lon: lon };
+    const current =
+      (currentJson && (currentJson.rightNow || currentJson.current)) ||
+      (currentJson && currentJson.weather && currentJson.weather.current) ||
+      null;
+
+    const bundle = {
+      location: location,
+      current: current,
+      forecast: forecastJson || null,
+      alerts: [],
+      headsUp: { count: 0, top: [] }
+    };
+
+    return normalizeBundleContract(bundle, lat, lon, "nws-composed");
   }
 
   async function fetchPublicWeather(lat, lon) {
