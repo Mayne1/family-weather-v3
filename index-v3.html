@@ -1,0 +1,154 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Family Weather - Homepage V3</title>
+  <meta name="description" content="Weather-first family planning homepage preview.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/index-v3.css">
+</head>
+<body>
+  <div class="v3-bg" id="v3-bg"></div>
+  <div class="v3-scrim"></div>
+
+  <nav class="v3-nav">
+    <div class="v3-nav-inner">
+      <p class="v3-brand">Family Weather</p>
+      <ul class="v3-nav-links" id="mainmenu">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="create-event.html">Create Event</a></li>
+        <li><a href="my-events.html">My Events</a></li>
+        <li><a href="/feeds.html">Feeds</a></li>
+        <li><a href="/profile.html">Profile</a></li>
+        <li><a href="invite.html">Invite</a></li>
+        <li><a href="rsvp.html">RSVP</a></li>
+        <li><a href="contacts.html">Contacts</a></li>
+        <li><a href="groups.html">Groups</a></li>
+        <li><a href="settings.html">Settings</a></li>
+        <li><a href="#" id="v3-signout-link">Sign Out</a></li>
+      </ul>
+      <div class="v3-account-slot" id="fw-account-slot" aria-label="Account"></div>
+    </div>
+  </nav>
+
+  <main class="v3-shell">
+    <header class="v3-header">
+      <p class="v3-kicker">Welcome back</p>
+      <h1>Here is what today means for your plans.</h1>
+      <p class="v3-location" id="v3-location">Locating...</p>
+      <p class="v3-updated" id="v3-updated"></p>
+      <div class="v3-hero-actions">
+        <a class="v3-cta" href="create-event.html">Create Event</a>
+        <a class="v3-cta v3-cta-line" href="my-events.html">My Events</a>
+      </div>
+    </header>
+
+    <section class="v3-now" aria-labelledby="v3-now-title">
+      <div class="v3-section-head">
+        <h2 id="v3-now-title">Right Now</h2>
+        <p class="v3-now-datetime" id="v3-now-datetime">Today · --</p>
+      </div>
+      <div class="v3-now-line">
+        <p class="v3-now-temp" id="v3-now-temp">--</p>
+        <div class="v3-now-main">
+          <p class="v3-now-label" id="v3-now-label">Loading weather</p>
+          <p class="v3-now-meta" id="v3-now-meta">Feels --, humidity --, wind --</p>
+        </div>
+      </div>
+      <div class="v3-now-stats">
+        <p class="v3-now-aqi" id="v3-now-aqi">Air quality --</p>
+        <p class="v3-now-precip" id="v3-now-precip">Precip chance --</p>
+      </div>
+      <p class="v3-now-summary" id="v3-now-summary">Checking what this means for your day...</p>
+    </section>
+
+    <section class="v3-pane" aria-label="Weather IQ">
+      <div class="v3-section-head">
+        <h3>Today's Activity Outlook</h3>
+        <a class="v3-inline-link" id="v3-open-iq-top" href="/weather-iq/">Open Weather IQ</a>
+      </div>
+      <p class="v3-context">See what these conditions mean for common plans. Activity recommendations stay lightweight here and connect to detailed IQ pages.</p>
+      <div class="v3-tools">
+        <label for="v3-weather-activity">Activity</label>
+        <select id="v3-weather-activity">
+          <option value="bbq">BBQ</option>
+          <option value="baseball">Baseball</option>
+          <option value="dog-walk">Dog Walk</option>
+          <option value="outdoor-concert">Outdoor Concert</option>
+          <option value="drone-flying">Drone Flying</option>
+          <option value="fishing">Fishing</option>
+          <option value="mowing">Mowing</option>
+        </select>
+        <a class="v3-inline-link" id="v3-open-intel" href="/weather-intel/">Open Weather Intel</a>
+      </div>
+      <p class="v3-context" id="v3-iq-summary">Loading Weather IQ guidance...</p>
+      <div class="v3-iq" id="v3-iq-list"></div>
+      <a class="v3-inline-link" id="v3-open-iq-bottom" href="/weather-iq/">See full activity planner</a>
+    </section>
+
+    <section class="v3-grid" aria-label="Forecast support">
+      <article class="v3-pane">
+        <h3>Next 5 Hours</h3>
+        <div class="v3-hourly" id="v3-hourly">
+          <p class="v3-muted">Loading hourly forecast...</p>
+        </div>
+      </article>
+
+      <article class="v3-pane">
+        <div class="v3-section-head">
+          <h3>7-Day Outlook</h3>
+          <a class="v3-inline-link" href="index.html#forecast">Full forecast</a>
+        </div>
+        <div class="v3-daily" id="v3-daily">
+          <p class="v3-muted">Loading daily forecast...</p>
+        </div>
+      </article>
+    </section>
+
+    <section class="v3-lower" aria-label="Advisories and almanac">
+      <article class="v3-pane">
+        <h3>Heads Up</h3>
+        <p class="v3-context">Quick guidance based on active alerts and local conditions.</p>
+        <div id="v3-headsup">
+          <p class="v3-muted">Checking alerts...</p>
+        </div>
+      </article>
+
+      <article class="v3-pane">
+        <h3>Almanac</h3>
+        <p class="v3-context">Use historical averages to set expectations for this date.</p>
+        <form class="v3-almanac" id="v3-almanac-form">
+          <label>
+            Date
+            <input id="v3-almanac-date" type="date">
+          </label>
+          <label>
+            ZIP (optional)
+            <input id="v3-almanac-zip" type="text" inputmode="numeric" maxlength="5" placeholder="95206">
+          </label>
+          <button type="submit">Lookup</button>
+        </form>
+        <pre id="v3-almanac-out" class="v3-almanac-out">Select a date to view historical averages.</pre>
+      </article>
+    </section>
+
+    <section class="v3-favorites" aria-label="Top favorites">
+      <h3>Top 5 Favorites</h3>
+      <div id="v3-favorites">
+        <p class="v3-muted">No favorites yet.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="v3-footer">
+    <p>Family Weather V3 local sandbox preview. Not live. | V3 BUILD MARKER 01</p>
+  </footer>
+
+  <script src="js/apiBox.js"></script>
+  <script src="js/index-v3-weather-adapter.js"></script>
+  <script src="js/index-v3.js"></script>
+</body>
+</html>
