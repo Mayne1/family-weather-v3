@@ -197,6 +197,35 @@
                             </form>
                         </div>
                     </div>
+
+                    <div class="col-lg-10">
+                        <div class="bg-dark-2 rounded-1 p-40 p-lg-60 relative">
+                            <div class="subtitle wow fadeInUp">Weather Planning</div>
+                            <h2 class="wow fadeInUp" data-wow-delay=".2s">Weather IQ and Intel</h2>
+                            <p class="mb-3">Pick your default activity. This connects Profile to Weather IQ and Weather Intel pages.</p>
+                            <form id="fw-weather-tools-form" class="row g-4 mt-2">
+                                <div class="col-md-6">
+                                    <label class="form-label" for="fw-weather-activity">Default Activity</label>
+                                    <select id="fw-weather-activity" class="form-control form-control-lg">
+                                        <option value="bbq">BBQ</option>
+                                        <option value="baseball">Baseball</option>
+                                        <option value="dog-walk">Dog Walk</option>
+                                        <option value="outdoor-concert">Outdoor Concert</option>
+                                        <option value="drone-flying">Drone Flying</option>
+                                        <option value="fishing">Fishing</option>
+                                        <option value="mowing">Mowing</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6 d-flex flex-wrap align-items-end gap-3">
+                                    <a id="fw-open-weather-iq" class="btn-main fx-slide" href="/weather-iq/"><span>Open Weather IQ</span></a>
+                                    <a id="fw-open-weather-intel" class="btn-main btn-line fx-slide" href="/weather-intel/"><span>Open Weather Intel</span></a>
+                                </div>
+                                <div class="col-12">
+                                    <div id="fw-weather-tools-msg" class="small text-success" role="status" aria-live="polite"></div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>

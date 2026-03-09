@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Family Weather Intel</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0c1726;
+      --card: #13263a;
+      --line: #294867;
+      --text: #eaf4ff;
+      --muted: #a6c0d9;
+      --ok: #19b36b;
+      --warn: #f2ae2e;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: radial-gradient(circle at top, #17324a, var(--bg));
+      color: var(--text);
+    }
+    .shell { max-width: 980px; margin: 32px auto; padding: 0 16px; }
+    .card {
+      background: color-mix(in srgb, var(--card), transparent 10%);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 18px;
+      margin-bottom: 14px;
+    }
+    h1, h2 { margin: 0 0 10px; }
+    p { margin: 8px 0; color: var(--muted); }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+    .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: end; }
+    label { display: grid; gap: 6px; font-size: 14px; color: var(--muted); }
+    input, select {
+      border: 1px solid var(--line);
+      background: #0e1f31;
+      color: var(--text);
+      border-radius: 8px;
+      padding: 10px 12px;
+      min-width: 180px;
+    }
+    button, a.btn {
+      border: 1px solid var(--line);
+      background: #1a3a55;
+      color: var(--text);
+      border-radius: 8px;
+      padding: 10px 14px;
+      text-decoration: none;
+      cursor: pointer;
+      display: inline-block;
+    }
+    .hint-ok { color: var(--ok); font-weight: 700; }
+    .hint-warn { color: var(--warn); font-weight: 700; }
+    pre {
+      margin: 0;
+      white-space: pre-wrap;
+      background: #0b1827;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      color: #d9e7f4;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="card">
+      <h1>Weather Intel</h1>
+      <p>Connected from Profile activity selection and live Intel hint API.</p>
+      <div class="row">
+        <label>
+          Activity
+          <select id="activity">
+            <option value="bbq">BBQ</option>
+            <option value="baseball">Baseball</option>
+            <option value="dog-walk">Dog Walk</option>
+            <option value="outdoor-concert">Outdoor Concert</option>
+            <option value="drone-flying">Drone Flying</option>
+            <option value="fishing">Fishing</option>
+            <option value="mowing">Mowing</option>
+          </select>
+        </label>
+        <label>
+          Latitude
+          <input id="lat" type="number" step="0.0001" value="37.9577">
+        </label>
+        <label>
+          Longitude
+          <input id="lon" type="number" step="0.0001" value="-121.2908">
+        </label>
+        <button id="run" type="button">Refresh Intel</button>
+      </div>
+      <p>
+        <a class="btn" id="openIq" href="/weather-iq/">Open Weather IQ</a>
+        <a class="btn" href="/profile.html">Back to Profile</a>
+      </p>
+    </section>
+
+    <section class="card grid">
+      <div>
+        <h2>Status</h2>
+        <p id="status">Loading...</p>
+      </div>
+      <div>
+        <h2>Severity</h2>
+        <p id="severity">-</p>
+      </div>
+      <div>
+        <h2>Background Hint</h2>
+        <p id="variant">-</p>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Raw Intel Response</h2>
+      <pre id="raw">Waiting for request...</pre>
+    </section>
+  </main>
+
+  <script>
+    (function () {
+      var qs = new URLSearchParams(window.location.search);
+      var actEl = document.getElementById("activity");
+      var latEl = document.getElementById("lat");
+      var lonEl = document.getElementById("lon");
+      var runBtn = document.getElementById("run");
+      var openIq = document.getElementById("openIq");
+      var status = document.getElementById("status");
+      var severity = document.getElementById("severity");
+      var variant = document.getElementById("variant");
+      var raw = document.getElementById("raw");
+
+      function getActivity() {
+        var query = String(qs.get("activity") || "").trim();
+        if (query) return query;
+        try {
+          var fromStorage = String(localStorage.getItem("fw_weather_activity") || "").trim();
+          if (fromStorage) return fromStorage;
+        } catch (_err) {}
+        return "bbq";
+      }
+
+      function setLinks(activity) {
+        if (openIq) openIq.href = "/weather-iq/?activity=" + encodeURIComponent(activity);
+      }
+
+      async function refresh() {
+        var activity = actEl.value || "bbq";
+        var lat = Number(latEl.value || 37.9577);
+        var lon = Number(lonEl.value || -121.2908);
+        var dateIso = new Date().toISOString().slice(0, 10);
+        setLinks(activity);
+        try { localStorage.setItem("fw_weather_activity", activity); } catch (_err) {}
+
+        status.textContent = "Loading intel...";
+        status.className = "";
+        severity.textContent = "-";
+        variant.textContent = "-";
+
+        try {
+          var hintUrl = "/api/intel/hint?lat=" + encodeURIComponent(lat) + "&lon=" + encodeURIComponent(lon) + "&dateIso=" + encodeURIComponent(dateIso);
+          var hintRes = await fetch(hintUrl);
+          var hintJson = await hintRes.json();
+          raw.textContent = JSON.stringify(hintJson, null, 2);
+          var severe = Boolean(hintJson && hintJson.severeHint);
+          var level = String((hintJson && hintJson.severity_tier) || "NONE");
+          var bg = String((hintJson && hintJson.background_variant_hint) || "normal");
+          severity.textContent = level;
+          variant.textContent = bg;
+          status.textContent = severe ? "Caution suggested for this day." : "No severe intel signal.";
+          status.className = severe ? "hint-warn" : "hint-ok";
+        } catch (err) {
+          status.textContent = "Intel request failed.";
+          status.className = "hint-warn";
+          raw.textContent = String((err && err.message) || err);
+        }
+      }
+
+      var activity = getActivity();
+      actEl.value = activity;
+      setLinks(activity);
+      runBtn.addEventListener("click", refresh);
+      actEl.addEventListener("change", function () {
+        setLinks(actEl.value || "bbq");
+      });
+      refresh();
+    })();
+  </script>
+</body>
+</html>

@@ -1,6 +1,7 @@
 import { onAuthChanged, signOutUser } from "../firebase/firebaseAuth.js";
 
 const PROFILE_KEY = "fw_profile_v1";
+const WEATHER_ACTIVITY_KEY = "fw_weather_activity";
 const COMMON_TIMEZONES = [
   "America/New_York",
   "America/Chicago",
@@ -95,10 +96,34 @@ function getDefaultsForUser(user) {
     severeAlerts: true,
     dailySummary: true,
     favoriteLocations: "",
+    weatherActivity: "bbq",
     role: "Family Member",
     status: "Active",
     updatedAt: new Date().toISOString()
   };
+}
+
+function getStoredActivity() {
+  try {
+    const raw = String(localStorage.getItem(WEATHER_ACTIVITY_KEY) || "").trim();
+    return raw || "";
+  } catch (_err) {
+    return "";
+  }
+}
+
+function writeStoredActivity(value) {
+  try {
+    localStorage.setItem(WEATHER_ACTIVITY_KEY, String(value || "").trim());
+  } catch (_err) {}
+}
+
+function syncWeatherToolLinks(activity) {
+  const selected = String(activity || "bbq").trim() || "bbq";
+  const iqLink = document.getElementById("fw-open-weather-iq");
+  const intelLink = document.getElementById("fw-open-weather-intel");
+  if (iqLink) iqLink.setAttribute("href", "/weather-iq/?activity=" + encodeURIComponent(selected));
+  if (intelLink) intelLink.setAttribute("href", "/weather-intel/?activity=" + encodeURIComponent(selected));
 }
 
 function renderSignedOut() {
@@ -128,13 +153,16 @@ function renderSignedIn(user) {
     dashboardView: document.getElementById("fw-dashboard-view"),
     severeAlerts: document.getElementById("fw-severe-alerts"),
     dailySummary: document.getElementById("fw-daily-summary"),
-    favoriteLocations: document.getElementById("fw-favorite-locations")
+    favoriteLocations: document.getElementById("fw-favorite-locations"),
+    weatherActivity: document.getElementById("fw-weather-activity")
   };
   if (Object.values(fields).some((el) => !el)) return;
 
   const defaults = getDefaultsForUser(user);
   const stored = readProfile() || {};
   const profile = { ...defaults, ...stored, email: user.email || stored.email || "" };
+  const cachedActivity = getStoredActivity();
+  if (cachedActivity) profile.weatherActivity = cachedActivity;
 
   buildTimezoneOptions(fields.timezone, profile.timezone || defaults.timezone);
   fields.fullName.value = profile.fullName || "";
@@ -147,6 +175,8 @@ function renderSignedIn(user) {
   fields.severeAlerts.checked = Boolean(profile.severeAlerts);
   fields.dailySummary.checked = Boolean(profile.dailySummary);
   fields.favoriteLocations.value = profile.favoriteLocations || "";
+  if (fields.weatherActivity) fields.weatherActivity.value = profile.weatherActivity || "bbq";
+  syncWeatherToolLinks((fields.weatherActivity && fields.weatherActivity.value) || profile.weatherActivity || "bbq");
   renderHeader(profile);
   setMessage("");
 
@@ -167,12 +197,15 @@ function renderSignedIn(user) {
       severeAlerts: fields.severeAlerts.checked,
       dailySummary: fields.dailySummary.checked,
       favoriteLocations: fields.favoriteLocations.value.trim(),
+      weatherActivity: fields.weatherActivity ? fields.weatherActivity.value : "bbq",
       role: "Family Member",
       status: "Active",
       updatedAt: new Date().toISOString()
     };
 
     writeProfile(next);
+    writeStoredActivity(next.weatherActivity || "bbq");
+    syncWeatherToolLinks(next.weatherActivity || "bbq");
     renderHeader(next);
     setMessage("Saved");
     showSavedBanner();
@@ -187,6 +220,16 @@ function renderSignedIn(user) {
     event.preventDefault();
     saveProfileState();
   });
+
+  if (fields.weatherActivity) {
+    fields.weatherActivity.addEventListener("change", () => {
+      const value = fields.weatherActivity.value || "bbq";
+      syncWeatherToolLinks(value);
+      writeStoredActivity(value);
+      const msg = document.getElementById("fw-weather-tools-msg");
+      if (msg) msg.textContent = "Activity updated to " + value + ".";
+    });
+  }
 
   signOutBtn?.addEventListener("click", async () => {
     await signOutUser();
