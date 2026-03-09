@@ -26,6 +26,14 @@ function rsvpSummary(eventId, rsvps) {
   return { rows, counts };
 }
 
+function intelSeverityClass(intel) {
+  const severe = Boolean(intel && intel.severeHint);
+  const tier = String((intel && intel.severity_tier) || "NONE").toUpperCase();
+  if (severe || tier === "SEVERE" || tier === "EXTREME") return "bg-danger";
+  if (tier === "MODERATE") return "bg-warning text-dark";
+  return "bg-success";
+}
+
 function render(userEmail) {
   const grid = document.getElementById("events-grid");
   if (!grid) return;
@@ -50,7 +58,20 @@ function render(userEmail) {
           <p class="mb-3">${esc(eventItem.notes || "")}</p>
           <div class="bg-dark rounded-1 p-20 mb-3">
             <div class="subtitle mb-1">Weather Intel</div>
-            <div>Weather intel will appear here <span class="badge bg-secondary">MVP</span></div>
+            <div class="small mb-2">
+              Severity:
+              <span class="badge ${intelSeverityClass(eventItem.weatherIntel)}">
+                ${esc((eventItem.weatherIntel && eventItem.weatherIntel.severity_tier) || "NONE")}
+              </span>
+              ${eventItem.weatherIntel && eventItem.weatherIntel.severeHint ? '<span class="badge bg-danger ms-1">Severe Hint</span>' : ""}
+            </div>
+            <div class="small mb-2">
+              Activity: ${esc((eventItem.weatherIntel && eventItem.weatherIntel.activity) || "bbq")}
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+              <a class="btn-main btn-line" href="${esc((eventItem.weatherIntel && eventItem.weatherIntel.intelUrl) || "/weather-intel/")}">Open Weather Intel</a>
+              <a class="btn-main btn-line" href="/weather-iq/?activity=${encodeURIComponent((eventItem.weatherIntel && eventItem.weatherIntel.activity) || "bbq")}">Open Weather IQ</a>
+            </div>
           </div>
           <div class="small mb-3">Invites: ${inviteCount} | Going: ${summary.counts.Going} | Maybe: ${summary.counts.Maybe} | No: ${summary.counts.No}</div>
           <div class="d-flex flex-wrap gap-2 mb-3">
